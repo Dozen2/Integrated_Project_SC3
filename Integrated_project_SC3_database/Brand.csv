@@ -1,0 +1,21 @@
+id,name,countryOfOrigin,webSiteUrl,isActive
+1,Samsung,South Korea,https://www.samsung.com,1
+2,Apple,United States,https://www.apple.com,1
+3,Xiaomi,China,https://www.mi.com,1
+4,Huawei,China,https://www.huawei.com,1
+5,OnePlus,China,https://www.oneplus.com,1
+6,Sony,Japan,https://www.sony.com,1
+7,LG,South Korea,https://www.lg.com,1
+8,Nokia,Finland,https://www.nokia.com,0
+9,Motorola,United States,https://www.motorola.com,0
+10,OPPO,China,https://www.oppo.com,1
+11,Vivo,China,https://www.vivo.com,1
+12,ASUS,Taiwan,https://www.asus.com,1
+13,Google,United States,https://store.google.com,1
+14,Realme,China,https://www.realme.com,1
+15,BlackBerry,Canada,https://www.blackberry.com,1
+16,HTC,Taiwan,https://www.htc.com,1
+17,ZTE,China,https://www.zte.com,1
+18,Lenovo,China,https://www.lenovo.com,1
+19,Honor,China,https://www.hihonor.com,1
+20,Nothing,United Kingdom,https://nothing.tech,1

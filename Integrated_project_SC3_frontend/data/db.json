@@ -1,0 +1,143 @@
+{
+  "saleItems": [
+    {
+      "id": "1",
+      "model": "NovaBook X1",
+      "description": "High performance ultrabook.",
+      "quantity": 10,
+      "price": 45000,
+      "screenSizeInch": 13.3,
+      "ramGb": 16,
+      "storageGb": 512,
+      "color": "Silver",
+      "createdOn": "1482-05-09T13:14:08Z",
+      "updatedOn": "1482-05-09T13:14:08Z",
+      "brandId": 1
+    },
+    {
+      "id": "2",
+      "model": "ProTab 10",
+      "description": "10-inch Android tablet.",
+      "quantity": 5,
+      "price": 12000,
+      "screenSizeInch": 10.1,
+      "ramGb": 4,
+      "storageGb": 64,
+      "color": "Black",
+      "createdOn": "1482-05-09T13:14:08Z",
+      "updatedOn": "1482-05-09T13:14:08Z",
+      "brandId": 2
+    },
+    {
+      "id": "3",
+      "model": "EcoPhone Lite",
+      "description": "Budget eco-friendly smartphone.",
+      "quantity": 15,
+      "price": 7500,
+      "screenSizeInch": null,
+      "ramGb": 2,
+      "storageGb": 32,
+      "color": "Green",
+      "createdOn": "1482-05-09T13:14:08Z",
+      "updatedOn": "1482-05-09T13:14:08Z",
+      "brandId": 3
+    },
+    {
+      "id": "4",
+      "model": "SmartCam 4K",
+      "description": "Smart security camera with 4K resolution.",
+      "quantity": 8,
+      "price": 8800,
+      "screenSizeInch": null,
+      "ramGb": null,
+      "storageGb": null,
+      "color": null,
+      "createdOn": "1482-05-09T13:14:08Z",
+      "updatedOn": "1482-05-09T13:14:08Z",
+      "brandId": 4
+    },
+    {
+      "id": "5",
+      "model": "FutureGlass AR",
+      "description": "Augmented reality smart glasses.",
+      "quantity": 2,
+      "price": 56000,
+      "screenSizeInch": null,
+      "ramGb": 8,
+      "storageGb": 128,
+      "color": "Transparent",
+      "createdOn": "1482-05-09T13:14:08Z",
+      "updatedOn": "1482-05-09T13:14:08Z",
+      "brandId": 5
+    }
+  ],
+  "Brands": [
+    {
+      "name": "TechNova",
+      "websiteUrl": "https://www.technova.com",
+      "isActive": true,
+      "countryOfOrigin": "USA",
+      "id": "1"
+    },
+    {
+      "id": "2",
+      "name": "GadgetPro",
+      "websiteUrl": null,
+      "isActive": true,
+      "countryOfOrigin": "Germany",
+      "createdOn": "1482-05-09T13:14:05Z",
+      "updatedOn": "1482-05-09T13:14:05Z"
+    },
+    {
+      "id": "3",
+      "name": "EcoWare",
+      "websiteUrl": "https://www.ecoware.org",
+      "isActive": false,
+      "countryOfOrigin": null,
+      "createdOn": "1482-05-09T13:14:05Z",
+      "updatedOn": "1482-05-09T13:14:05Z"
+    },
+    {
+      "id": "4",
+      "name": "SmartAsia",
+      "websiteUrl": "https://smartasia.co",
+      "isActive": true,
+      "countryOfOrigin": "South Korea",
+      "createdOn": "1482-05-09T13:14:05Z",
+      "updatedOn": "1482-05-09T13:14:05Z"
+    },
+    {
+      "id": "5",
+      "name": "FutureTech",
+      "websiteUrl": "https://www.futuretech.io",
+      "isActive": true,
+      "countryOfOrigin": "Japan",
+      "createdOn": "1482-05-09T13:14:05Z",
+      "updatedOn": "1482-05-09T13:14:05Z"
+    },
+    {
+      "name": "Sony",
+      "websiteUrl": "https://www.sony.com",
+      "isActive": true,
+      "countryOfOrigin": "Japan",
+      "id": "6"
+    },
+    {
+      "id": "7",
+      "name": "LG",
+      "websiteUrl": "https://www.lg.com",
+      "countryOfOrigin": "South Korea",
+      "noOfSaleItems": 0,
+      "createdOn": "2025-05-16 23:20:44.0",
+      "updatedOn": "2025-05-16 23:20:44.0",
+      "isActive": true
+    },
+    {
+      "name": "Nokia",
+      "websiteUrl": "https://www.nokia.com",
+      "isActive": false,
+      "countryOfOrigin": "Finland",
+      "id": "8"
+    }
+  ]
+}

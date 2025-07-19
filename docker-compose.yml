@@ -1,0 +1,57 @@
+services:
+  frontend:
+    container_name: fe-server
+    build:
+      context: ./Integrated_project_SC3_frontend
+      dockerfile: dockerfile
+    ports:
+      - 80:80
+    networks:
+      - sc3_network
+    depends_on:
+      - backend
+
+  backend:
+    container_name: be-server
+    build:
+      context: ./Integrated_project_SC3_backend
+      dockerfile: dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - sc3_network
+    depends_on:
+      database:
+        condition: service_healthy
+
+
+  database:
+    container_name: db-server
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: proj_sc3
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_general_ci
+      LANG: C.UTF-8
+      TZ: UTC
+    ports:
+      - 3306:3306
+    networks:
+      - sc3_network
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./Integrated_project_SC3_database/productV2.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+
+networks:
+  sc3_network:
+
+volumes:
+  db_data:
