@@ -11,7 +11,7 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.VITE_BASE_PATH || '/'),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
