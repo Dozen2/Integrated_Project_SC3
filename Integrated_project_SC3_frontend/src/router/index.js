@@ -10,9 +10,8 @@ import ProductManage from '@/views/SaleItem/SaleItemManage.vue'
 import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 
-
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.VITE_BASE_PATH || '/'),
   routes: [
     {
       path: '/',
