@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/itb-mshop/v1")
-@CrossOrigin(origins = "${app.cors.allowedOrigins}")
+//@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class BrandController {
     @Autowired
@@ -27,13 +27,6 @@ public class BrandController {
     private ListMapper listMapper;
     @Autowired
     private ModelMapper modelMapper;
-
-//    @GetMapping("/brands")
-//    public ResponseEntity<List<BrandDetailDTO>> getAllBrands() {
-//        List<Brand> brand = brandServices.getAllBrand();
-//        List<BrandDetailDTO> brandDTOS = listMapper.mapList(brand, BrandDetailDTO.class, modelMapper);
-//        return ResponseEntity.ok(brandDTOS);
-//    }
 
     @GetMapping("/brands")
     public ResponseEntity<List<BrandDetailDTO>> getAllBrands() {

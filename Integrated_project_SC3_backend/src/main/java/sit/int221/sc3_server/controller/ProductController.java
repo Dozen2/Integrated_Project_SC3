@@ -6,9 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sit.int221.sc3_server.DTO.*;
+import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.SalesItemDTO;
+import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.Product;
-import sit.int221.sc3_server.service.BrandServices;
 import sit.int221.sc3_server.service.ProductServices;
 import sit.int221.sc3_server.utils.ListMapper;
 
@@ -16,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/itb-mshop/v1")
-@CrossOrigin(origins = "${app.cors.allowedOrigins}")
+//@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class ProductController {
     @Autowired

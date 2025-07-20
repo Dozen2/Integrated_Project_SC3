@@ -1,6 +1,5 @@
 package sit.int221.sc3_server.controller;
 
-import lombok.Getter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,14 +9,13 @@ import sit.int221.sc3_server.DTO.PageDTO;
 import sit.int221.sc3_server.DTO.SalesItemAllDataDTO;
 import sit.int221.sc3_server.entity.Product;
 import sit.int221.sc3_server.service.ProductServiceV2;
-import sit.int221.sc3_server.service.ProductServices;
 import sit.int221.sc3_server.utils.ListMapper;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/itb-mshop/v2")
-@CrossOrigin(origins = "${app.cors.allowedOrigins}")
+//@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class ProductControllerV2 {
     @Autowired
