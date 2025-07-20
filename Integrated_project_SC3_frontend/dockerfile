@@ -3,11 +3,19 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
+# 👉 Copy package files ก่อน เพื่อใช้ cache ของ npm install
 COPY package.json ./
+COPY package-lock.json ./   
+
+# 👉 Run npm install แยกไว้ตรงนี้ (Docker cache ทำงานได้ดี)
 RUN npm install
 
+# 👉 Copy source code ทีหลัง
 COPY . .
-RUN npm run build -- --base=/sc3/
+
+# 👉 Build Project
+# RUN npm run build -- --base=/sc3/
+RUN npm run build
 
 # Runtime Stage
 FROM nginx:stable-alpine
