@@ -14,8 +14,8 @@ RUN npm install
 COPY . .
 
 # 👉 Build Project
-RUN npm run build -- --base=/sc3/
-# RUN npm run build
+# RUN npm run build -- --base=/sc3/
+RUN npm run build
 
 # Runtime Stage
 FROM nginx:stable-alpine
