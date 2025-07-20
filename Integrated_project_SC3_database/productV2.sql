@@ -50,8 +50,6 @@ INSERT INTO Brand (id, name, countryOfOrigin, webSiteUrl, isActive) VALUES
 (19, 'Honor', 'China', 'https://www.hihonor.com', 1),
 (20, 'Nothing', 'United Kingdom', 'https://nothing.tech', 1);
 
-<<<<<<< HEAD
-
 INSERT INTO products(id, brand_id, model, description, quantity, price, screenSizeInch, ramGb, storageGb, color) VALUES
 (1, 2, 'iPhone 14 Pro Max', 'ไอโฟนเรือธงรุ่นล่าสุด มาพร้อม Dynamic Island จอใหญ่สุดในตระกูล กล้องระดับโปร', 5, 42900, 6.7, 6, 512, 'Space Black'),
 (2, 2, 'iPhone 14', 'มือถือรุ่นทั่วไปทันสมัย รองรับ 5G ประมวลผล ถ่ายภาพได้สวยคมชัด', 8, 29700, 6.1, 6, 256, 'Midnight'),
@@ -113,5 +111,3 @@ INSERT INTO products(id, brand_id, model, description, quantity, price, screenSi
 (83, 10, 'Find X5 Lite', 'Previous gen lite', 8, 14850, 6.43, 8, 128, 'Starry Black'),
 (84, 10, 'A77', 'Budget friendly', 20, 8250, 6.56, 6, 128, 'Ocean Blue'),
 (85, 10, 'Reno6 Pro', 'Classic premium', 7, 16500, 6.55, 12, 256, 'Arctic Blue');
-=======
->>>>>>> 57a71b53783464363373c610ca51f9e9622a37e8
