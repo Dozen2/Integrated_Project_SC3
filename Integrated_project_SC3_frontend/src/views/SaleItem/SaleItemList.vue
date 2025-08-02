@@ -1,89 +1,22 @@
 <script setup>
 import { ref, onBeforeUnmount, onBeforeMount } from "vue";
-import { getAllData} from "@/libs/api.js";
-import {getAllSaleItemV1,getAllSaleItemV2} from "@/libs/callAPI/apiSaleItem.js"
+import { getAllSaleItemV1, getAllSaleItemV2 } from "@/libs/callAPI/apiSaleItem.js"
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
 import Pagination from "@/components/Pagination.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
 
 const product = ref([]);
 const brand = ref([]);
-const urlSetting = ref("");
 const productTotalPages = ref(0);
-const savedSettings = ref(null); // เพิ่ม reactive variable
-const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
+const savedSettings = ref(null);
 const alertStore = useAlertStore();
-
-// Add this helper function for consistent brand sorting
-const sortProductsByBrandOrder = (products, brandOrder) => {
-  if (!brandOrder || brandOrder.length === 0) return products;
-
-  return products.sort((a, b) => {
-    const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-    const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
-
-    const indexA = brandOrder.indexOf(brandA);
-    const indexB = brandOrder.indexOf(brandB);
-
-    // Both brands are in the selected order
-    if (indexA !== -1 && indexB !== -1) {
-      return indexA - indexB;
-    }
-    // Only brand A is in selected order (comes first)
-    if (indexA !== -1 && indexB === -1) return -1;
-    // Only brand B is in selected order (comes first)
-    if (indexA === -1 && indexB !== -1) return 1;
-    // Neither brand is in selected order (alphabetical)
-    return brandA.localeCompare(brandB);
-  });
-};
 
 onBeforeMount(async () => {
   const loadedSettings = loadSettingsFromSession();
   savedSettings.value = loadedSettings;
 
   if (loadedSettings) {
-    const url = buildUrlFromSettings(loadedSettings);
-    console.log("Built URL from settings:", url);
-    urlSetting.value = url;
-    const productData = await getAllData(
-      `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items${url}`
-    );
-
-    if (productData && productData.content) {
-      if (
-        loadedSettings.filterBrands &&
-        loadedSettings.filterBrands.trim() !== ""
-      ) {
-        const brandOrder = loadedSettings.filterBrands
-          .split(",")
-          .map((brand) => brand.trim());
-        console.log("Initial brand order:", brandOrder);
-
-        productData.content.sort((a, b) => {
-          const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-          const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
-
-          const indexA = brandOrder.indexOf(brandA);
-          const indexB = brandOrder.indexOf(brandB);
-
-          if (indexA !== -1 && indexB !== -1) {
-            return indexA - indexB;
-          }
-          if (indexA !== -1 && indexB === -1) return -1;
-          if (indexA === -1 && indexB !== -1) return 1;
-          return brandA.localeCompare(brandB);
-        });
-
-        console.log(
-          "Initial sorted products:",
-          productData.content.map((p) => p.brandName || p.brand?.name)
-        );
-      }
-    }
-
-    product.value = productData;
-    productTotalPages.value = productData.totalPages;
+    await fetchProductWithSettings(loadedSettings);
   } else {
     await fetchProduct();
   }
@@ -98,27 +31,6 @@ function onStorageChange(event) {
   if (event.key === "product-updated") {
     fetchProduct();
   }
-}
-
-function buildUrlFromSettings(settings) {
-  const params = new URLSearchParams();
-  if (settings.filterBrands !== undefined && settings.filterBrands !== "") {
-    params.append("filterBrands", settings.filterBrands);
-  }
-  if (settings.page !== undefined) {
-    params.append("page", settings.page);
-  }
-  if (settings.size !== undefined) {
-    params.append("size", settings.size);
-  }
-  if (settings.sortField !== undefined && settings.sortField !== "") {
-    params.append("sortField", settings.sortField);
-  }
-  if (settings.sortDirection !== undefined && settings.sortDirection !== "") {
-    params.append("sortDirection", settings.sortDirection);
-  }
-
-  return "?" + params.toString();
 }
 
 const saveSettingsToSession = (settings) => {
@@ -141,59 +53,68 @@ const loadSettingsFromSession = () => {
 
 const fetchProduct = async () => {
   try {
-    const productData = await getAllData(
-      `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items?page=0`
+    const productData = await getAllSaleItemV2(
+      [], // filterBrand
+      "createdOn", // sortField
+      "desc", // sortDirection
+      10, // size
+      0 // page
     );
+    
     product.value = productData;
     productTotalPages.value = productData.totalPages;
 
-    const brandData = await getAllSaleItemV1()
+    const brandData = await getAllSaleItemV1();
     brand.value = brandData;
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
 
-const handleUserInteraction = async (newSettings) => {
-  saveSettingsToSession(newSettings);
-
-  const url = buildUrlFromSettings(newSettings);
-  urlSetting.value = url;
-
+const fetchProductWithSettings = async (settings) => {
   try {
-    const productData = await getAllData(
-      `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items${url}`
+    // แปลง filterBrands จาก string เป็น array
+    let filterBrands = [];
+    if (settings.filterBrands && settings.filterBrands.trim() !== "") {
+      filterBrands = settings.filterBrands
+        .split(",")
+        .map((brand) => brand.trim());
+    }
+
+    const productData = await getAllSaleItemV2(
+      filterBrands,
+      settings.sortField || "createdOn",
+      settings.sortDirection || "desc", 
+      settings.size || 10,
+      settings.page || 0
     );
 
-    if (productData && productData.content) {
-      if (newSettings.filterBrands && newSettings.filterBrands.trim() !== "") {
-        const brandOrder = newSettings.filterBrands
-          .split(",")
-          .map((brand) => brand.trim());
-        console.log("Brand order:", brandOrder);
+    console.log("Fetched product data:", productData);
 
-        productData.content.sort((a, b) => {
-          const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-          const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
+    // จัดการ sorting ตาม brand order ถ้ามี filterBrands
+    if (productData && productData.content && filterBrands.length > 0) {
+      const brandOrder = filterBrands;
+      console.log("Brand order:", brandOrder);
 
-          console.log("Comparing:", brandA, "vs", brandB);
+      productData.content.sort((a, b) => {
+        const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
+        const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
 
-          const indexA = brandOrder.indexOf(brandA);
-          const indexB = brandOrder.indexOf(brandB);
+        const indexA = brandOrder.indexOf(brandA);
+        const indexB = brandOrder.indexOf(brandB);
 
-          if (indexA !== -1 && indexB !== -1) {
-            return indexA - indexB;
-          }
-          if (indexA !== -1 && indexB === -1) return -1;
-          if (indexA === -1 && indexB !== -1) return 1;
-          return brandA.localeCompare(brandB);
-        });
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+        if (indexA !== -1 && indexB === -1) return -1;
+        if (indexA === -1 && indexB !== -1) return 1;
+        return brandA.localeCompare(brandB);
+      });
 
-        console.log(
-          "Sorted products:",
-          productData.content.map((p) => p.brandName || p.brand?.name)
-        );
-      }
+      console.log(
+        "Sorted products:",
+        productData.content.map((p) => p.brandName || p.brand?.name)
+      );
     }
 
     product.value = productData;
@@ -201,6 +122,11 @@ const handleUserInteraction = async (newSettings) => {
   } catch (error) {
     console.error("Error fetching product data:", error);
   }
+};
+
+const handleUserInteraction = async (newSettings) => {
+  saveSettingsToSession(newSettings);
+  await fetchProductWithSettings(newSettings);
 };
 </script>
 
@@ -278,7 +204,7 @@ const handleUserInteraction = async (newSettings) => {
       :initialSortField="savedSettings?.sortField || ''"
       :initialSortDirection="savedSettings?.sortDirection || ''"
       :showFilter="true"
-      :show-pagination="true"
+      :show-pagination="false"
     />
 
     <!-- Gallery -->
@@ -287,4 +213,20 @@ const handleUserInteraction = async (newSettings) => {
       :product="product.content"
     />
   </div>
+
+  <Pagination
+      @urlSetting="handleUserInteraction"
+      :productTotalPages="productTotalPages"
+      :initialPage="
+        savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
+      "
+      :initialSize="
+        savedSettings?.size !== undefined ? Number(savedSettings.size) : 10
+      "
+      :initialFilterBrands="savedSettings?.filterBrands || ''"
+      :initialSortField="savedSettings?.sortField || ''"
+      :initialSortDirection="savedSettings?.sortDirection || ''"
+      :showFilter="false"
+      :show-pagination="true"
+    />
 </template>

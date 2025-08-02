@@ -13,16 +13,11 @@ onMounted(async () => {
     const data = await getSaleItemById(route.params.id);
     if (data == undefined) {
       product.value = "404_not_found";
-      console.log("product.value: " + product.value);
       setTimeout(() => {
         router.push("/sale-items");
       }, 2000);
     } else {
       product.value = data;
-      console.log(product.value);
-      console.log(data);
-      console.log("product.value: " + product.value.id);
-      console.log("product.value: " + typeof product.value.id);
     }
   } catch (error) {
     console.log("โหลดข้อมูลสินค้าไม่สำเร็จ:", error.message);

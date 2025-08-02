@@ -1,16 +1,3 @@
-// async function getAllData(url) {
-//     try{
-//         const data = await fetch(url);
-//         if (data.status === 404) return undefined;
-//         const finalData = await data.json();
-//         return finalData;
-//     }catch(error){
-//         throw new Error(error);
-//     }
-// }
-
-// @/libs/api.js
-
 async function getAllData(url) {
   try {
     const res = await fetch(url);

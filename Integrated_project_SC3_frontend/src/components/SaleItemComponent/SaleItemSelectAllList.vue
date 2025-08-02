@@ -6,7 +6,6 @@ import { useRouter } from "vue-router";
 import { deleteUserById } from "@/libs/api.js";
 
 const alertStore = useAlertStore();
-const router = useRouter();
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 
 const emit = defineEmits(["selestDeleted"]);

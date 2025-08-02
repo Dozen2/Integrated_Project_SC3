@@ -29,7 +29,7 @@ onBeforeUnmount(() => {
 function onStorageChange(event) {
   if (event.key === 'product-updated') {
     console.log('Product data changed in another tab');
-    fetchselect(); // โหลดข้อมูลใหม่
+    fetchselect();
   }
 }
 

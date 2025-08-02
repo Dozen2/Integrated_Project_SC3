@@ -1,10 +1,7 @@
 <script setup>
+import { nullCatching, unitPrice } from "@/libs/utils.js";
+import { useAlertStore } from "@/stores/alertStore.js";
 import { onMounted } from "vue";
-import { unitPrice, nullCatching } from "@/libs/utils.js"
-import { useAlertStore } from "@/stores/alertStore.js"
-// import BrandFilter from "./BrandFilter.vue";
-// import SortButton from "./SortButton.vue";
-// import Pagination from "./Pagination.vue";
 
 const alertStore = useAlertStore()
 
@@ -37,7 +34,7 @@ onMounted(() => {
       <RouterLink v-for="(item, index) in product" :key="index" :to="`/sale-items/${item.id}`"
         class="itbms-row bg-white p-4 rounded-2xl shadow-md hover:shadow-lg transition-all hover:scale-[1.02]">
         <img :src="item.imageUrl || 'https://app-area.riointernational.com.bd/productImages/1738403480BRk6I.png'"
-          alt="product image" class="w-full h-40 object-contain" />
+          alt="product image" class="w-full h-40 object-contain" /> 
 
         <div class="mt-3 space-y-1">
           <h2 class="itbms-brand text-lg font-bold text-gray-800">
