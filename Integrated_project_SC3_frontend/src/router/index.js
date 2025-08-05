@@ -61,7 +61,6 @@ const router = createRouter({
       name: 'BrandEdit',
       component: BrandEdit
     }
-
   ],
 })
 

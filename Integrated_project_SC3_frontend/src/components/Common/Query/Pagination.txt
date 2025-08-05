@@ -8,7 +8,7 @@ import {
   ref,
   watch,
 } from "vue";
-import { getAllBrand } from "../libs/callAPI/apiBrand";
+import { getAllBrand } from "../../libs/callAPI/apiBrand";
 
 const props = defineProps({
   productTotalPages: Number,

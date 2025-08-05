@@ -1,12 +1,9 @@
 <script setup>
 import { ref, onBeforeUnmount, onBeforeMount } from "vue";
-import {
-  getAllSaleItemV1,
-  getAllSaleItemV2,
-} from "@/libs/callAPI/apiSaleItem.js";
+import { getAllSaleItemV1, getAllSaleItemV2 } from "@/libs/callAPI/apiSaleItem.js"
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
+import Pagination from "@/components/Common/Query/Skeleton/Pagination.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
-import QueryComponent from "@/components/Common/Query/QueryComponent.vue";
 
 const product = ref([]);
 const brand = ref([]);
@@ -34,8 +31,14 @@ const loadSettingsFromSession = () => {
 
 const fetchProduct = async () => {
   try {
-    const productData = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
-
+    const productData = await getAllSaleItemV2(
+      [],
+      "createdOn",
+      "desc",
+      10,
+      0
+    );
+    
     product.value = productData;
     productTotalPages.value = productData.totalPages;
 
@@ -59,7 +62,7 @@ const fetchProductWithSettings = async (settings) => {
     const productData = await getAllSaleItemV2(
       filterBrands,
       settings.sortField || "createdOn",
-      settings.sortDirection || "desc",
+      settings.sortDirection || "desc", 
       settings.size || 10,
       settings.page || 0
     );
@@ -184,9 +187,12 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Filter -->
-    <QueryComponent
+    <Pagination
       @urlSetting="handleUserInteraction"
+      :productTotalPages="productTotalPages"
+      :initialPage="
+        savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
+      "
       :initialSize="
         savedSettings?.size !== undefined ? Number(savedSettings.size) : 10
       "
@@ -194,8 +200,7 @@ onBeforeUnmount(() => {
       :initialSortField="savedSettings?.sortField || ''"
       :initialSortDirection="savedSettings?.sortDirection || ''"
       :showFilter="true"
-      :showPagination="false"
-      :showSizeAndSort="true"
+      :show-pagination="false"
     />
 
     <SelectAllSaleItemGallery
@@ -204,15 +209,19 @@ onBeforeUnmount(() => {
     />
   </div>
 
-  <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Pagination -->
-  <QueryComponent
-    @urlSetting="handleUserInteraction"
-    :productTotalPages="productTotalPages"
-    :initialPage="
-      savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
-    "
-    :showFilter="false"
-    :showPagination="true"
-    :showSizeAndSort="false"
-  />
+  <Pagination
+      @urlSetting="handleUserInteraction"
+      :productTotalPages="productTotalPages"
+      :initialPage="
+        savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
+      "
+      :initialSize="
+        savedSettings?.size !== undefined ? Number(savedSettings.size) : 10
+      "
+      :initialFilterBrands="savedSettings?.filterBrands || ''"
+      :initialSortField="savedSettings?.sortField || ''"
+      :initialSortDirection="savedSettings?.sortDirection || ''"
+      :showFilter="false"
+      :show-pagination="true"
+    />
 </template>

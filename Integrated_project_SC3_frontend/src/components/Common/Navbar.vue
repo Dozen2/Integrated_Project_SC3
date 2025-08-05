@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import BrandDropdown from './BrandComponents/BrandDropdown.vue'
+import BrandDropdown from './../BrandComponents/BrandDropdown.vue'
 
 const isMenuOpen = ref(false)
 </script>
