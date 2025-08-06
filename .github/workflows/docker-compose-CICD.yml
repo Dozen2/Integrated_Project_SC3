@@ -1,0 +1,22 @@
+name: Auto-Deployment
+
+on:
+  push:
+    branches: [ CI/CD-Develop ]  # Change to the branch you want to trigger on
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+
+      - name: Auto-Deployment-Container
+        run: |
+          set -x
+          cd /home/shared/intrigated-sc3-v7
+          git pull https://github.com/Nutchanon-TR/Integrated_project_SC3.git CI/CD-Develop
+          docker compose down -v
+          docker compose up -d --build
