@@ -17,8 +17,6 @@ jobs:
         run: |
           set -x
           cd /home/shared/intrigated-sc3-v7
-          
           git pull https://github.com/Nutchanon-TR/Integrated_project_SC3.git CI/CD-Develop
-
           docker compose down -v
           docker compose up -d --build
