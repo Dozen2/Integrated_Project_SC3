@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sit.int221.sc3_server.DTO.PageDTO;
-import sit.int221.sc3_server.DTO.SalesItemAllDataDTO;
+import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.Product;
 import sit.int221.sc3_server.service.ProductServiceV2;
 import sit.int221.sc3_server.utils.ListMapper;
@@ -26,15 +26,18 @@ public class ProductControllerV2 {
     private ListMapper listMapper;
 
     @GetMapping("/sale-items")
-    public ResponseEntity<PageDTO<SalesItemAllDataDTO>> getAllSaleItem(
+    public ResponseEntity<PageDTO<SalesItemDetailDTO>> getAllSaleItem(
             @RequestParam(required = false) List<String> filterBrands,
+            @RequestParam(required = false) List<Integer> storageGb,
+            @RequestParam(required = false) Integer minPrice,
+            @RequestParam(required = false) Integer maxPrice,
             @RequestParam Integer page,
             @RequestParam(defaultValue = "10", required = false) Integer size,
             @RequestParam(defaultValue = "id",required = false) String sortField,
             @RequestParam(defaultValue = "asc", required = false) String sortDirection
     ) {
-        Page<Product> products = productServiceV2.getAllProduct(filterBrands, page, size, sortField, sortDirection);
-        PageDTO<SalesItemAllDataDTO> pageDTO = listMapper.toPageDTO(products, SalesItemAllDataDTO.class, modelMapper);
+        Page<Product> products = productServiceV2.getAllProduct(filterBrands,storageGb,minPrice,maxPrice, page, size, sortField, sortDirection);
+        PageDTO<SalesItemDetailDTO> pageDTO = listMapper.toPageDTO(products, SalesItemDetailDTO.class, modelMapper);
         return ResponseEntity.ok(pageDTO);
     }
 }
