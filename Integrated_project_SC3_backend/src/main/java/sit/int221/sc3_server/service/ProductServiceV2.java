@@ -22,18 +22,25 @@ public class ProductServiceV2 {
     @Autowired
     private ModelMapper modelMapper;
 
-    public Page<Product> getAllProduct(List<String> filterBrands, Integer page, Integer size, String sortField, String sortDirection) {
+    public Page<Product> getAllProduct(List<String> filterBrands,List<Integer> storageGb,Integer minPrice,Integer maxPrice, Integer page, Integer size, String sortField, String sortDirection) {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort.Direction directionId = Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
+
+        filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
+        storageGb = (storageGb == null || storageGb.isEmpty())? null : storageGb;
         //No filter
-        if (filterBrands == null || filterBrands.isEmpty()) {
-            System.out.println("Non Filter By brand Id");
-            return productRepository.findAll(PageRequest.of(page, size,Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
-        }
-        //Filter by BrandName
-        else {
-            System.out.println("Filter By brand Id filterBrands: "+filterBrands);
-            return productRepository.findByBrand_NameIn(filterBrands, PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
-        }
+//        if (filterBrands == null || filterBrands.isEmpty()) {
+//            System.out.println("Non Filter By brand Id");
+//            return productRepository.findAll(PageRequest.of(page, size,Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
+//        }
+//
+//        //Filter by BrandName
+//        else {
+//            System.out.println("Filter By brand Id filterBrands: "+filterBrands+ storageGb);
+//            return productRepository.findByBrand_NameInAndRamGbIn(filterBrands,storageGb,PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
+//        }
+        return productRepository.findFilteredProduct(filterBrands,storageGb,minPrice,maxPrice,pageable);
     }
+
 }
