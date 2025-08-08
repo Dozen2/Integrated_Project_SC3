@@ -35,7 +35,7 @@ public class BrandController {
     return ResponseEntity.ok(brandDTOS);
 }
 
-    @GetMapping("/brands/{id}")
+    @GetMapping("sc3/brands/{id}")
     public ResponseEntity<BrandDetailDTO> getBrandById(@PathVariable int id) {
         BrandDetailDTO brandDTO = brandServices.getBrandDetailById(id);
         return ResponseEntity.ok(brandDTO);

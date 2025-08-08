@@ -29,6 +29,12 @@ public class ProductServiceV2 {
 
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         storageGb = (storageGb == null || storageGb.isEmpty())? null : storageGb;
+        if(minPrice == null || maxPrice == null){
+            return productRepository.findFilterProductNoPrice(filterBrands,storageGb,pageable);
+        }
+        if(minPrice > maxPrice){
+            throw new RuntimeException("Min should be less than Max");
+        }
         //No filter
 //        if (filterBrands == null || filterBrands.isEmpty()) {
 //            System.out.println("Non Filter By brand Id");
