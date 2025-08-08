@@ -5,15 +5,15 @@ import SizeAndSort from "./Skeleton/SizeAndSort.vue";
 import Pagination from "./Skeleton/Pagination.vue";
 
 const props = defineProps({
-  productTotalPages: Number,
+  initialTotalPages: Number,
   initialPage: Number,
   initialSize: Number,
   initialFilterBrands: String,
   initialSortField: String,
   initialSortDirection: String,
-  showFilter: { type: Boolean, default: true },
-  showPagination: { type: Boolean, default: true },
-  showSizeAndSort: { type: Boolean, default: true },
+  showFilter: { type: Boolean, default: false },
+  showPagination: { type: Boolean, default: false },
+  showSizeAndSort: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["urlSetting"]);
@@ -28,16 +28,24 @@ const sortDirection = ref(props.initialSortDirection || "asc");
 
 // Watch for prop changes to keep state in sync
 watch(
-  [() => props.initialFilterBrands, () => props.initialPage, () => props.initialSize, () => props.initialSortField, () => props.initialSortDirection],
+  [
+    () => props.initialFilterBrands,
+    () => props.initialPage,
+    () => props.initialSize,
+    () => props.initialSortField,
+    () => props.initialSortDirection,
+  ],
   ([newFilterBrands, newPage, newSize, newSortField, newSortDirection]) => {
-    if (newFilterBrands !== undefined) filterBrands.value = newFilterBrands || "";
+    if (newFilterBrands !== undefined)
+      filterBrands.value = newFilterBrands || "";
     if (newPage !== undefined) {
       page.value = newPage || 1;
       itbmPage.value = (newPage || 1) - 1;
     }
     if (newSize !== undefined) size.value = newSize || 10;
     if (newSortField !== undefined) sortField.value = newSortField || "id";
-    if (newSortDirection !== undefined) sortDirection.value = newSortDirection || "asc";
+    if (newSortDirection !== undefined)
+      sortDirection.value = newSortDirection || "asc";
   }
 );
 
@@ -105,11 +113,6 @@ const handlePageChanged = (pageData) => {
 </script>
 
 <template>
-  <div v-if="showFilter || showSizeAndSort" class="p-4 space-y-6 text-sm text-gray-800 max-w-6xl mx-auto">
-    <!-- Filter Section - Horizontal Layout -->
-    <div
-      class="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border"
-    >
       <div v-if="showFilter">
         <!-- Left Side - Brand Filter -->
         <FilterBrand
@@ -128,13 +131,11 @@ const handlePageChanged = (pageData) => {
           @sortChanged="handleSortChanged"
         />
       </div>
-    </div>
-  </div>
 
   <!-- Pagination Section -->
   <div v-if="showPagination">
     <Pagination
-      :productTotalPages="productTotalPages"
+      :initialTotalPages="initialTotalPages"
       :initialPage="initialPage"
       @pageChanged="handlePageChanged"
     />

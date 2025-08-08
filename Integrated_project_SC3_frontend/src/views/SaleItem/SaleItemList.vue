@@ -10,7 +10,7 @@ import QueryComponent from "@/components/Common/Query/QueryComponent.vue";
 
 const product = ref([]);
 const brand = ref([]);
-const productTotalPages = ref(0);
+const initialTotalPages = ref(0);
 const savedSettings = ref(null);
 const alertStore = useAlertStore();
 
@@ -37,7 +37,7 @@ const fetchProduct = async () => {
     const productData = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
 
     product.value = productData;
-    productTotalPages.value = productData.totalPages;
+    initialTotalPages.value = productData.totalPages;
 
     const brandData = await getAllSaleItemV1();
     brand.value = brandData;
@@ -92,7 +92,7 @@ const fetchProductWithSettings = async (settings) => {
     }
 
     product.value = productData;
-    productTotalPages.value = productData.totalPages;
+    initialTotalPages.value = productData.totalPages;
   } catch (error) {
     console.error("Error fetching product data:", error);
   }
@@ -184,7 +184,6 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Filter -->
     <QueryComponent
       @urlSetting="handleUserInteraction"
       :initialSize="
@@ -193,26 +192,23 @@ onBeforeUnmount(() => {
       :initialFilterBrands="savedSettings?.filterBrands || ''"
       :initialSortField="savedSettings?.sortField || ''"
       :initialSortDirection="savedSettings?.sortDirection || ''"
-      :showFilter="true"
-      :showPagination="false"
       :showSizeAndSort="true"
+      :showFilter="true"
     />
 
     <SelectAllSaleItemGallery
       v-if="product?.content"
       :product="product.content"
     />
-  </div>
 
-  <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Pagination -->
-  <QueryComponent
-    @urlSetting="handleUserInteraction"
-    :productTotalPages="productTotalPages"
-    :initialPage="
-      savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
-    "
-    :showFilter="false"
-    :showPagination="true"
-    :showSizeAndSort="false"
-  />
+    <QueryComponent
+      @urlSetting="handleUserInteraction"
+      :initialTotalPages="initialTotalPages"
+      :initialPage="
+        savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
+      "
+      :showPagination="true"
+    />
+  </div>
+  
 </template>

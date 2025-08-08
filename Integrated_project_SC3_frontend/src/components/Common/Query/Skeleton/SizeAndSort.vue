@@ -48,7 +48,7 @@ watch(
 const setSize = (newsize) => {
   size.value = newsize;
   // Save pagination size to sessionStorage
-  sessionStorage.setItem("pagination-size", newsize.toString());
+  // sessionStorage.setItem("pagination-size", newsize.toString());
   emit("sizeChanged", newsize);
 };
 
@@ -83,10 +83,10 @@ const resetSort = () => {
 };
 
 onMounted(() => {
-  const savedSize = sessionStorage.getItem("pagination-size");
-  if (savedSize && !props.initialSize) {
-    size.value = parseInt(savedSize, 10);
-  }
+  // const savedSize = sessionStorage.getItem("pagination-size");
+  // if (savedSize && !props.initialSize) {
+  //   size.value = parseInt(savedSize, 10);
+  // }
   
   // Set initial sort state
   if (props.initialSortField === "brand.name") {
@@ -126,19 +126,7 @@ onMounted(() => {
         ]"
         title="Sort Ascending"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h8m-8 6h4"
-          ></path>
-        </svg>
+    <SortAscendingOutlined class="text-[25px]" />
       </button>
       <button
         @click="sortDesc"
@@ -150,19 +138,7 @@ onMounted(() => {
         ]"
         title="Sort Descending"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 18h16M4 12h8m-8 6h4"
-          ></path>
-        </svg>
+        <SortDescendingOutlined  class="text-[25px]" />
       </button>
       <button
         @click="resetSort"
@@ -174,19 +150,7 @@ onMounted(() => {
         ]"
         title="Reset Sort"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M10 12H4m0 6h16"
-          ></path>
-        </svg>
+        <MenuOutlined class="text-[17px]"/>
       </button>
     </div>
   </div>

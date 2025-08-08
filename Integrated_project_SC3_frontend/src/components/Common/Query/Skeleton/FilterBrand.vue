@@ -100,6 +100,7 @@ onMounted(async () => {
   try {
     const data = await getAllBrand();
     options.value = data.sort((a, b) => a.name.localeCompare(b.name));
+    console.log("แบรนด์ที่โหลด:", options.value);
   } catch (error) {
     console.error("โหลดแบรนด์ล้มเหลว:", error.message);
   }

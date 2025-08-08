@@ -9,7 +9,7 @@ import {
 } from "vue";
 
 const props = defineProps({
-  productTotalPages: Number,
+  initialTotalPages: Number,
   initialPage: Number,
 });
 
@@ -29,7 +29,7 @@ watch(
   }
 );
 
-const totalPage = computed(() => props.productTotalPages);
+const totalPage = computed(() => props.initialTotalPages);
 
 const goToPage = async (pageNumber) => {
   page.value = pageNumber;
