@@ -28,15 +28,15 @@ public class ProductControllerV2 {
     @GetMapping("/sale-items")
     public ResponseEntity<PageDTO<SalesItemDetailDTO>> getAllSaleItem(
             @RequestParam(required = false) List<String> filterBrands,
-            @RequestParam(required = false) List<Integer> storageGb,
-            @RequestParam(required = false) Integer minPrice,
-            @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) List<Integer> filterStorages,
+            @RequestParam(required = false) Integer  filterPriceLower,
+            @RequestParam(required = false) Integer filterPriceUpper,
             @RequestParam Integer page,
             @RequestParam(defaultValue = "10", required = false) Integer size,
             @RequestParam(defaultValue = "id",required = false) String sortField,
             @RequestParam(defaultValue = "asc", required = false) String sortDirection
     ) {
-        Page<Product> products = productServiceV2.getAllProduct(filterBrands,storageGb,minPrice,maxPrice, page, size, sortField, sortDirection);
+        Page<Product> products = productServiceV2.getAllProduct(filterBrands,filterStorages, filterPriceLower,filterPriceUpper, page, size, sortField, sortDirection);
         PageDTO<SalesItemDetailDTO> pageDTO = listMapper.toPageDTO(products, SalesItemDetailDTO.class, modelMapper);
         return ResponseEntity.ok(pageDTO);
     }

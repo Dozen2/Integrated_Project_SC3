@@ -21,13 +21,25 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     select p from Product p
     WHERE (:brandName is null or p.brand.name in :brandName)
     and (:storageGb is null or p.storageGb in :storageGb)
-    and (:minPrice is null or :maxPrice is null or p.price between :minPrice and :maxPrice)
+    and (:minPrice is null or p.price >= :minPrice)
+    and (:maxPrice is null or p.price <= :maxPrice)
 """)
     Page<Product> findFilteredProduct(
             @Param("brandName") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,
             @Param("maxPrice") Integer maxPrice,
+            Pageable pageable
+    );
+
+    @Query("""
+    select p from Product p
+    where (:brandName is null or p.brand.name in :brandName)
+    and (:storageGb is null or p.storageGb in :storageGb)
+""")
+    Page<Product> findFilterProductNoPrice(
+            @Param("brandName") List<String> brandNames,
+            @Param("storageGb") List<Integer> storageGb,
             Pageable pageable
     );
 }
