@@ -54,4 +54,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
     }
 
+    @ExceptionHandler(PageNotFoundException.class)
+    public ResponseEntity<Object> handlePageNotFoundException(Exception e ,HttpServletRequest httpServletRequest){
+        GeneralErrorResponse ger = new GeneralErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Required parameter 'page' is not present.",
+                e.getMessage(),
+                httpServletRequest.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
+    }
+
 }
