@@ -45,8 +45,9 @@ public class BrandServices {
 
         return brandList.stream().map(brand -> {
             BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-            int count = productRepository.countByBrand_Id(brand.getId()); // อย่าลืมใช้ method ที่ชื่อถูกต้อง
-            dto.setNoOfSaleItems(count);
+            dto.setNoOfSaleItems(brand.getProducts().size());
+//            int count = productRepository.countByBrand_Id(brand.getId()); // อย่าลืมใช้ method ที่ชื่อถูกต้อง
+//            dto.setNoOfSaleItems(count);
             return dto;
         }).collect(Collectors.toList());
     }
@@ -61,8 +62,9 @@ public class BrandServices {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Brand was found with id: " + id));
 
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-        int count = productRepository.countByBrand_Id(brand.getId());
-        dto.setNoOfSaleItems(count);
+        dto.setNoOfSaleItems(brand.getProducts().size());
+//        int count = productRepository.countByBrand_Id(brand.getId());
+//        dto.setNoOfSaleItems(count);
 
         return dto;
     }
@@ -99,8 +101,9 @@ public class BrandServices {
         brand = brandRepository.save(brand);
 
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-        int count = productRepository.countByBrand_Id(brand.getId());
-        dto.setNoOfSaleItems(count);
+        dto.setNoOfSaleItems(brand.getProducts().size());
+//        int count = productRepository.countByBrand_Id(brand.getId());
+//        dto.setNoOfSaleItems(count);
 
         return dto;
     }

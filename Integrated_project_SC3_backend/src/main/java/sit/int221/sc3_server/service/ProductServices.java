@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
-import sit.int221.sc3_server.DTO.SalesItemAllDataDTO;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.Product;
 import sit.int221.sc3_server.exception.CreateFailedException;
