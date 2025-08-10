@@ -6,30 +6,55 @@ import {
 } from "@/libs/callAPI/apiSaleItem.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
-import QueryComponent from "@/components/Common/Query/QueryComponent.vue";
+import FilterBrand from "@/components/Common/Query/FilterBrand.vue";
+import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
+import Pagination from "@/components/Common/Query/Pagination.vue";
 
 const product = ref([]);
 const brand = ref([]);
 const initialTotalPages = ref(0);
-const savedSettings = ref(null);
 const alertStore = useAlertStore();
 
-const saveSettingsToSession = (settings) => {
-  sessionStorage.setItem("product-page-settings", JSON.stringify(settings));
-  savedSettings.value = settings;
+// Session storage keys
+const SESSION_KEYS = {
+  FILTER_BRAND: "SaleItem-FilterBrand",
+  PAGE: "SaleItem-Page",
+  SIZE: "SaleItem-Size",
+  SORT_DIRECTION: "SaleItem-SortDirection",
+  SORT_FIELD: "SaleItem-SortField"
 };
 
-const loadSettingsFromSession = () => {
-  const raw = sessionStorage.getItem("product-page-settings");
+// Get individual session storage values
+const getSessionValue = (key, defaultValue = null) => {
+  const raw = sessionStorage.getItem(key);
   if (raw) {
     try {
       return JSON.parse(raw);
     } catch (e) {
-      console.error("Error parsing saved settings:", e);
-      return null;
+      return raw; // Return as string if not JSON
     }
   }
-  return null;
+  return defaultValue;
+};
+
+// Set individual session storage values
+const setSessionValue = (key, value) => {
+  if (typeof value === 'object') {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } else {
+    sessionStorage.setItem(key, value);
+  }
+};
+
+// Get current settings from session storage
+const getCurrentSettings = () => {
+  return {
+    filterBrands: getSessionValue(SESSION_KEYS.FILTER_BRAND, ""),
+    page: getSessionValue(SESSION_KEYS.PAGE, 0),
+    size: getSessionValue(SESSION_KEYS.SIZE, 10),
+    sortDirection: getSessionValue(SESSION_KEYS.SORT_DIRECTION, "desc"),
+    sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, "createdOn")
+  };
 };
 
 const fetchProduct = async () => {
@@ -98,9 +123,54 @@ const fetchProductWithSettings = async (settings) => {
   }
 };
 
-const handleUserInteraction = async (newSettings) => {
-  saveSettingsToSession(newSettings);
-  await fetchProductWithSettings(newSettings);
+// Handle brand filter changes
+const handleBrandFilterChanged = async (newFilterBrands) => {
+  setSessionValue(SESSION_KEYS.FILTER_BRAND, newFilterBrands);
+  setSessionValue(SESSION_KEYS.PAGE, 0); // Reset to first page
+  
+  const settings = getCurrentSettings();
+  await fetchProductWithSettings(settings);
+};
+
+// Handle size changes
+const handleSizeChanged = async (newSize) => {
+  setSessionValue(SESSION_KEYS.SIZE, newSize);
+  setSessionValue(SESSION_KEYS.PAGE, 0); // Reset to first page
+  
+  const settings = getCurrentSettings();
+  await fetchProductWithSettings(settings);
+};
+
+// Handle sort changes
+const handleSortChanged = async (sortData) => {
+  setSessionValue(SESSION_KEYS.SORT_FIELD, sortData.sortField);
+  setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortData.sortDirection);
+  setSessionValue(SESSION_KEYS.PAGE, 0); // Reset to first page
+  
+  const settings = getCurrentSettings();
+  await fetchProductWithSettings(settings);
+};
+
+// Handle page changes
+const handlePageChanged = async (pageData) => {
+  setSessionValue(SESSION_KEYS.PAGE, pageData.page);
+  
+  // Update other settings if provided
+  if (pageData.sortField) {
+    setSessionValue(SESSION_KEYS.SORT_FIELD, pageData.sortField);
+  }
+  if (pageData.sortDirection) {
+    setSessionValue(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
+  }
+  if (pageData.filterBrands !== undefined) {
+    setSessionValue(SESSION_KEYS.FILTER_BRAND, pageData.filterBrands);
+  }
+  if (pageData.size) {
+    setSessionValue(SESSION_KEYS.SIZE, pageData.size);
+  }
+  
+  const settings = getCurrentSettings();
+  await fetchProductWithSettings(settings);
 };
 
 const onStorageChange = (event) => {
@@ -110,14 +180,19 @@ const onStorageChange = (event) => {
 };
 
 onBeforeMount(async () => {
-  const loadedSettings = loadSettingsFromSession();
-  savedSettings.value = loadedSettings;
-
-  if (loadedSettings) {
+  const loadedSettings = getCurrentSettings();
+  
+  // Check if any settings exist, if not use defaults
+  const hasSettings = Object.values(loadedSettings).some(value => 
+    value !== null && value !== "" && value !== 0
+  );
+  
+  if (hasSettings) {
     await fetchProductWithSettings(loadedSettings);
   } else {
     await fetchProduct();
   }
+  
   window.addEventListener("storage", onStorageChange);
 });
 
@@ -184,31 +259,32 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <QueryComponent
-      @urlSetting="handleUserInteraction"
-      :initialSize="
-        savedSettings?.size !== undefined ? Number(savedSettings.size) : 10
-      "
-      :initialFilterBrands="savedSettings?.filterBrands || ''"
-      :initialSortField="savedSettings?.sortField || ''"
-      :initialSortDirection="savedSettings?.sortDirection || ''"
-      :showSizeAndSort="true"
-      :showFilter="true"
+    <!-- Filter Brand Component -->
+    <FilterBrand
+      :initialFilterBrands="getSessionValue(SESSION_KEYS.FILTER_BRAND, '')"
+      @brandFilterChanged="handleBrandFilterChanged"
     />
 
+    <!-- Size and Sort Component -->
+    <SizeAndSort
+      :initialSize="getSessionValue(SESSION_KEYS.SIZE, 10)"
+      :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+      :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
+      @sizeChanged="handleSizeChanged"
+      @sortChanged="handleSortChanged"
+    />
+
+    <!-- Product Gallery -->
     <SelectAllSaleItemGallery
       v-if="product?.content"
       :product="product.content"
     />
 
-    <QueryComponent
-      @urlSetting="handleUserInteraction"
+    <!-- Pagination Component -->
+    <Pagination
       :initialTotalPages="initialTotalPages"
-      :initialPage="
-        savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
-      "
-      :showPagination="true"
+      :initialPage="getSessionValue(SESSION_KEYS.PAGE, 0) + 1"
+      @pageChanged="handlePageChanged"
     />
   </div>
-  
 </template>
