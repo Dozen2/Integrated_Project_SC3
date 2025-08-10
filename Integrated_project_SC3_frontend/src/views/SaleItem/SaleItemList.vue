@@ -4,9 +4,10 @@ import {
   getAllSaleItemV1,
   getAllSaleItemV2,
 } from "@/libs/callAPI/apiSaleItem.js";
+import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
-import FilterBrand from "@/components/Common/Query/FilterBrand.vue";
+import Filter from "@/components/Common/Query/Filter.vue";
 import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 
@@ -57,16 +58,22 @@ const getCurrentSettings = () => {
   };
 };
 
+const fetchBrandData = async () => {
+  try {
+    const brandData = await getAllBrand();
+    brand.value = brandData.sort((a, b) => a.name.localeCompare(b.name));
+    console.log("Fetched brand data:", brandData);
+  } catch (error) {
+    console.error("Error fetching brand data:", error);
+  }
+};
+
 const fetchProduct = async () => {
   try {
     const productData = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
 
     product.value = productData;
     initialTotalPages.value = productData.totalPages;
-
-    const brandData = await getAllSaleItemV1();
-    brand.value = brandData;
-    console.log("Fetched brand data:", brandData);
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -176,10 +183,14 @@ const handlePageChanged = async (pageData) => {
 const onStorageChange = (event) => {
   if (event.key === "product-updated") {
     fetchProduct();
+    fetchBrandData(); // Also refresh brand data if needed
   }
 };
 
 onBeforeMount(async () => {
+  // Load brand data first
+  await fetchBrandData();
+  
   const loadedSettings = getCurrentSettings();
   
   // Check if any settings exist, if not use defaults
@@ -259,10 +270,16 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <!-- Filter Brand Component -->
-    <FilterBrand
-      :initialFilterBrands="getSessionValue(SESSION_KEYS.FILTER_BRAND, '')"
-      @brandFilterChanged="handleBrandFilterChanged"
+    <!-- Brand Filter Component -->
+    <Filter
+      :initialFilterValues="getSessionValue(SESSION_KEYS.FILTER_BRAND, '')"
+      :options="brand"
+      label="Filter by brand(s)"
+      placeholder="-- เลือกแบรนด์ --"
+      :sessionKey="SESSION_KEYS.FILTER_BRAND"
+      valueField="name"
+      displayField="name"
+      @filterChanged="handleBrandFilterChanged"
     />
 
     <!-- Size and Sort Component -->
