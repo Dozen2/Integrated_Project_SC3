@@ -9,7 +9,7 @@ import {
 } from "vue";
 
 const props = defineProps({
-  initialFilterValues: String,
+  initialFilterValues: [String, Array], // Support both string and array
   options: {
     type: Array,
     default: () => [],
@@ -38,21 +38,39 @@ const props = defineProps({
 
 const emit = defineEmits(["filterChanged"]);
 
-const filterValues = ref("");
 const selectedValueList = ref([]);
 const dropdownOpen = ref(false);
 const dropdownRef = ref(null);
-const selected = ref(null);
 
-// Get session storage value
-const getSessionFilterValues = () => {
-  const raw = sessionStorage.getItem(props.sessionKey);
-  return raw || "";
+// Helper function to convert various input types to array
+const normalizeToArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.filter(item => item && item.toString().trim() !== "");
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    return value.split(",").map(item => item.trim()).filter(item => item !== "");
+  }
+  return [];
 };
 
-// Set session storage value
-const setSessionFilterValues = (value) => {
-  sessionStorage.setItem(props.sessionKey, value);
+// Get session storage value and normalize to array
+const getSessionFilterValues = () => {
+  const raw = sessionStorage.getItem(props.sessionKey);
+  if (!raw) return [];
+  
+  try {
+    // Try parsing as JSON first (for array)
+    const parsed = JSON.parse(raw);
+    return normalizeToArray(parsed);
+  } catch {
+    // If parsing fails, treat as string
+    return normalizeToArray(raw);
+  }
+};
+
+// Set session storage value as JSON array
+const setSessionFilterValues = (arrayValue) => {
+  sessionStorage.setItem(props.sessionKey, JSON.stringify(arrayValue));
 };
 
 onBeforeUnmount(() => {
@@ -71,23 +89,16 @@ watch(
   () => props.initialFilterValues,
   (newVal) => {
     if (newVal !== undefined) {
-      filterValues.value = newVal || "";
-      if (newVal) {
-        selectedValueList.value = newVal
-          .split(",")
-          .filter((value) => value.trim() !== "");
-      } else {
-        selectedValueList.value = [];
-      }
+      const normalizedArray = normalizeToArray(newVal);
+      selectedValueList.value = [...normalizedArray];
     }
   }
 );
 
 const emitFilter = () => {
-  const filterValue = selectedValueList.value.join(",");
-  filterValues.value = filterValue;
-  setSessionFilterValues(filterValue);
-  emit("filterChanged", filterValue);
+  const filterArray = [...selectedValueList.value];
+  setSessionFilterValues(filterArray);
+  emit("filterChanged", filterArray); // Emit array instead of string
 };
 
 function onOptionSelected(optionValue) {
@@ -114,12 +125,6 @@ function removeValue(index) {
   emitFilter();
 }
 
-function clearFilter() {
-  selectedValueList.value = [];
-  selected.value = null;
-  emitFilter();
-}
-
 // Toggle dropdown function
 const toggleDropdown = (event) => {
   event.stopPropagation();
@@ -135,14 +140,9 @@ const getDisplayText = (value) => {
 onMounted(() => {
   // Load from session storage first, then from props as fallback
   const sessionValue = getSessionFilterValues();
-  const initialValue = sessionValue || props.initialFilterValues || "";
+  const initialValue = sessionValue.length > 0 ? sessionValue : normalizeToArray(props.initialFilterValues);
   
-  if (initialValue) {
-    filterValues.value = initialValue;
-    selectedValueList.value = initialValue
-      .split(",")
-      .filter((value) => value.trim() !== "");
-  }
+  selectedValueList.value = [...initialValue];
 
   document.addEventListener("click", handleClickOutside);
 });
@@ -231,16 +231,6 @@ onMounted(() => {
         </button>
       </span>
     </div>
-
-    <!-- Clear Button -->
-    <button
-      v-if="selectedValueList.length > 0"
-      @click="clearFilter"
-      class="itbms-filter-clear px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 whitespace-nowrap"
-      title="Clear all filters"
-    >
-      Clear All
-    </button>
-  </div>
+    </div>
  
 </template>
