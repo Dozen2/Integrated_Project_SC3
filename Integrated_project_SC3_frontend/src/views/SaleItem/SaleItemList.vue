@@ -12,14 +12,14 @@ import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
 
-// ======================== State Management ========================
+// ======================== Reactive States ========================
 const product = ref([]);
 const brand = ref([]);
-const initialTotalPages = ref(0);
+const totalPages = ref(0);
 const alertStore = useAlertStore();
 
-// ======================== Configuration Data ========================
-const storageOptions = [
+// ======================== Configuration ========================
+const STORAGE_OPTIONS = [
   { id: 1, name: "32GB", value: "32" },
   { id: 2, name: "64GB", value: "64" },
   { id: 3, name: "128GB", value: "128" },
@@ -29,7 +29,7 @@ const storageOptions = [
   { id: 7, name: "Not specified", value: "0" },
 ];
 
-const priceOptions = [
+const PRICE_OPTIONS = [
   { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
   { id: 2, name: "5,001-10,000 Baht", value: "5001-10000" },
   { id: 3, name: "10,001-20,000 Baht", value: "10001-20000" },
@@ -38,287 +38,252 @@ const priceOptions = [
   { id: 6, name: "40,001-50,000 Baht", value: "40001-50000" },
 ];
 
-// ======================== Session Storage Management ========================
 const SESSION_KEYS = {
-  FILTER_BRAND: "SaleItem-FilterBrand",
-  FILTER_STORAGE: "SaleItem-FilterStorage",
-  FILTER_PRICE: "SaleItem-FilterPrice",
+  BRAND: "SaleItem-FilterBrand",
+  STORAGE: "SaleItem-FilterStorage", 
+  PRICE: "SaleItem-FilterPrice",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
 };
 
-// Helper function to normalize values from session storage
-const normalizeToArray = (value) => {
-  if (Array.isArray(value)) {
-    return value.filter(item => item && item.toString().trim() !== "");
-  }
-  if (typeof value === "string" && value.trim() !== "") {
-    return value.split(",").map(item => item.trim()).filter(item => item !== "");
-  }
-  return [];
+const DEFAULT_VALUES = {
+  page: 0,
+  size: 10,
+  sortDirection: "desc",
+  sortField: "createdOn",
 };
 
-// อ่านค่าจาก session storage พร้อม error handling
-const getSessionValue = (key, defaultValue = null) => {
-  const raw = sessionStorage.getItem(key);
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      // If it's an array or string for filter keys, normalize to array
-      if (key.includes("Filter")) {
-        return normalizeToArray(parsed);
-      }
-      return parsed;
-    } catch (e) {
-      // If parsing fails and it's a filter key, try to normalize the raw string
-      if (key.includes("Filter")) {
-        return normalizeToArray(raw);
-      }
-      return raw;
+// ======================== Session Storage Helpers ========================
+const getSessionArray = (key) => {
+  try {
+    const value = sessionStorage.getItem(key);
+    if (!value) return [];
+    
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed.filter(item => item && item.toString().trim() !== "");
     }
+    return [];
+  } catch {
+    return [];
   }
-  return defaultValue;
 };
 
-// บันทึกค่าลง session storage
-const setSessionValue = (key, value) => {
+const getSessionValue = (key, defaultValue) => {
+  try {
+    const value = sessionStorage.getItem(key);
+    return value ? JSON.parse(value) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+const setSession = (key, value) => {
   sessionStorage.setItem(key, JSON.stringify(value));
 };
 
-// ดึงการตั้งค่าปัจจุบันจาก session storage
-const getCurrentSettings = () => {
-  return {
-    filterBrands: getSessionValue(SESSION_KEYS.FILTER_BRAND, []),
-    filterStorages: getSessionValue(SESSION_KEYS.FILTER_STORAGE, []),
-    filterPrice: getSessionValue(SESSION_KEYS.FILTER_PRICE, []),
-    page: getSessionValue(SESSION_KEYS.PAGE, 0),
-    size: getSessionValue(SESSION_KEYS.SIZE, 10),
-    sortDirection: getSessionValue(SESSION_KEYS.SORT_DIRECTION, "desc"),
-    sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, "createdOn"),
-  };
+const getCurrentFilters = () => ({
+  brands: getSessionArray(SESSION_KEYS.BRAND),
+  storages: getSessionArray(SESSION_KEYS.STORAGE),
+  prices: getSessionArray(SESSION_KEYS.PRICE),
+  page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
+  size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
+  sortDirection: getSessionValue(SESSION_KEYS.SORT_DIRECTION, DEFAULT_VALUES.sortDirection),
+  sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
+});
+
+// ======================== Data Processing Helpers ========================
+const convertStorageValues = (storageNames) => {
+  return storageNames.map(name => {
+    const option = STORAGE_OPTIONS.find(opt => opt.name === name);
+    return option ? option.value : name;
+  });
 };
 
-// ======================== Helper Functions ========================
-// แยก price range จาก price filter array
-const parsePriceFilters = (priceFilters) => {
-  if (!Array.isArray(priceFilters) || priceFilters.length === 0) {
-    return { filterPriceLower: null, filterPriceUpper: null };
-  }
+const convertPriceValues = (priceNames) => {
+  return priceNames.map(name => {
+    const option = PRICE_OPTIONS.find(opt => opt.name === name);
+    return option ? option.value : name;
+  });
+};
 
-  // รวม price ranges ทั้งหมดแล้วหา min/max
-  let minPrice = null;
-  let maxPrice = null;
+const parsePriceRange = (priceValues) => {
+  if (!priceValues.length) return { min: null, max: null };
 
-  priceFilters.forEach(priceRange => {
-    const [lower, upper] = priceRange.split('-').map(p => parseInt(p));
-    if (!isNaN(lower)) {
-      minPrice = minPrice === null ? lower : Math.min(minPrice, lower);
-    }
-    if (!isNaN(upper)) {
-      maxPrice = maxPrice === null ? upper : Math.max(maxPrice, upper);
-    }
+  let min = null;
+  let max = null;
+
+  priceValues.forEach(range => {
+    const [lower, upper] = range.split('-').map(Number);
+    if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+    if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
   });
 
-  return {
-    filterPriceLower: minPrice,
-    filterPriceUpper: maxPrice
-  };
+  return { min, max };
 };
 
-// ======================== API Data Fetching ========================
-// ดึงข้อมูล brand และเรียงตามชื่อ
-const fetchBrandData = async () => {
+const sortProductsByBrand = (products, brandOrder) => {
+  return products.sort((a, b) => {
+    const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
+    const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
+
+    const indexA = brandOrder.indexOf(brandA);
+    const indexB = brandOrder.indexOf(brandB);
+
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return brandA.localeCompare(brandB);
+  });
+};
+
+// ======================== API Functions ========================
+const loadBrands = async () => {
   try {
-    const brandData = await getAllBrand();
-    brand.value = brandData.sort((a, b) => a.name.localeCompare(b.name));
+    const data = await getAllBrand();
+    brand.value = data.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
-    console.error("Error fetching brand data:", error);
+    console.error("Error loading brands:", error);
   }
 };
 
-// ดึงข้อมูลสินค้าแบบ default (ไม่มี filter)
-const fetchProduct = async () => {
+const loadProductsDefault = async () => {
   try {
-    const productData = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
-    product.value = productData;
-    initialTotalPages.value = productData.totalPages;
+    const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
+    product.value = data;
+    totalPages.value = data.totalPages;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error loading products:", error);
   }
 };
 
-// ดึงข้อมูลสินค้าตามการตั้งค่าที่กำหนด (มี filter, sort, pagination)
-const fetchProductWithSettings = async (settings) => {
+const loadProductsWithFilters = async (filters) => {
   try {
-    // Convert storage filter values to match API expectation
-    const filterStorageValues = Array.isArray(settings.filterStorages) 
-      ? settings.filterStorages.map(storage => {
-          const storageOption = storageOptions.find(opt => opt.name === storage);
-          return storageOption ? storageOption.value : storage;
-        })
-      : [];
+    // Convert filter values
+    const storageValues = convertStorageValues(filters.storages);
+    const priceValues = convertPriceValues(filters.prices);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues);
 
-    // Parse price filters
-    const priceFilters = Array.isArray(settings.filterPrice) 
-      ? settings.filterPrice.map(price => {
-          const priceOption = priceOptions.find(opt => opt.name === price);
-          return priceOption ? priceOption.value : price;
-        })
-      : [];
-    
-    const { filterPriceLower, filterPriceUpper } = parsePriceFilters(priceFilters);
-
-    // เรียก API พร้อมการตั้งค่า
-    const productData = await getAllSaleItemV2(
-      Array.isArray(settings.filterBrands) ? settings.filterBrands : [],
-      settings.sortField || "createdOn",
-      settings.sortDirection || "desc",
-      settings.size || 10,
-      settings.page || 0,
-      filterStorageValues,
-      filterPriceLower,
-      filterPriceUpper
+    // Fetch data
+    const data = await getAllSaleItemV2(
+      filters.brands,
+      filters.sortField,
+      filters.sortDirection,
+      filters.size,
+      filters.page,
+      storageValues,
+      minPrice,
+      maxPrice
     );
 
-    // เรียงลำดับสินค้าตาม brand filter ถ้ามี
-    if (productData && productData.content && Array.isArray(settings.filterBrands) && settings.filterBrands.length > 0) {
-      const brandOrder = settings.filterBrands;
-
-      productData.content.sort((a, b) => {
-        const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-        const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
-
-        const indexA = brandOrder.indexOf(brandA);
-        const indexB = brandOrder.indexOf(brandB);
-
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        if (indexA !== -1 && indexB === -1) return -1;
-        if (indexA === -1 && indexB !== -1) return 1;
-        return brandA.localeCompare(brandB);
-      });
+    // Sort by brand order if brands are filtered
+    if (data?.content && filters.brands.length > 0) {
+      data.content = sortProductsByBrand(data.content, filters.brands);
     }
 
-    product.value = productData;
-    initialTotalPages.value = productData.totalPages;
+    product.value = data;
+    totalPages.value = data.totalPages;
   } catch (error) {
-    console.error("Error fetching product data:", error);
+    console.error("Error loading filtered products:", error);
   }
 };
 
-// ======================== Event Handlers ========================
-// จัดการการเปลี่ยน brand filter - รับค่าเป็น array
-const handleBrandFilterChanged = async (newFilterBrands) => {
-  setSessionValue(SESSION_KEYS.FILTER_BRAND, newFilterBrands);
-  setSessionValue(SESSION_KEYS.PAGE, 0);
-  console.log("New Filter Brands (Array):", newFilterBrands);
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
+// ======================== Filter Event Handlers ========================
+const handleBrandFilter = async (newBrands) => {
+  setSession(SESSION_KEYS.BRAND, newBrands);
+  setSession(SESSION_KEYS.PAGE, 0);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
-// จัดการการเปลี่ยน storage filter - รับค่าเป็น array
-const handleStorageFilterChanged = async (newFilterStorages) => {
-  setSessionValue(SESSION_KEYS.FILTER_STORAGE, newFilterStorages);
-  setSessionValue(SESSION_KEYS.PAGE, 0);
-  console.log("New Filter Storages (Array):", newFilterStorages);
-
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
+const handleStorageFilter = async (newStorages) => {
+  setSession(SESSION_KEYS.STORAGE, newStorages);
+  setSession(SESSION_KEYS.PAGE, 0);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
-// จัดการการเปลี่ยน price filter - รับค่าเป็น array
-const handlePriceFilterChanged = async (newFilterPrice) => {
-  setSessionValue(SESSION_KEYS.FILTER_PRICE, newFilterPrice);
-  setSessionValue(SESSION_KEYS.PAGE, 0);
-  console.log("New Filter Price (Array):", newFilterPrice);
-
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
+const handlePriceFilter = async (newPrices) => {
+  setSession(SESSION_KEYS.PRICE, newPrices);
+  setSession(SESSION_KEYS.PAGE, 0);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
-// จัดการการเปลี่ยนจำนวนรายการต่อหน้า
-const handleSizeChanged = async (newSize) => {
-  setSessionValue(SESSION_KEYS.SIZE, newSize);
-  setSessionValue(SESSION_KEYS.PAGE, 0);
-
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
+// ======================== Other Event Handlers ========================
+const handleSizeChange = async (newSize) => {
+  setSession(SESSION_KEYS.SIZE, newSize);
+  setSession(SESSION_KEYS.PAGE, 0);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
-// จัดการการล้าง filter ทั้งหมด
+const handleSortChange = async (sortData) => {
+  setSession(SESSION_KEYS.SORT_FIELD, sortData.sortField);
+  setSession(SESSION_KEYS.SORT_DIRECTION, sortData.sortDirection);
+  setSession(SESSION_KEYS.PAGE, 0);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handlePageChange = async (pageData) => {
+  setSession(SESSION_KEYS.PAGE, pageData.page);
+  
+  // Update other settings if provided
+  if (pageData.sortField) setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
+  if (pageData.sortDirection) setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
+  if (pageData.filterBrands !== undefined) setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
+  if (pageData.size) setSession(SESSION_KEYS.SIZE, pageData.size);
+  
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
 const handleClear = async () => {
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
-// จัดการการเปลี่ยนการเรียงลำดับ
-const handleSortChanged = async (sortData) => {
-  setSessionValue(SESSION_KEYS.SORT_FIELD, sortData.sortField);
-  setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortData.sortDirection);
-  setSessionValue(SESSION_KEYS.PAGE, 0);
-
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
-};
-
-// จัดการการเปลี่ยนหน้า
-const handlePageChanged = async (pageData) => {
-  setSessionValue(SESSION_KEYS.PAGE, pageData.page);
-
-  // อัพเดทการตั้งค่าอื่นๆ ถ้ามี
-  if (pageData.sortField) {
-    setSessionValue(SESSION_KEYS.SORT_FIELD, pageData.sortField);
-  }
-  if (pageData.sortDirection) {
-    setSessionValue(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
-  }
-  if (pageData.filterBrands !== undefined) {
-    setSessionValue(SESSION_KEYS.FILTER_BRAND, pageData.filterBrands);
-  }
-  if (pageData.size) {
-    setSessionValue(SESSION_KEYS.SIZE, pageData.size);
-  }
-
-  const settings = getCurrentSettings();
-  await fetchProductWithSettings(settings);
-};
-
-// ฟังการเปลี่ยนแปลงใน storage (สำหรับ sync ระหว่าง tab)
+// ======================== Storage Event Handler ========================
 const onStorageChange = (event) => {
   if (event.key === "product-updated") {
-    fetchProduct();
-    fetchBrandData();
+    loadProductsDefault();
+    loadBrands();
   }
 };
 
-// ======================== Lifecycle Hooks ========================
+// ======================== Utility Functions ========================
+const hasActiveFilters = (filters) => {
+  return (
+    filters.brands.length > 0 ||
+    filters.storages.length > 0 ||
+    filters.prices.length > 0 ||
+    filters.page > 0 ||
+    filters.sortField !== DEFAULT_VALUES.sortField ||
+    filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
+    filters.size !== DEFAULT_VALUES.size
+  );
+};
+
+// ======================== Lifecycle ========================
 onBeforeMount(async () => {
-  // โหลดข้อมูล brand ก่อน
-  await fetchBrandData();
-
-  // ดึงการตั้งค่าจาก session storage
-  const loadedSettings = getCurrentSettings();
-
-  // ตรวจสอบว่ามีการตั้งค่าอยู่หรือไม่
-  const hasSettings = 
-    (Array.isArray(loadedSettings.filterBrands) && loadedSettings.filterBrands.length > 0) ||
-    (Array.isArray(loadedSettings.filterStorages) && loadedSettings.filterStorages.length > 0) ||
-    (Array.isArray(loadedSettings.filterPrice) && loadedSettings.filterPrice.length > 0) ||
-    loadedSettings.page > 0 ||
-    (loadedSettings.sortField && loadedSettings.sortField !== "createdOn") ||
-    (loadedSettings.sortDirection && loadedSettings.sortDirection !== "desc") ||
-    (loadedSettings.size && loadedSettings.size !== 10);
-
-  // ถ้ามีการตั้งค่า ใช้การตั้งค่านั้น ถ้าไม่มี ใช้ค่า default
-  if (hasSettings) {
-    await fetchProductWithSettings(loadedSettings);
+  await loadBrands();
+  
+  const filters = getCurrentFilters();
+  
+  if (hasActiveFilters(filters)) {
+    await loadProductsWithFilters(filters);
   } else {
-    await fetchProduct();
+    await loadProductsDefault();
   }
-
+  
   window.addEventListener("storage", onStorageChange);
 });
 
@@ -329,7 +294,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex flex-col gap-4 mx-[225px] mt-[50px]">
-    <!-- แสดง Alert Message -->
+    <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
         :class="`itbms-message px-4 py-2 rounded ${
@@ -344,7 +309,6 @@ onBeforeUnmount(() => {
 
     <!-- Action Buttons -->
     <div class="flex items-center justify-between gap-4">
-      <!-- ปุ่มเพิ่มสินค้าใหม่ -->
       <RouterLink
         :to="{ name: 'ProuctCreate' }"
         class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
@@ -366,7 +330,6 @@ onBeforeUnmount(() => {
         <span class="itbms-sale-item-add tracking-wide">New Product</span>
       </RouterLink>
 
-      <!-- ปุ่มจัดการสินค้า -->
       <RouterLink
         :to="{ name: 'ProductManage' }"
         class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
@@ -389,61 +352,60 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <!-- Brand Filter -->
+    <!-- Filters -->
     <Filter
-      :initialFilterValues="getSessionValue(SESSION_KEYS.FILTER_BRAND, [])"
+      :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
       :options="brand"
       label="Filter by brands"
       placeholder="Select brands"
-      :sessionKey="SESSION_KEYS.FILTER_BRAND"
+      :sessionKey="SESSION_KEYS.BRAND"
       valueField="name"
       displayField="name"
-      @filterChanged="handleBrandFilterChanged"
+      @filterChanged="handleBrandFilter"
     />
 
-    <!-- Storage Filters -->
     <Filter
-      :initialFilterValues="getSessionValue(SESSION_KEYS.FILTER_STORAGE, [])"
-      :options="storageOptions"
+      :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
+      :options="STORAGE_OPTIONS"
       label="Filter by Storages"
       placeholder="Select StoragesGB"
-      :sessionKey="SESSION_KEYS.FILTER_STORAGE"
+      :sessionKey="SESSION_KEYS.STORAGE"
       valueField="name"
       displayField="name"
-      @filterChanged="handleStorageFilterChanged"
+      @filterChanged="handleStorageFilter"
     />
 
-    <!-- Price Filters -->
     <Filter
-      :initialFilterValues="getSessionValue(SESSION_KEYS.FILTER_PRICE, [])"
-      :options="priceOptions"
+      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+      :options="PRICE_OPTIONS"
       label="Filter by Price"
       placeholder="Select Price Range"
-      :sessionKey="SESSION_KEYS.FILTER_PRICE"
+      :sessionKey="SESSION_KEYS.PRICE"
       valueField="name"
       displayField="name"
-      @filterChanged="handlePriceFilterChanged"
+      @filterChanged="handlePriceFilter"
     />
 
+    <!-- Clear Button -->
     <div class="flex justify-end mb-4">
       <ClearButton
         :sessionKeys="[
-          SESSION_KEYS.FILTER_BRAND,
-          SESSION_KEYS.FILTER_STORAGE,
-          SESSION_KEYS.FILTER_PRICE,
+          SESSION_KEYS.BRAND,
+          SESSION_KEYS.STORAGE,
+          SESSION_KEYS.PRICE,
           SESSION_KEYS.PAGE,
         ]"
         @cleared="handleClear"
       />
     </div>
 
-    <!-- Size and Sort Controls -->
+    <!-- Size and Sort -->
     <SizeAndSort
-      :initialSize="getSessionValue(SESSION_KEYS.SIZE, 10)"
+      :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
       :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
       :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
-      @sizeChanged="handleSizeChanged"
-      @sortChanged="handleSortChanged"
+      @sizeChanged="handleSizeChange"
+      @sortChanged="handleSortChange"
     />
 
     <!-- Product Gallery -->
@@ -454,9 +416,9 @@ onBeforeUnmount(() => {
 
     <!-- Pagination -->
     <Pagination
-      :initialTotalPages="initialTotalPages"
-      :initialPage="getSessionValue(SESSION_KEYS.PAGE, 0) + 1"
-      @pageChanged="handlePageChanged"
+      :initialTotalPages="totalPages"
+      :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
+      @pageChanged="handlePageChange"
     />
   </div>
 </template>
