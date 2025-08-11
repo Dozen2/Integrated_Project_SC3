@@ -22,23 +22,24 @@ const fetchselect = async () => {
   }
 }
 
-onBeforeUnmount(() => {
-  window.removeEventListener('storage', onStorageChange);
-});
+// onBeforeUnmount(() => {
+//   window.removeEventListener('storage', onStorageChange);
+// });
 
-function onStorageChange(event) {
-  if (event.key === 'product-updated') {
-    console.log('Product data changed in another tab');
-    fetchselect();
-  }
-}
+// function onStorageChange(event) {
+//   if (event.key === 'product-updated') {
+//     console.log('Product data changed in another tab');
+//     fetchselect();
+//   }
+// }
 
 
+// onMounted(async () => {
+//   await fetchselect();
+//   window.addEventListener('storage', onStorageChange);
+// });
 onMounted(async () => {
   await fetchselect();
-  window.addEventListener('storage', onStorageChange);
-
-
 });
 
 </script>

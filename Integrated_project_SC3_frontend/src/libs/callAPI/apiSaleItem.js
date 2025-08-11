@@ -18,24 +18,81 @@ async function getAllSaleItemV1() {
   }
 }
 
+// const getAllSaleItemV2 = async (
+//   filterBrand,
+//   sortField,
+//   sortDirection,
+//   size,
+//   page
+// ) => {
+//   filterBrand = filterBrand || [];
+
+//   const params = new URLSearchParams();
+//   filterBrand.forEach((brand) => {
+//     params.append("filterBrands", brand || "");
+//   });
+//   params.append("sortField", sortField || "createdOn");
+//   params.append("sortDirection", sortDirection || "desc");
+//   params.append("size", size || 10);
+//   params.append("page", page || 0);
+//   const pathInput = params.toString();
+
+//   try {
+//     const res = await fetch(`${urlV2}?${pathInput}`);
+//     if (!res.ok) {
+//       if (res.status === 404) {
+//         return { error: "not_found" };
+//       }
+//       throw new Error(`HTTP error! status: ${res.status}`);
+//     }
+//     const SaleItem = await res.json();
+//     return SaleItem;
+//   } catch (error) {
+//     throw new Error(`Fetch failed: ${error.message}`);
+//   }
+// };
+
 const getAllSaleItemV2 = async (
   filterBrand,
   sortField,
   sortDirection,
   size,
-  page
+  page,
+  filterStorages = [],
+  filterPriceLower = null,
+  filterPriceUpper = null
 ) => {
   filterBrand = filterBrand || [];
+  filterStorages = filterStorages || [];
 
   const params = new URLSearchParams();
+  
+  // Filter brands
   filterBrand.forEach((brand) => {
     params.append("filterBrands", brand || "");
   });
+  
+  // Filter storages
+  filterStorages.forEach((storage) => {
+    params.append("filterStorages", storage || "");
+  });
+  
+  // Price range filters
+  if (filterPriceLower !== null && filterPriceLower !== "") {
+    params.append("filterPriceLower", filterPriceLower);
+  }
+  if (filterPriceUpper !== null && filterPriceUpper !== "") {
+    params.append("filterPriceUpper", filterPriceUpper);
+  }
+  
+  // Sorting and pagination
   params.append("sortField", sortField || "createdOn");
   params.append("sortDirection", sortDirection || "desc");
   params.append("size", size || 10);
   params.append("page", page || 0);
+  
   const pathInput = params.toString();
+  console.log("API Call URL:", `${urlV2}?${pathInput}`);
 
   try {
     const res = await fetch(`${urlV2}?${pathInput}`);
@@ -116,8 +173,45 @@ const deleteSaleItemById = async (id) => {
 };
 
 // ดึงข้อมูลแบบมี pagination/filter/sort ผ่าน query
+// const getAllSaleItemPage = async ({
+//   filterBrands = [],
+//   page = 0,
+//   size = 10,
+//   sortField = null,
+//   sortDirection = "desc",
+// } = {}) => {
+//   const params = new URLSearchParams();
+
+//   if (filterBrands.length > 0) {
+//     filterBrands.forEach((brand) => params.append("filterBrands", brand));
+//   }
+//   params.append("page", page);
+//   params.append("size", size);
+//   if (sortField) {
+//     params.append("sortField", sortField);
+//     params.append("sortDirection", sortDirection);
+//   }
+
+//   const fullUrl = `${urlV1}?${params.toString()}`;
+//   console.log(fullUrl);
+
+//   try {
+//     const res = await fetch(fullUrl);
+//     if (!res.ok) {
+//       throw new Error(`HTTP error! status: ${res.status}`);
+//     }
+//     const SaleItem = await res.json();
+//     return SaleItem;
+//   } catch (error) {
+//     throw new Error(`Fetch failed: ${error.message}`);
+//   }
+// };
+
 const getAllSaleItemPage = async ({
   filterBrands = [],
+  filterStorages = [],
+  filterPriceLower = null,
+  filterPriceUpper = null,
   page = 0,
   size = 10,
   sortField = null,
@@ -125,11 +219,29 @@ const getAllSaleItemPage = async ({
 } = {}) => {
   const params = new URLSearchParams();
 
+  // Filter brands
   if (filterBrands.length > 0) {
     filterBrands.forEach((brand) => params.append("filterBrands", brand));
   }
+
+  // Filter storages
+  if (filterStorages.length > 0) {
+    filterStorages.forEach((storage) => params.append("filterStorages", storage));
+  }
+
+  // Price range filters
+  if (filterPriceLower !== null) {
+    params.append("filterPriceLower", filterPriceLower);
+  }
+  if (filterPriceUpper !== null) {
+    params.append("filterPriceUpper", filterPriceUpper);
+  }
+
+  // Pagination
   params.append("page", page);
   params.append("size", size);
+
+  // Sorting
   if (sortField) {
     params.append("sortField", sortField);
     params.append("sortDirection", sortDirection);
@@ -157,5 +269,5 @@ export {
   addSaleItem,
   updateSaleItem,
   deleteSaleItemById,
-  getAllSaleItemPage,
+  // getAllSaleItemPage,
 };
