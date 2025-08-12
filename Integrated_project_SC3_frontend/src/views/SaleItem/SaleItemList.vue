@@ -26,7 +26,7 @@ const STORAGE_OPTIONS = [
   { id: 4, name: "256GB", value: "256" },
   { id: 5, name: "512GB", value: "512" },
   { id: 6, name: "1TB", value: "1024" },
-  { id: 7, name: "Not specified", value: "0" },
+  { id: 7, name: "Not specified", value: "-1" },
 ];
 
 const PRICE_OPTIONS = [
@@ -40,7 +40,7 @@ const PRICE_OPTIONS = [
 
 const SESSION_KEYS = {
   BRAND: "SaleItem-FilterBrand",
-  STORAGE: "SaleItem-FilterStorage", 
+  STORAGE: "SaleItem-FilterStorage",
   PRICE: "SaleItem-FilterPrice",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
@@ -60,10 +60,10 @@ const getSessionArray = (key) => {
   try {
     const value = sessionStorage.getItem(key);
     if (!value) return [];
-    
+
     const parsed = JSON.parse(value);
     if (Array.isArray(parsed)) {
-      return parsed.filter(item => item && item.toString().trim() !== "");
+      return parsed.filter((item) => item && item.toString().trim() !== "");
     }
     return [];
   } catch {
@@ -90,21 +90,24 @@ const getCurrentFilters = () => ({
   prices: getSessionArray(SESSION_KEYS.PRICE),
   page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
   size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
-  sortDirection: getSessionValue(SESSION_KEYS.SORT_DIRECTION, DEFAULT_VALUES.sortDirection),
+  sortDirection: getSessionValue(
+    SESSION_KEYS.SORT_DIRECTION,
+    DEFAULT_VALUES.sortDirection
+  ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
 });
 
 // ======================== Data Processing Helpers ========================
 const convertStorageValues = (storageNames) => {
-  return storageNames.map(name => {
-    const option = STORAGE_OPTIONS.find(opt => opt.name === name);
+  return storageNames.map((name) => {
+    const option = STORAGE_OPTIONS.find((opt) => opt.name === name);
     return option ? option.value : name;
   });
 };
 
 const convertPriceValues = (priceNames) => {
-  return priceNames.map(name => {
-    const option = PRICE_OPTIONS.find(opt => opt.name === name);
+  return priceNames.map((name) => {
+    const option = PRICE_OPTIONS.find((opt) => opt.name === name);
     return option ? option.value : name;
   });
 };
@@ -115,8 +118,8 @@ const parsePriceRange = (priceValues) => {
   let min = null;
   let max = null;
 
-  priceValues.forEach(range => {
-    const [lower, upper] = range.split('-').map(Number);
+  priceValues.forEach((range) => {
+    const [lower, upper] = range.split("-").map(Number);
     if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
     if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
   });
@@ -194,7 +197,7 @@ const loadProductsWithFilters = async (filters) => {
 const handleBrandFilter = async (newBrands) => {
   setSession(SESSION_KEYS.BRAND, newBrands);
   setSession(SESSION_KEYS.PAGE, 0);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
@@ -202,7 +205,7 @@ const handleBrandFilter = async (newBrands) => {
 const handleStorageFilter = async (newStorages) => {
   setSession(SESSION_KEYS.STORAGE, newStorages);
   setSession(SESSION_KEYS.PAGE, 0);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
@@ -210,7 +213,7 @@ const handleStorageFilter = async (newStorages) => {
 const handlePriceFilter = async (newPrices) => {
   setSession(SESSION_KEYS.PRICE, newPrices);
   setSession(SESSION_KEYS.PAGE, 0);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
@@ -219,7 +222,7 @@ const handlePriceFilter = async (newPrices) => {
 const handleSizeChange = async (newSize) => {
   setSession(SESSION_KEYS.SIZE, newSize);
   setSession(SESSION_KEYS.PAGE, 0);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
@@ -228,20 +231,23 @@ const handleSortChange = async (sortData) => {
   setSession(SESSION_KEYS.SORT_FIELD, sortData.sortField);
   setSession(SESSION_KEYS.SORT_DIRECTION, sortData.sortDirection);
   setSession(SESSION_KEYS.PAGE, 0);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
 
 const handlePageChange = async (pageData) => {
   setSession(SESSION_KEYS.PAGE, pageData.page);
-  
+
   // Update other settings if provided
-  if (pageData.sortField) setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
-  if (pageData.sortDirection) setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
-  if (pageData.filterBrands !== undefined) setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
+  if (pageData.sortField)
+    setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
+  if (pageData.sortDirection)
+    setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
+  if (pageData.filterBrands !== undefined)
+    setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
   if (pageData.size) setSession(SESSION_KEYS.SIZE, pageData.size);
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
@@ -275,15 +281,15 @@ const hasActiveFilters = (filters) => {
 // ======================== Lifecycle ========================
 onBeforeMount(async () => {
   await loadBrands();
-  
+
   const filters = getCurrentFilters();
-  
+
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
   } else {
     await loadProductsDefault();
   }
-  
+
   window.addEventListener("storage", onStorageChange);
 });
 
@@ -381,10 +387,11 @@ onBeforeUnmount(() => {
       label="Filter by Price"
       placeholder="Select Price Range"
       :sessionKey="SESSION_KEYS.PRICE"
-      valueField="name"
+      valueField="value"
       displayField="name"
       @filterChanged="handlePriceFilter"
-    />
+      ><template #InputPrice></template> ></Filter
+    >
 
     <!-- Clear Button -->
     <div class="flex justify-end mb-4">
