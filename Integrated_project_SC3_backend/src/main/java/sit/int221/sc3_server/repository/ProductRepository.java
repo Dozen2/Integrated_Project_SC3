@@ -20,7 +20,11 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("""
     select p from Product p
     WHERE (:brandName is null or p.brand.name in :brandName)
-    and (:storageGb is null or p.storageGb in :storageGb)
+and (
+     :storageGb is null
+     or (-1 in :storageGb and p.storageGb is null)
+     or (p.storageGb in :storageGb and -1 not in :storageGb)
+ )
     and (:minPrice is null or p.price >= :minPrice)
     and (:maxPrice is null or p.price <= :maxPrice)
 """)
@@ -35,11 +39,36 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("""
     select p from Product p
     where (:brandName is null or p.brand.name in :brandName)
-    and (:storageGb is null or p.storageGb in :storageGb)
+ and (
+     :storageGb is null
+     or (-1 in :storageGb and p.storageGb is null)
+     or (p.storageGb in :storageGb and -1 not in :storageGb)
+ )
 """)
     Page<Product> findFilterProductNoPrice(
             @Param("brandName") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
+//            @Param("isNullStorage") boolean isNullStorage,
             Pageable pageable
     );
+
+    @Query("""
+select p from Product p
+where (:brandName is null or p.brand.name in :brandName)
+and (
+     :storageGb is null
+     or (-1 in :storageGb and p.storageGb is null)
+     or (p.storageGb in :storageGb and -1 not in :storageGb)
+ )
+and (:minPrice is null or p.price = :minPrice)
+""")
+
+    Page<Product> findProductMinPrice(
+            @Param("brandName") List<String> brandNames,
+            @Param("storageGb") List<Integer> storageGb,
+            @Param("minPrice") Integer minPrice,
+            Pageable pageable
+    );
+
+
 }

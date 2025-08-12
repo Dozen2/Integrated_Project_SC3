@@ -30,16 +30,25 @@ public class ProductServiceV2 {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort.Direction directionId = Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
-
+//        boolean isNullStorage = filterStorages.contains(-1);
+//        List<Integer> storageFilter = isNullStorage
+//                ? null // ไม่ต้องส่งค่าจริงเพราะเราหา null อยู่แล้ว
+//                : filterStorages;
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
 
-        if(filterPriceLower == null ||filterPriceUpper == null){
+        if(filterPriceLower != null && filterPriceUpper == null ){
+            return productRepository.findProductMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+        }
+        if(filterPriceLower == null ){
             return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
         }
+
         if(filterPriceLower > filterPriceUpper){
             throw new RuntimeException("Min should be less than Max");
         }
+
+
         //No filter
 //        if (filterBrands == null || filterBrands.isEmpty()) {
 //            System.out.println("Non Filter By brand Id");
