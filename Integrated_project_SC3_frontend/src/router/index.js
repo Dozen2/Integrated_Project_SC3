@@ -9,6 +9,7 @@ import BrandCreate from '@/views/Brand/BrandCreate.vue'
 import ProductManage from '@/views/SaleItem/SaleItemManage.vue'
 import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
+import Test_SaleItem_createEdit from '@/components/SaleItemComponent/Test_SaleItem_create&edit.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,7 +17,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'Home',
-      component: HomePage 
+      component: HomePage
     },
     {
       path: '/sale-items',
@@ -32,7 +33,7 @@ const router = createRouter({
       path: '/sale-items/:id/edit',
       name: 'Edit',
       component: ProuctEdit,
-      props:true
+      props: true
     },
     {
       path: '/sale-items/create',
@@ -60,6 +61,11 @@ const router = createRouter({
       path: '/brands/:id/edit',
       name: 'BrandEdit',
       component: BrandEdit
+    },
+    {
+      path: '/sale-items/:id/edit/test',
+      name: 'test_BrandEdit',
+      component: Test_SaleItem_createEdit
     }
   ],
 })
