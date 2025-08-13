@@ -15,16 +15,44 @@ const props = defineProps({
 
 const emit = defineEmits(["sizeChanged", "sortChanged"]);
 
-const size = ref(props.initialSize || 10);
-const sortField = ref(props.initialSortField || "id");
-const sortDirection = ref(props.initialSortDirection || "asc");
+const SESSION_KEYS = {
+  SIZE: "SaleItem-Size",
+  SORT_FIELD: "SaleItem-SortField",
+  SORT_DIRECTION: "SaleItem-SortDirection"
+};
+
+const size = ref(10);
+const sortField = ref("id");
+const sortDirection = ref("asc");
 const currentSort = ref("none");
+
+// Get session storage value
+const getSessionValue = (key, defaultValue) => {
+  const raw = sessionStorage.getItem(key);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      return raw; // Return as string if not JSON
+    }
+  }
+  return defaultValue;
+};
+
+// Set session storage value
+const setSessionValue = (key, value) => {
+  if (typeof value === 'object') {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } else {
+    sessionStorage.setItem(key, value.toString());
+  }
+};
 
 // Watch for prop changes
 watch(
   () => props.initialSize,
   (newVal) => {
-    if (newVal) {
+    if (newVal !== undefined) {
       size.value = newVal;
     }
   }
@@ -34,11 +62,15 @@ watch(
 watch(
   [() => props.initialSortField, () => props.initialSortDirection],
   ([newSortField, newSortDirection]) => {
-    sortField.value = newSortField || "id";
-    sortDirection.value = newSortDirection || "asc";
+    if (newSortField !== undefined) {
+      sortField.value = newSortField || "id";
+    }
+    if (newSortDirection !== undefined) {
+      sortDirection.value = newSortDirection || "asc";
+    }
     
-    if (newSortField === "brand.name") {
-      currentSort.value = newSortDirection === "asc" ? "asc" : "desc";
+    if (sortField.value === "brand.name") {
+      currentSort.value = sortDirection.value === "asc" ? "asc" : "desc";
     } else {
       currentSort.value = "none";
     }
@@ -47,8 +79,7 @@ watch(
 
 const setSize = (newsize) => {
   size.value = newsize;
-  // Save pagination size to sessionStorage
-  sessionStorage.setItem("pagination-size", newsize.toString());
+  setSessionValue(SESSION_KEYS.SIZE, newsize);
   emit("sizeChanged", newsize);
 };
 
@@ -56,6 +87,10 @@ const sortAsc = () => {
   sortDirection.value = "asc";
   sortField.value = "brand.name";
   currentSort.value = "asc";
+  
+  setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
+  setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
+  
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -66,6 +101,10 @@ const sortDesc = () => {
   sortDirection.value = "desc";
   sortField.value = "brand.name";
   currentSort.value = "desc";
+  
+  setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
+  setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
+  
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -76,6 +115,10 @@ const resetSort = () => {
   sortDirection.value = "asc";
   sortField.value = "id";
   currentSort.value = "none";
+  
+  setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
+  setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
+  
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -83,14 +126,18 @@ const resetSort = () => {
 };
 
 onMounted(() => {
-  const savedSize = sessionStorage.getItem("pagination-size");
-  if (savedSize && !props.initialSize) {
-    size.value = parseInt(savedSize, 10);
-  }
+  // Load from session storage first, then from props as fallback
+  const sessionSize = getSessionValue(SESSION_KEYS.SIZE, null);
+  const sessionSortField = getSessionValue(SESSION_KEYS.SORT_FIELD, null);
+  const sessionSortDirection = getSessionValue(SESSION_KEYS.SORT_DIRECTION, null);
+  
+  size.value = sessionSize !== null ? sessionSize : (props.initialSize || 10);
+  sortField.value = sessionSortField !== null ? sessionSortField : (props.initialSortField || "id");
+  sortDirection.value = sessionSortDirection !== null ? sessionSortDirection : (props.initialSortDirection || "asc");
   
   // Set initial sort state
-  if (props.initialSortField === "brand.name") {
-    currentSort.value = props.initialSortDirection === "asc" ? "asc" : "desc";
+  if (sortField.value === "brand.name") {
+    currentSort.value = sortDirection.value === "asc" ? "asc" : "desc";
   } else {
     currentSort.value = "none";
   }
@@ -126,19 +173,7 @@ onMounted(() => {
         ]"
         title="Sort Ascending"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h8m-8 6h4"
-          ></path>
-        </svg>
+        ↑ A-Z
       </button>
       <button
         @click="sortDesc"
@@ -150,19 +185,7 @@ onMounted(() => {
         ]"
         title="Sort Descending"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 18h16M4 12h8m-8 6h4"
-          ></path>
-        </svg>
+        ↓ Z-A
       </button>
       <button
         @click="resetSort"
@@ -174,19 +197,7 @@ onMounted(() => {
         ]"
         title="Reset Sort"
       >
-        <svg
-          class="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M10 12H4m0 6h16"
-          ></path>
-        </svg>
+        ═
       </button>
     </div>
   </div>

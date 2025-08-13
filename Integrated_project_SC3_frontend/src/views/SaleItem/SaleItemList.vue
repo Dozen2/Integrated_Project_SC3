@@ -4,120 +4,292 @@ import {
   getAllSaleItemV1,
   getAllSaleItemV2,
 } from "@/libs/callAPI/apiSaleItem.js";
+import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
-import QueryComponent from "@/components/Common/Query/QueryComponent.vue";
+import Filter from "@/components/Common/Query/Filter.vue";
+import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
+import Pagination from "@/components/Common/Query/Pagination.vue";
+import ClearButton from "@/components/Common/Query/ClearButton.vue";
 
+// ======================== Reactive States ========================
 const product = ref([]);
 const brand = ref([]);
-const productTotalPages = ref(0);
-const savedSettings = ref(null);
+const totalPages = ref(0);
 const alertStore = useAlertStore();
 
-const saveSettingsToSession = (settings) => {
-  sessionStorage.setItem("product-page-settings", JSON.stringify(settings));
-  savedSettings.value = settings;
+// ======================== Configuration ========================
+const STORAGE_OPTIONS = [
+  { id: 1, name: "32GB", value: "32" },
+  { id: 2, name: "64GB", value: "64" },
+  { id: 3, name: "128GB", value: "128" },
+  { id: 4, name: "256GB", value: "256" },
+  { id: 5, name: "512GB", value: "512" },
+  { id: 6, name: "1TB", value: "1024" },
+  { id: 7, name: "Not specified", value: "-1" },
+];
+
+const PRICE_OPTIONS = [
+  { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
+  { id: 2, name: "5,001-10,000 Baht", value: "5001-10000" },
+  { id: 3, name: "10,001-20,000 Baht", value: "10001-20000" },
+  { id: 4, name: "20,001-30,000 Baht", value: "20001-30000" },
+  { id: 5, name: "30,001-40,000 Baht", value: "30001-40000" },
+  { id: 6, name: "40,001-50,000 Baht", value: "40001-50000" },
+];
+
+const SESSION_KEYS = {
+  BRAND: "SaleItem-FilterBrand",
+  STORAGE: "SaleItem-FilterStorage",
+  PRICE: "SaleItem-FilterPrice",
+  PAGE: "SaleItem-Page",
+  SIZE: "SaleItem-Size",
+  SORT_DIRECTION: "SaleItem-SortDirection",
+  SORT_FIELD: "SaleItem-SortField",
 };
 
-const loadSettingsFromSession = () => {
-  const raw = sessionStorage.getItem("product-page-settings");
-  if (raw) {
-    try {
-      return JSON.parse(raw);
-    } catch (e) {
-      console.error("Error parsing saved settings:", e);
-      return null;
-    }
-  }
-  return null;
+const DEFAULT_VALUES = {
+  page: 0,
+  size: 10,
+  sortDirection: "desc",
+  sortField: "createdOn",
 };
 
-const fetchProduct = async () => {
+// ======================== Session Storage Helpers ========================
+const getSessionArray = (key) => {
   try {
-    const productData = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
+    const value = sessionStorage.getItem(key);
+    if (!value) return [];
 
-    product.value = productData;
-    productTotalPages.value = productData.totalPages;
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item) => item && item.toString().trim() !== "");
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
 
-    const brandData = await getAllSaleItemV1();
-    brand.value = brandData;
-    console.log("Fetched brand data:", brandData);
+const getSessionValue = (key, defaultValue) => {
+  try {
+    const value = sessionStorage.getItem(key);
+    return value ? JSON.parse(value) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+const setSession = (key, value) => {
+  sessionStorage.setItem(key, JSON.stringify(value));
+};
+
+const getCurrentFilters = () => ({
+  brands: getSessionArray(SESSION_KEYS.BRAND),
+  storages: getSessionArray(SESSION_KEYS.STORAGE),
+  prices: getSessionArray(SESSION_KEYS.PRICE),
+  page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
+  size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
+  sortDirection: getSessionValue(
+    SESSION_KEYS.SORT_DIRECTION,
+    DEFAULT_VALUES.sortDirection
+  ),
+  sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
+});
+
+// ======================== Data Processing Helpers ========================
+const convertStorageValues = (storageNames) => {
+  return storageNames.map((name) => {
+    const option = STORAGE_OPTIONS.find((opt) => opt.name === name);
+    return option ? option.value : name;
+  });
+};
+
+const convertPriceValues = (priceNames) => {
+  return priceNames.map((name) => {
+    const option = PRICE_OPTIONS.find((opt) => opt.name === name);
+    return option ? option.value : name;
+  });
+};
+
+const parsePriceRange = (priceValues) => {
+  if (!priceValues.length) return { min: null, max: null };
+
+  let min = null;
+  let max = null;
+
+  priceValues.forEach((range) => {
+    const [lower, upper] = range.split("-").map(Number);
+    if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+    if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+  });
+
+  return { min, max };
+};
+
+const sortProductsByBrand = (products, brandOrder) => {
+  return products.sort((a, b) => {
+    const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
+    const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
+
+    const indexA = brandOrder.indexOf(brandA);
+    const indexB = brandOrder.indexOf(brandB);
+
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return brandA.localeCompare(brandB);
+  });
+};
+
+// ======================== API Functions ========================
+const loadBrands = async () => {
+  try {
+    const data = await getAllBrand();
+    brand.value = data.sort((a, b) => a.name.localeCompare(b.name));
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error("Error loading brands:", error);
   }
 };
 
-const fetchProductWithSettings = async (settings) => {
+const loadProductsDefault = async () => {
   try {
-    let filterBrands = [];
-    if (settings.filterBrands && settings.filterBrands.trim() !== "") {
-      filterBrands = settings.filterBrands
-        .split(",")
-        .map((brand) => brand.trim());
-    }
+    const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
+    product.value = data;
+    totalPages.value = data.totalPages;
+  } catch (error) {
+    console.error("Error loading products:", error);
+  }
+};
 
-    const productData = await getAllSaleItemV2(
-      filterBrands,
-      settings.sortField || "createdOn",
-      settings.sortDirection || "desc",
-      settings.size || 10,
-      settings.page || 0
+const loadProductsWithFilters = async (filters) => {
+  try {
+    // Convert filter values
+    const storageValues = convertStorageValues(filters.storages);
+    const priceValues = convertPriceValues(filters.prices);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues);
+
+    // Fetch data
+    const data = await getAllSaleItemV2(
+      filters.brands,
+      filters.sortField,
+      filters.sortDirection,
+      filters.size,
+      filters.page,
+      storageValues,
+      minPrice,
+      maxPrice
     );
 
-    console.log("Fetched product data:", productData);
-
-    if (productData && productData.content && filterBrands.length > 0) {
-      const brandOrder = filterBrands;
-      console.log("Brand order:", brandOrder);
-
-      productData.content.sort((a, b) => {
-        const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-        const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
-
-        const indexA = brandOrder.indexOf(brandA);
-        const indexB = brandOrder.indexOf(brandB);
-
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        if (indexA !== -1 && indexB === -1) return -1;
-        if (indexA === -1 && indexB !== -1) return 1;
-        return brandA.localeCompare(brandB);
-      });
-
-      console.log(
-        "Sorted products:",
-        productData.content.map((p) => p.brandName || p.brand?.name)
-      );
+    // Sort by brand order if brands are filtered
+    if (data?.content && filters.brands.length > 0) {
+      data.content = sortProductsByBrand(data.content, filters.brands);
     }
 
-    product.value = productData;
-    productTotalPages.value = productData.totalPages;
+    product.value = data;
+    totalPages.value = data.totalPages;
   } catch (error) {
-    console.error("Error fetching product data:", error);
+    console.error("Error loading filtered products:", error);
   }
 };
 
-const handleUserInteraction = async (newSettings) => {
-  saveSettingsToSession(newSettings);
-  await fetchProductWithSettings(newSettings);
+// ======================== Filter Event Handlers ========================
+const handleBrandFilter = async (newBrands) => {
+  setSession(SESSION_KEYS.BRAND, newBrands);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
 };
 
+const handleStorageFilter = async (newStorages) => {
+  setSession(SESSION_KEYS.STORAGE, newStorages);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handlePriceFilter = async (newPrices) => {
+  setSession(SESSION_KEYS.PRICE, newPrices);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+// ======================== Other Event Handlers ========================
+const handleSizeChange = async (newSize) => {
+  setSession(SESSION_KEYS.SIZE, newSize);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handleSortChange = async (sortData) => {
+  setSession(SESSION_KEYS.SORT_FIELD, sortData.sortField);
+  setSession(SESSION_KEYS.SORT_DIRECTION, sortData.sortDirection);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handlePageChange = async (pageData) => {
+  setSession(SESSION_KEYS.PAGE, pageData.page);
+
+  // Update other settings if provided
+  if (pageData.sortField)
+    setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
+  if (pageData.sortDirection)
+    setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
+  if (pageData.filterBrands !== undefined)
+    setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
+  if (pageData.size) setSession(SESSION_KEYS.SIZE, pageData.size);
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handleClear = async () => {
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+// ======================== Storage Event Handler ========================
 const onStorageChange = (event) => {
   if (event.key === "product-updated") {
-    fetchProduct();
+    loadProductsDefault();
+    loadBrands();
   }
 };
 
-onBeforeMount(async () => {
-  const loadedSettings = loadSettingsFromSession();
-  savedSettings.value = loadedSettings;
+// ======================== Utility Functions ========================
+const hasActiveFilters = (filters) => {
+  return (
+    filters.brands.length > 0 ||
+    filters.storages.length > 0 ||
+    filters.prices.length > 0 ||
+    filters.page > 0 ||
+    filters.sortField !== DEFAULT_VALUES.sortField ||
+    filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
+    filters.size !== DEFAULT_VALUES.size
+  );
+};
 
-  if (loadedSettings) {
-    await fetchProductWithSettings(loadedSettings);
+// ======================== Lifecycle ========================
+onBeforeMount(async () => {
+  await loadBrands();
+
+  const filters = getCurrentFilters();
+
+  if (hasActiveFilters(filters)) {
+    await loadProductsWithFilters(filters);
   } else {
-    await fetchProduct();
+    await loadProductsDefault();
   }
+
   window.addEventListener("storage", onStorageChange);
 });
 
@@ -128,6 +300,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="flex flex-col gap-4 mx-[225px] mt-[50px]">
+    <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
         :class="`itbms-message px-4 py-2 rounded ${
@@ -140,6 +313,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
+    <!-- Action Buttons -->
     <div class="flex items-center justify-between gap-4">
       <RouterLink
         :to="{ name: 'ProuctCreate' }"
@@ -184,35 +358,74 @@ onBeforeUnmount(() => {
       </RouterLink>
     </div>
 
-    <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Filter -->
-    <QueryComponent
-      @urlSetting="handleUserInteraction"
-      :initialSize="
-        savedSettings?.size !== undefined ? Number(savedSettings.size) : 10
-      "
-      :initialFilterBrands="savedSettings?.filterBrands || ''"
-      :initialSortField="savedSettings?.sortField || ''"
-      :initialSortDirection="savedSettings?.sortDirection || ''"
-      :showFilter="true"
-      :showPagination="false"
-      :showSizeAndSort="true"
+    <!-- Filters -->
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
+      :options="brand"
+      label="Filter by brands"
+      placeholder="Select brands"
+      :sessionKey="SESSION_KEYS.BRAND"
+      valueField="name"
+      displayField="name"
+      @filterChanged="handleBrandFilter"
     />
 
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
+      :options="STORAGE_OPTIONS"
+      label="Filter by Storages"
+      placeholder="Select StoragesGB"
+      :sessionKey="SESSION_KEYS.STORAGE"
+      valueField="name"
+      displayField="name"
+      @filterChanged="handleStorageFilter"
+    />
+
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+      :options="PRICE_OPTIONS"
+      label="Filter by Price"
+      placeholder="Select Price Range"
+      :sessionKey="SESSION_KEYS.PRICE"
+      valueField="value"
+      displayField="name"
+      @filterChanged="handlePriceFilter"
+      ><template #InputPrice></template> ></Filter
+    >
+
+    <!-- Clear Button -->
+    <div class="flex justify-end mb-4">
+      <ClearButton
+        :sessionKeys="[
+          SESSION_KEYS.BRAND,
+          SESSION_KEYS.STORAGE,
+          SESSION_KEYS.PRICE,
+          SESSION_KEYS.PAGE,
+        ]"
+        @cleared="handleClear"
+      />
+    </div>
+
+    <!-- Size and Sort -->
+    <SizeAndSort
+      :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
+      :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+      :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
+      @sizeChanged="handleSizeChange"
+      @sortChanged="handleSortChange"
+    />
+
+    <!-- Product Gallery -->
     <SelectAllSaleItemGallery
       v-if="product?.content"
       :product="product.content"
     />
-  </div>
 
-  <!-- แทนที่ Pagination เดิมด้วย MainComponent ที่แสดงเฉพาะ Pagination -->
-  <QueryComponent
-    @urlSetting="handleUserInteraction"
-    :productTotalPages="productTotalPages"
-    :initialPage="
-      savedSettings?.page !== undefined ? Number(savedSettings.page) + 1 : 1
-    "
-    :showFilter="false"
-    :showPagination="true"
-    :showSizeAndSort="false"
-  />
+    <!-- Pagination -->
+    <Pagination
+      :initialTotalPages="totalPages"
+      :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
+      @pageChanged="handlePageChange"
+    />
+  </div>
 </template>

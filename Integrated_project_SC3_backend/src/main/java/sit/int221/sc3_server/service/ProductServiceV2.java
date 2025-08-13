@@ -23,6 +23,7 @@ public class ProductServiceV2 {
     @Autowired
     private ModelMapper modelMapper;
 
+    
     public Page<Product> getAllProduct(List<String> filterBrands,List<Integer> filterStorages,Integer filterPriceLower,Integer filterPriceUpper, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
             throw new PageNotFoundException("Required parameter 'page' is not present.");
@@ -34,9 +35,18 @@ public class ProductServiceV2 {
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
 
-        if(filterPriceLower == null ||filterPriceUpper == null){
-            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
+        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
+        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
+
+
+//        if(filterPriceLower == null ||filterPriceUpper == null){
+//            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
+//        }
+
+        if (filterStorages != null && filterStorages.contains(-1)) {
+            return productRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
         }
+
         if(filterPriceLower > filterPriceUpper){
             throw new RuntimeException("Min should be less than Max");
         }

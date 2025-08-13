@@ -296,7 +296,7 @@ const saveProduct = async () => {
   } finally {
     isSaving.value = true;
     reloadData.value++;
-    sessionStorage.setItem("product-updated", Date.now().toString());
+    // sessionStorage.setItem("product-updated", Date.now().toString());
   }
 };
 
