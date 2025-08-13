@@ -40,14 +40,15 @@ public class ProductServiceV2 {
 
 
 //        if(filterPriceLower != null && filterPriceUpper == null ){
-//            return productRepository.findProductMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
 //        }
 //        if(filterPriceLower == null ){
 //            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
-
+//            }
+//================Ter====================
         filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
         filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
-
+//================Ter====================
 
 //        if(filterPriceLower != null && filterPriceUpper == null){
 //            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
