@@ -483,6 +483,7 @@ const nextImage = () => {
 
         <!-- Model -->
         <div class="flex items-center mb-6 max-w-[600px]">
+
           <label class="font-medium text-gray-700 w-24 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -493,6 +494,7 @@ const nextImage = () => {
             Model
             <span class="text-red-500 ml-1">*</span>
           </label>
+          
           <div class="flex-1">
             <input type="text" v-model="product.model" @blur="trimField('model')"
               :class="`itbms-model ${boxTextTailwindModel} w-full`" placeholder="e.g. iPhone 13 Pro" />
