@@ -39,8 +39,8 @@ public class ProductServiceV2 {
         filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
 
 
-//        if(filterPriceLower == null ||filterPriceUpper == null){
-//            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
+//        if(filterPriceLower != null && filterPriceUpper == null){
+//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
 //        }
 
         if (filterStorages != null && filterStorages.contains(-1)) {
@@ -50,6 +50,8 @@ public class ProductServiceV2 {
         if(filterPriceLower > filterPriceUpper){
             throw new RuntimeException("Min should be less than Max");
         }
+
+
         //No filter
 //        if (filterBrands == null || filterBrands.isEmpty()) {
 //            System.out.println("Non Filter By brand Id");

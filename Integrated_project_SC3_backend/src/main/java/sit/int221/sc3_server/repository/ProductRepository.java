@@ -51,7 +51,23 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             Pageable pageable
     );
 
+    @Query("""
+    select p from Product p
+    WHERE (:brandNames is null or p.brand.name in :brandNames)
+      and (
+            :storageGb is null 
+            or p.storageGb in :storageGb
+            or p.storageGb IS NULL
+          )
+      and (:minPrice is null or p.price = :minPrice)
 
+""")
+    Page<Product> findFilteredProductAndNullStorageGbAndMinPrice(
+            @Param("brandNames") List<String> brandNames,
+            @Param("storageGb") List<Integer> storageGb,
+            @Param("minPrice") Integer minPrice,
+            Pageable pageable
+    );
 //    @Query("""
 //    select p from Product p
 //    where (:brandName is null or p.brand.name in :brandName)
