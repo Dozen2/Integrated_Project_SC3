@@ -38,37 +38,49 @@ and (
 
     @Query("""
     select p from Product p
-    where (:brandName is null or p.brand.name in :brandName)
- and (
-     :storageGb is null
-     or (-1 in :storageGb and p.storageGb is null)
-     or (p.storageGb in :storageGb and -1 not in :storageGb)
- )
+    WHERE (:brandNames is null or p.brand.name in :brandNames)
+      and (
+            :storageGb is null 
+            or p.storageGb in :storageGb
+            or p.storageGb IS NULL
+          )
+      and (:minPrice is null or p.price >= :minPrice)
+      and (:maxPrice is null or p.price <= :maxPrice)
 """)
-    Page<Product> findFilterProductNoPrice(
-            @Param("brandName") List<String> brandNames,
+    Page<Product> findFilteredProductAndNullStorageGb(
+            @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
-//            @Param("isNullStorage") boolean isNullStorage,
+            @Param("minPrice") Integer minPrice,
+            @Param("maxPrice") Integer maxPrice,
             Pageable pageable
     );
 
     @Query("""
-select p from Product p
-where (:brandName is null or p.brand.name in :brandName)
-and (
-     :storageGb is null
-     or (-1 in :storageGb and p.storageGb is null)
-     or (p.storageGb in :storageGb and -1 not in :storageGb)
- )
-and (:minPrice is null or p.price = :minPrice)
-""")
+    select p from Product p
+    WHERE (:brandNames is null or p.brand.name in :brandNames)
+      and (
+            :storageGb is null 
+            or p.storageGb in :storageGb
+            or p.storageGb IS NULL
+          )
+      and (:minPrice is null or p.price = :minPrice)
 
-    Page<Product> findProductMinPrice(
-            @Param("brandName") List<String> brandNames,
+""")
+    Page<Product> findFilteredProductAndNullStorageGbAndMinPrice(
+            @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,
             Pageable pageable
     );
-////
 
+//    @Query("""
+//    select p from Product p
+//    where (:brandName is null or p.brand.name in :brandName)
+//    and (:storageGb is null or p.storageGb in :storageGb)
+//""")
+//    Page<Product> findFilterProductNoPrice(
+//            @Param("brandName") List<String> brandNames,
+//            @Param("storageGb") List<Integer> storageGb,
+//            Pageable pageable
+//    );
 }

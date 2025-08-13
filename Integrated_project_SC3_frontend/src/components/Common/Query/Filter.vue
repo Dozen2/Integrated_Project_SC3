@@ -6,6 +6,7 @@ import {
   onMounted,
   ref,
   watch,
+  computed
 } from "vue";
 
 const props = defineProps({
@@ -45,10 +46,13 @@ const dropdownRef = ref(null);
 // Helper function to convert various input types to array
 const normalizeToArray = (value) => {
   if (Array.isArray(value)) {
-    return value.filter(item => item && item.toString().trim() !== "");
+    return value.filter((item) => item && item.toString().trim() !== "");
   }
   if (typeof value === "string" && value.trim() !== "") {
-    return value.split(",").map(item => item.trim()).filter(item => item !== "");
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item !== "");
   }
   return [];
 };
@@ -57,7 +61,7 @@ const normalizeToArray = (value) => {
 const getSessionFilterValues = () => {
   const raw = sessionStorage.getItem(props.sessionKey);
   if (!raw) return [];
-  
+
   try {
     // Try parsing as JSON first (for array)
     const parsed = JSON.parse(raw);
@@ -102,11 +106,15 @@ const emitFilter = () => {
 };
 
 function onOptionSelected(optionValue) {
-  const optionObj = props.options.find((opt) => opt[props.valueField] === optionValue);
-  
+  const optionObj = props.options.find(
+    (opt) => opt[props.valueField] === optionValue
+  );
+
   if (optionObj) {
-    const valueIndex = selectedValueList.value.indexOf(optionObj[props.valueField]);
-    
+    const valueIndex = selectedValueList.value.indexOf(
+      optionObj[props.valueField]
+    );
+
     if (valueIndex === -1) {
       // Add if not selected
       selectedValueList.value.push(optionObj[props.valueField]);
@@ -114,7 +122,7 @@ function onOptionSelected(optionValue) {
       // Remove if already selected
       selectedValueList.value.splice(valueIndex, 1);
     }
-    
+
     emitFilter();
     // Don't close dropdown - keep it open for multiple selections
   }
@@ -137,13 +145,15 @@ const getDisplayText = (value) => {
   return option ? option[props.displayField] : value;
 };
 
-onMounted(() => {
+onMounted(async() => {
   // Load from session storage first, then from props as fallback
   const sessionValue = getSessionFilterValues();
-  const initialValue = sessionValue.length > 0 ? sessionValue : normalizeToArray(props.initialFilterValues);
-  
-  selectedValueList.value = [...initialValue];
+  const initialValue =
+    sessionValue.length > 0
+      ? sessionValue
+      : normalizeToArray(props.initialFilterValues);
 
+  selectedValueList.value = [...initialValue];
   document.addEventListener("click", handleClickOutside);
 });
 </script>
@@ -153,10 +163,7 @@ onMounted(() => {
     <span class="text-gray-700 font-medium whitespace-nowrap">{{ label }}</span>
 
     <!-- Filter Dropdown -->
-    <div
-      ref="dropdownRef"
-      class="itbms-filter relative"
-    >
+    <div ref="dropdownRef" class="itbms-filter relative">
       <!-- Dropdown Toggle Button -->
       <div
         class="itbms-filter itbms-filter-button px-4 py-3 border border-gray-300 rounded-lg cursor-pointer bg-white min-w-48 text-left hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm"
@@ -166,11 +173,28 @@ onMounted(() => {
         tabindex="0"
       >
         <span class="text-gray-700">
-          {{ selectedValueList.length > 0 ? `${selectedValueList.length} selected` : placeholder }}
+          {{
+            selectedValueList.length > 0
+              ? `${selectedValueList.length} selected`
+              : placeholder
+          }}
         </span>
-        <span class="float-right text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': dropdownOpen }">
-          <svg class="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        <span
+          class="float-right text-gray-500 transition-transform duration-200"
+          :class="{ 'rotate-180': dropdownOpen }"
+        >
+          <svg
+            class="w-4 h-4 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </span>
       </div>
@@ -183,7 +207,7 @@ onMounted(() => {
         :data-dropdown-open="dropdownOpen"
       >
         <div
-          v-for="opt in options"
+          v-for="(opt, index) in options"
           :key="opt.id || opt[valueField]"
           class="itbms-filter-item flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
           @click="onOptionSelected(opt[valueField])"
@@ -202,19 +226,40 @@ onMounted(() => {
                 readonly
               />
             </div>
-            <span class="ml-3 text-gray-700 select-none">{{ opt[displayField] }}</span>
+
+            <!-- ชื่อ option -->
+            <span class="ml-3 text-gray-700 select-none">{{
+              opt[displayField]
+            }}</span>
+
+            <!-- ใส่ slot เฉพาะตัวสุดท้าย -->
+            <span
+              v-if="index === options.length - 1"
+              class="ml-3 text-gray-700 select-none"
+            >
+            </span>
           </div>
         </div>
+
+        <!-- Custom slot for InputPrice -->
+        <slot name="InputPrice"></slot>
         
+
         <!-- No options message -->
-        <div v-if="options.length === 0" class="px-4 py-3 text-gray-500 text-center">
+        <div
+          v-if="options.length === 0"
+          class="px-4 py-3 text-gray-500 text-center"
+        >
           No options available
         </div>
       </div>
-      </div>
-    
+    </div>
+
     <!-- Selected Values Display -->
-    <div v-if="selectedValueList.length > 0" class="flex flex-wrap gap-2 flex-1">
+    <div
+      v-if="selectedValueList.length > 0"
+      class="flex flex-wrap gap-2 flex-1"
+    >
       <span
         v-for="(value, i) in selectedValueList"
         :key="i"
@@ -231,6 +276,6 @@ onMounted(() => {
         </button>
       </span>
     </div>
-    </div>
- 
+  </div>
+
 </template>

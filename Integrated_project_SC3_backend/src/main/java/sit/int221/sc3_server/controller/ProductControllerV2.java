@@ -14,7 +14,7 @@ import sit.int221.sc3_server.utils.ListMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/itb-mshop/v2")
+@RequestMapping("sc3/itb-mshop/v2")
 //@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class ProductControllerV2 {
@@ -40,4 +40,7 @@ public class ProductControllerV2 {
         PageDTO<SalesItemDetailDTO> pageDTO = listMapper.toPageDTO(products, SalesItemDetailDTO.class, modelMapper);
         return ResponseEntity.ok(pageDTO);
     }
+
+
+
 }
