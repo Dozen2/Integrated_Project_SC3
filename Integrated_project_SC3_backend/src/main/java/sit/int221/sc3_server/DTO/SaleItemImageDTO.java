@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class SaleItemImageDTO {
+
     private String fileName;
     private Integer imageViewOrder;
 

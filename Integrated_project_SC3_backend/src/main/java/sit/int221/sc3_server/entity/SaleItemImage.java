@@ -16,17 +16,17 @@ public class SaleItemImage {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Size(max = 60)
+    @Size(max = 70)
     @NotNull
-    @Column(name = "fileName", nullable = false, length = 60)
+    @Column(name = "fileName", nullable = false, length = 70)
     private String fileName;
 
     @Column(name = "imageViewOrder")
     private Integer imageViewOrder;
 
-    @Size(max = 80)
-    @Column(name = "path", length = 80)
-    private String path;
+    @Size(max = 50)
+    @Column(name = "originalFileName", length = 50)
+    private String originalFileName;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

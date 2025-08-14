@@ -27,7 +27,7 @@ public class SaleItemDetailFileDto {
     private Integer storageGb;
     private BigDecimal screenSizeInch;
     private String color;
-    private List<SaleItemImageDTO> saleItemImages;
+    private List<SaleItemImage> saleItemImages;
     @Min(0)
     @NotNull(message = "Quantity is required")
     private Integer quantity;

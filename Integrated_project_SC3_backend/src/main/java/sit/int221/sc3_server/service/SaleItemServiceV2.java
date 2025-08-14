@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
 import sit.int221.sc3_server.configuration.FileStorageProperties;
@@ -24,6 +25,7 @@ import sit.int221.sc3_server.repository.SaleitemRepository;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SaleItemServiceV2 {
@@ -37,8 +39,6 @@ public class SaleItemServiceV2 {
     private SaleItemImageRepository saleItemImageRepository;
     @Autowired
     private FileService fileService;
-    @Autowired
-    private FileStorageProperties fileStorageProperties;
 
 
 
@@ -118,24 +118,46 @@ public class SaleItemServiceV2 {
 
         // 4. Save SaleItem ก่อน เพื่อให้ได้ id
         SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
+        //5สุ่มชื่อไฟล์ใหม่เก็บไว้ใน fileName ชื่อเก่าเก้บไว้ใน originalFilename
 
-        // 5. จัดการไฟล์รูปภาพ
+
+        // 6. จัดการไฟล์รูปภาพ
         if(images != null && !images.isEmpty()){
-            List<String> storedFileNames = fileService.storeList(images);
+//            List<String> storedFileNames = fileService.storeList(images);
             int sequence = 1;
-            for (String fileName : storedFileNames) {
+            for (MultipartFile image : images) {
+                String originalFilename = image.getOriginalFilename();
+                //แยกนามสกุลไฟล์
+                String keepFileSurname = "";
+                int keepIndexFileName = originalFilename.lastIndexOf('.');
+                if(keepIndexFileName > 0){
+                    keepFileSurname = originalFilename.substring(keepIndexFileName);
+                }
+
+                //สุ่มชื่อใหม่
+                String newFileName = UUID.randomUUID().toString() + keepFileSurname;
+                fileService.store(image,newFileName);
                 SaleItemImage saleItemImage = new SaleItemImage();
                 saleItemImage.setSaleItem(saveItem);
-                saleItemImage.setFileName(fileName);
+                saleItemImage.setFileName(newFileName);         // ชื่อใหม่
+                saleItemImage.setOriginalFileName(originalFilename); // ชื่อเก่า
                 saleItemImage.setImageViewOrder(sequence++);
-                //set Path
-                String relativePath = fileStorageProperties.getUploadDir() + "/" + fileName;
-                saleItemImage.setPath(relativePath);
                 saleItemImageRepository.saveAndFlush(saleItemImage);
             }
         }
 
     return saveItem;
+    }
+
+    public SaleItem getProductById(int id) {
+        SaleItem saleitem = saleitemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("SaleItem not found for this id :: " + id));
+        if (saleitem.getDescription() != null) {
+
+            String cleaned = saleitem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
+            saleitem.setDescription(cleaned);
+        }
+        return saleitem;
     }
 
 }
