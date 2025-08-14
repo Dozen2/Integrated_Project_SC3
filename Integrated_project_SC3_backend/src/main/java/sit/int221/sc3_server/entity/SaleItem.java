@@ -5,22 +5,19 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "saleItem")
+public class SaleItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -70,15 +67,6 @@ public class Product {
     @Column(name = "updatedOn", nullable = false)
     private Instant updatedOn;
 
-
-//    @CreationTimestamp
-//    @Column(name = "createdOn", nullable = false, updatable = false)
-//    private Timestamp createdOn;
-//
-//    @UpdateTimestamp
-//    @Column(name = "updatedOn", nullable = false)
-//    private Timestamp updatedOn;
-
+    @OneToMany(mappedBy = "saleItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SaleItemImage> saleItemImage = new ArrayList<>();
 }
-
-
