@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
-import sit.int221.sc3_server.DTO.SaleItemImageDTO;
+import sit.int221.sc3_server.configuration.FileStorageProperties;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
@@ -21,9 +21,9 @@ import sit.int221.sc3_server.repository.BrandRepository;
 import sit.int221.sc3_server.repository.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.SaleitemRepository;
 
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class SaleItemServiceV2 {
@@ -33,13 +33,15 @@ public class SaleItemServiceV2 {
     private BrandRepository brandRepository;
     @Autowired
     private ModelMapper modelMapper;
-
     @Autowired
     private SaleItemImageRepository saleItemImageRepository;
     @Autowired
     private FileService fileService;
+    @Autowired
+    private FileStorageProperties fileStorageProperties;
 
-    
+
+
     public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
             throw new PageNotFoundException("Required parameter 'page' is not present.");
@@ -126,7 +128,10 @@ public class SaleItemServiceV2 {
                 saleItemImage.setSaleItem(saveItem);
                 saleItemImage.setFileName(fileName);
                 saleItemImage.setImageViewOrder(sequence++);
-                saleItemImageRepository.save(saleItemImage);
+                //set Path
+                String relativePath = fileStorageProperties.getUploadDir() + "/" + fileName;
+                saleItemImage.setPath(relativePath);
+                saleItemImageRepository.saveAndFlush(saleItemImage);
             }
         }
 

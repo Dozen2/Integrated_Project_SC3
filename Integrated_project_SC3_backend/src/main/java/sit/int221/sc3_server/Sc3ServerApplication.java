@@ -20,8 +20,8 @@ public class Sc3ServerApplication {
 	public ListMapper listMapper(){
 		return ListMapper.getInstance();
 	}
-	@Bean
-	public ModelMapper modelMapper() {
-		return new ModelMapper();
-	}
+//	@Bean
+//	public ModelMapper modelMapper() {
+//		return new ModelMapper();
+//	}
 }
