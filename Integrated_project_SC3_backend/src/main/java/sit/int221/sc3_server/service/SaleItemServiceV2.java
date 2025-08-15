@@ -15,12 +15,14 @@ import sit.int221.sc3_server.configuration.FileStorageProperties;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
+import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.CreateFailedException;
 import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.exception.PageNotFoundException;
 import sit.int221.sc3_server.repository.BrandRepository;
 import sit.int221.sc3_server.repository.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.SaleitemRepository;
+import sit.int221.sc3_server.repository.StorageGbViewRepository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,8 +41,8 @@ public class SaleItemServiceV2 {
     private SaleItemImageRepository saleItemImageRepository;
     @Autowired
     private FileService fileService;
-
-
+    @Autowired
+    private StorageGbViewRepository storageGbViewRepository;
 
     public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
@@ -96,6 +98,10 @@ public class SaleItemServiceV2 {
 //            return productRepository.findByBrand_NameInAndRamGbIn(filterBrands,storageGb,PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
 //        }
         return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
+    }
+
+    public List<StorageGbView> getStorageView(){
+        return storageGbViewRepository.findAll();
     }
 
     @Transactional
