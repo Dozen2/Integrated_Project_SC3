@@ -16,21 +16,26 @@ import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
+import TextInput from "../Common/Input_box.vue";
 
-const boxTextTailwind =
-    "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
-const boxTextTailwindError =
-    "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+// const boxTextTailwind =
+//     "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+// const boxTextTailwindError =
+//     "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+
+const baseInputClass = "w-[600px] p-3 rounded-lg shadow-sm transition-all duration-200 focus:ring-2 focus:outline-none";
+const borderBlue = "border-2 border-blue-300 focus:ring-blue-500";
+const borderRed = "border-2 border-red-400 focus:ring-red-500";
 
 const brandError = ref(false);
-const boxTextTailwindModel = ref(boxTextTailwind);
-const boxTextTailwindPrice = ref(boxTextTailwind);
-const boxTextTailwindQuantity = ref(boxTextTailwind);
-const boxTextTailwindDesc = ref(boxTextTailwind);
-const boxTextTailwindRamGB = ref(boxTextTailwind);
-const boxTextTailwindStorageGB = ref(boxTextTailwind);
-const boxTextTailwindColor = ref(boxTextTailwind);
-const boxTextTailwindScreenSizeInch = ref(boxTextTailwind);
+const boxTextTailwindModel = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindPrice = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindQuantity = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindDesc = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindRamGB = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindStorageGB = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindColor = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindScreenSizeInch = ref(`${baseInputClass} ${borderBlue}`);
 
 const reloadData = ref(0);
 const isSaving = ref(true);
@@ -143,80 +148,135 @@ const checkDecimal = (num) => {
     return !(Math.floor(num * 100) === num * 100);
 };
 
+// const validationProductForm = () => {
+//     let isValid = true;
+//     if (!product.model || (product.model?.length ?? 0) > maxLength.model) {
+//         boxTextTailwindModel.value = `${baseInputClass} ${borderRed}`;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindModel.value = `${baseInputClass} ${borderBlue}`;
+//     }
+
+//     // Price
+//     if (product.price < 0) {
+//         boxTextTailwindPrice.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindPrice.value = boxTextTailwind;
+//     }
+
+//     // RAM
+//     if (typeof product.ramGb === "number" && product.ramGb <= 0) {
+//         boxTextTailwindRamGB.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindRamGB.value = boxTextTailwind;
+//     }
+
+//     // Storage
+//     if (typeof product.storageGb === "number" && product.storageGb <= 0) {
+//         boxTextTailwindStorageGB.value = boxTextTailwindError;
+//         console.log(typeof product.storageGb);
+//         isValid = false;
+//     } else {
+//         boxTextTailwindStorageGB.value = boxTextTailwind;
+//     }
+
+//     // Description
+//     if (
+//         !product.description ||
+//         product.description.length > maxLength.description
+//     ) {
+//         boxTextTailwindDesc.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindDesc.value = boxTextTailwind;
+//     }
+
+//     // Quantity
+//     if (product.quantity === null || product.quantity < 0) {
+//         boxTextTailwindQuantity.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindQuantity.value = boxTextTailwind;
+//     }
+
+//     // Color
+//     if ((product.color?.length ?? 0) > maxLength.color) {
+//         boxTextTailwindColor.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindColor.value = boxTextTailwind;
+//     }
+
+//     // Screen Size
+//     if (
+//         (typeof product.screenSizeInch === "number" &&
+//             product.screenSizeInch <= 0) ||
+//         checkDecimal(product.screenSizeInch)
+//     ) {
+//         boxTextTailwindScreenSizeInch.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindScreenSizeInch.value = boxTextTailwind;
+//     }
+
+//     // Brand
+//     if (!product.brand.id || !product.brand.name) {
+//         brandError.value = true;
+//         isValid = false;
+//     } else {
+//         brandError.value = false;
+//     }
+
+//     isSaving.value = isValid;
+// };
+
 const validationProductForm = () => {
     let isValid = true;
+
+    // Model validation - ใช้ระบบ error ของ TextInput แทน
     if (!product.model || (product.model?.length ?? 0) > maxLength.model) {
-        boxTextTailwindModel.value = boxTextTailwindError;
         isValid = false;
-    } else {
-        boxTextTailwindModel.value = boxTextTailwind;
     }
 
-    // Price
+    // Price validation
     if (product.price < 0) {
-        boxTextTailwindPrice.value = boxTextTailwindError;
         isValid = false;
-    } else {
-        boxTextTailwindPrice.value = boxTextTailwind;
     }
 
-    // RAM
+    // RAM validation
     if (typeof product.ramGb === "number" && product.ramGb <= 0) {
-        boxTextTailwindRamGB.value = boxTextTailwindError;
         isValid = false;
-    } else {
-        boxTextTailwindRamGB.value = boxTextTailwind;
     }
 
-    // Storage
+    // Storage validation
     if (typeof product.storageGb === "number" && product.storageGb <= 0) {
-        boxTextTailwindStorageGB.value = boxTextTailwindError;
-        console.log(typeof product.storageGb);
         isValid = false;
-    } else {
-        boxTextTailwindStorageGB.value = boxTextTailwind;
     }
 
-    // Description
-    if (
-        !product.description ||
-        product.description.length > maxLength.description
-    ) {
-        boxTextTailwindDesc.value = boxTextTailwindError;
+    // Description validation
+    if (!product.description || product.description.length > maxLength.description) {
         isValid = false;
-    } else {
-        boxTextTailwindDesc.value = boxTextTailwind;
     }
 
-    // Quantity
+    // Quantity validation
     if (product.quantity === null || product.quantity < 0) {
-        boxTextTailwindQuantity.value = boxTextTailwindError;
         isValid = false;
-    } else {
-        boxTextTailwindQuantity.value = boxTextTailwind;
     }
 
-    // Color
+    // Color validation
     if ((product.color?.length ?? 0) > maxLength.color) {
-        boxTextTailwindColor.value = boxTextTailwindError;
         isValid = false;
-    } else {
-        boxTextTailwindColor.value = boxTextTailwind;
     }
 
-    // Screen Size
-    if (
-        (typeof product.screenSizeInch === "number" &&
-            product.screenSizeInch <= 0) ||
-        checkDecimal(product.screenSizeInch)
-    ) {
-        boxTextTailwindScreenSizeInch.value = boxTextTailwindError;
+    // Screen Size validation
+    if ((typeof product.screenSizeInch === "number" && product.screenSizeInch <= 0) ||
+        checkDecimal(product.screenSizeInch)) {
         isValid = false;
-    } else {
-        boxTextTailwindScreenSizeInch.value = boxTextTailwind;
     }
 
-    // Brand
+    // Brand validation
     if (!product.brand.id || !product.brand.name) {
         brandError.value = true;
         isValid = false;
@@ -226,6 +286,63 @@ const validationProductForm = () => {
 
     isSaving.value = isValid;
 };
+
+const modelError = computed(() =>
+    !product.model || (product.model?.length ?? 0) > maxLength.model
+);
+
+const priceError = computed(() =>
+    product.price === null || product.price < 0
+);
+
+const ramError = computed(() =>
+    typeof product.ramGb === "number" && product.ramGb <= 0
+);
+
+const storageError = computed(() =>
+    typeof product.storageGb === "number" && product.storageGb <= 0
+);
+
+const descriptionError = computed(() =>
+    !product.description || product.description.length > maxLength.description
+);
+
+const quantityError = computed(() =>
+    product.quantity === null || product.quantity < 0
+);
+
+const colorError = computed(() =>
+    (product.color?.length ?? 0) > maxLength.color
+);
+
+const screenSizeError = computed(() =>
+    (typeof product.screenSizeInch === "number" && product.screenSizeInch <= 0) ||
+    checkDecimal(product.screenSizeInch)
+);
+
+// แก้ไข error message สำหรับ price
+const priceErrorMessage = computed(() => {
+    if (product.price === null || product.price === undefined) {
+        return "Price is required.";
+    }
+    if (product.price < 0) {
+        return "Price must be a non-negative number.";
+    }
+    return "";
+});
+
+// แก้ไข error message สำหรับ quantity
+const quantityErrorMessage = computed(() => {
+    if (product.quantity === null || product.quantity === undefined) {
+        return "Quantity is required.";
+    }
+    if (product.quantity < 0) {
+        return "Quantity must be a non-negative integer.";
+    }
+    return "";
+});
+
+
 
 const isFormValid = computed(() => {
     return (
@@ -452,103 +569,44 @@ const nextImage = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <label for="model" class="block text-sm font-medium text-gray-700">Model <span
-                                class="text-red-500">*</span></label>
-                        <div class="mt-1">
-                            <input type="text" id="model" v-model="product.model" @blur="trimField('model')"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="e.g. iPhone 13 Pro" />
-                            <p v-show="product.model.length > maxLength.model" class="mt-2 text-sm text-red-600">Model
-                                must be 1-60 characters long.</p>
-                        </div>
-                    </div>
 
-                    <div>
-                        <label for="price" class="block text-sm font-medium text-gray-700">Price (Baht) <span
-                                class="text-red-500">*</span></label>
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span class="text-gray-500 sm:text-sm"> ฿ </span>
-                            </div>
-                            <input type="number" id="price" v-model.number="product.price"
-                                class="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="e.g. 29900" />
-                        </div>
-                        <p v-show="product.price < 0" class="mt-2 text-sm text-red-600">Price must be a non-negative
-                            integer.</p>
-                    </div>
+                    <TextInput v-model="product.model" label="Model" required :maxLength="60"
+                        placeholder="e.g. iPhone 13 Pro" type="text" :error="modelError"
+                        errorMessage="Model is required and must be 1-60 characters long." @blur="trimField('model')" />
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                            <label for="ram" class="block text-sm font-medium text-gray-700">RAM (GB)</label>
-                            <div class="mt-1">
-                                <input type="number" id="ram" v-model.number="product.ramGb"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="e.g. 8" />
-                                <p v-show="product.ramGb < 0" class="mt-2 text-sm text-red-600">RAM size must be a
-                                    positive integer.</p>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="storage" class="block text-sm font-medium text-gray-700">Storage (GB)</label>
-                            <div class="mt-1">
-                                <input type="number" id="storage" v-model.number="product.storageGb"
-                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="e.g. 128" />
-                                <p v-show="product.storageGb < 0" class="mt-2 text-sm text-red-600">Storage size must be
-                                    a positive integer.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Price -->
+                    <TextInput v-model="product.price" label="Price (Baht)" required type="number" prefix="฿" :min="0"
+                        placeholder="e.g. 29900" :error="priceError" :errorMessage="priceErrorMessage" />
 
-                    <div>
-                        <label for="screen" class="block text-sm font-medium text-gray-700">Screen Size (Inches)</label>
-                        <div class="mt-1">
-                            <input type="number" id="screen" v-model.number="product.screenSizeInch" step="0.1"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="e.g. 6.1" />
-                            <p v-show="product.screenSizeInch < 0" class="mt-2 text-sm text-red-600">Screen size must be
-                                a positive number.</p>
-                        </div>
-                    </div>
+                    <!-- RAM -->
+                    <TextInput v-model="product.ramGb" label="RAM (GB)" type="number" :min="1" placeholder="e.g. 8"
+                        :error="ramError" errorMessage="RAM size must be a positive integer." />
 
-                    <div>
-                        <label for="color" class="block text-sm font-medium text-gray-700">Color</label>
-                        <div class="mt-1">
-                            <input type="text" id="color" v-model="product.color" @blur="trimField('color')"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="e.g. Midnight Blue" />
-                            <p v-show="(product.color?.length ?? 0) > maxLength.color"
-                                class="mt-2 text-sm text-red-600">Color must be 1-40 characters long.</p>
-                        </div>
-                    </div>
+                    <!-- Storage -->
+                    <TextInput v-model="product.storageGb" label="Storage (GB)" type="number" :min="1"
+                        placeholder="e.g. 128" :error="storageError"
+                        errorMessage="Storage size must be a positive integer." />
 
-                    <div>
-                        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity <span
-                                class="text-red-500">*</span></label>
-                        <div class="mt-1">
-                            <input type="number" id="quantity" v-model.number="product.quantity"
-                                @focus="product.quantity = null"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="e.g. 10" />
-                            <p v-show="product.quantity < 0" class="mt-2 text-sm text-red-600">Quantity must be a
-                                non-negative integer.</p>
-                        </div>
-                    </div>
+                    <!-- Screen Size -->
+                    <TextInput v-model="product.screenSizeInch" label="Screen Size (Inches)" type="number" step="0.1"
+                        :min="0.1" placeholder="e.g. 6.1" :error="screenSizeError"
+                        errorMessage="Screen size must be a positive number with up to 2 decimal places." />
 
-                    <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700">Description <span
-                                class="text-red-500">*</span></label>
-                        <div class="mt-1">
-                            <textarea id="description" v-model="product.description" rows="4"
-                                @blur="trimField('description')"
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="Enter product description..."></textarea>
-                            <p v-show="product.description.length > maxLength.description"
-                                class="mt-2 text-sm text-red-600">Description must be 1-65,535 characters long.</p>
-                        </div>
-                    </div>
+                    <!-- Color -->
+                    <TextInput v-model="product.color" label="Color" :maxLength="40" placeholder="e.g. Midnight Blue"
+                        type="text" :error="colorError" errorMessage="Color must be 1-40 characters long."
+                        @blur="trimField('color')" />
+
+                    <!-- Quantity -->
+                    <TextInput v-model="product.quantity" label="Quantity" required type="number" clearOnFocus :min="0"
+                        placeholder="e.g. 10" :error="quantityError" :errorMessage="quantityErrorMessage" />
+
+                    <!-- Description -->
+                    <TextInput v-model="product.description" label="Description" required type="textarea" rows="4"
+                        :maxLength="65535" placeholder="Enter product description..." :error="descriptionError"
+                        errorMessage="Description is required and must be 1-65,535 characters long."
+                        @blur="trimField('description')" />
+
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Upload Images</label>
