@@ -35,7 +35,7 @@ public class SaleItemControllerV2 {
     @Autowired
     private FileService fileService;
 
-    @GetMapping("/sale-items")
+    @GetMapping("/sale-items")//map เป็น SalesItemDetailFileDto เพื่อที่จะได้ส่งรูปไปได้
     public ResponseEntity<PageDTO<SalesItemDetailDTO>> getAllSaleItem(
             @RequestParam(required = false) List<String> filterBrands,
             @RequestParam(required = false) List<Integer> filterStorages,

@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.SaleItemImageRequest;
+import sit.int221.sc3_server.DTO.SaleItemWithImageInfo;
 import sit.int221.sc3_server.configuration.FileStorageProperties;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
@@ -19,6 +21,7 @@ import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.CreateFailedException;
 import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.exception.PageNotFoundException;
+import sit.int221.sc3_server.exception.UpdateFailedException;
 import sit.int221.sc3_server.repository.BrandRepository;
 import sit.int221.sc3_server.repository.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.SaleitemRepository;
@@ -148,5 +151,52 @@ public class SaleItemServiceV2 {
         System.out.println(saleitem);
         return saleitem;
     }
+
+
+    public SaleItem updateProduct(int id, SaleItemWithImageInfo newProduct) {
+        SaleItem existing = saleitemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
+
+        Brand brand = brandRepository.findById(newProduct.getSaleItem().getBrand().getId())
+                .orElseThrow(() -> new ItemNotFoundException("Brand not found with ID."));
+
+        SaleItemCreateDTO saleItem = newProduct.getSaleItem();
+        if (saleItem.getQuantity() == null || saleItem.getQuantity() < 0) {
+            saleItem.setQuantity(1);
+        }
+
+        try {
+            existing.setModel(saleItem.getModel());
+            existing.setBrand(brand);
+            existing.setDescription(saleItem.getDescription());
+            existing.setPrice(saleItem.getPrice());
+            existing.setRamGb(saleItem.getRamGb());
+            existing.setScreenSizeInch(saleItem.getScreenSizeInch());
+            existing.setQuantity(saleItem.getQuantity());
+            existing.setStorageGb(saleItem.getStorageGb());
+            existing.setColor(saleItem.getColor());
+
+                if(newProduct.getImageInfos() != null){
+                    for (SaleItemImageRequest imageRequest : newProduct.getImageInfos()){
+                        if("new".equalsIgnoreCase(imageRequest.getStatus()) && imageRequest.getImageFile() != null){
+                            //save new image
+                            SaleItemImage image = new SaleItemImage();
+                            image.setSaleItem(existing);
+                            image.setImageViewOrder(imageRequest.getImageViewOrder());
+                            image.setFileName(imageRequest.getFileName() != null ? image.getFileName() :  imageRequest.getImageFile().getOriginalFilename());
+                            saleItemImageRepository.save(image);
+                        } else if ("delete".equalsIgnoreCase(imageRequest.getStatus())) {
+                            saleItemImageRepository.deleteByFileNameAndSaleItem(imageRequest.getFileName(), existing);
+                        }
+                    }
+                }
+
+            return saleitemRepository.save(existing);
+        } catch (Exception e) {
+            throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
+
+        }
+    }
+
 
 }
