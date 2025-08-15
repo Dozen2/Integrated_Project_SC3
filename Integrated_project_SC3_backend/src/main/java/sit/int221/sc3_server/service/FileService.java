@@ -51,7 +51,7 @@ public class FileService {
             if(!isSupportedContentType(file)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Does not support content type: " + file.getContentType());
             }
-
+            Files.createDirectories(this.fileStorageLocation);
             Path targetLocation = this.fileStorageLocation.resolve(newFile);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return newFile;
