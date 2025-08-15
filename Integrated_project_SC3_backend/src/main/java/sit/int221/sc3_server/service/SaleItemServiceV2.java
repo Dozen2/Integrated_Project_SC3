@@ -153,7 +153,7 @@ public class SaleItemServiceV2 {
     }
 
 
-    public SaleItem updateProduct(int id, SaleItemWithImageInfo newProduct) {
+    public SaleItem updateSaleItem(int id, SaleItemWithImageInfo newProduct) {
         SaleItem existing = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
 
@@ -176,27 +176,80 @@ public class SaleItemServiceV2 {
             existing.setStorageGb(saleItem.getStorageGb());
             existing.setColor(saleItem.getColor());
 
-                if(newProduct.getImageInfos() != null){
-                    for (SaleItemImageRequest imageRequest : newProduct.getImageInfos()){
-                        if("new".equalsIgnoreCase(imageRequest.getStatus()) && imageRequest.getImageFile() != null){
-                            //save new image
-                            SaleItemImage image = new SaleItemImage();
-                            image.setSaleItem(existing);
-                            image.setImageViewOrder(imageRequest.getImageViewOrder());
-                            image.setFileName(imageRequest.getFileName() != null ? image.getFileName() :  imageRequest.getImageFile().getOriginalFilename());
-                            saleItemImageRepository.save(image);
-                        } else if ("delete".equalsIgnoreCase(imageRequest.getStatus())) {
-                            saleItemImageRepository.deleteByFileNameAndSaleItem(imageRequest.getFileName(), existing);
+            if (newProduct.getImageInfos() != null) {
+                for (SaleItemImageRequest imageRequest : newProduct.getImageInfos()) {
+
+                    String status = imageRequest.getStatus();
+
+                    if ("online".equalsIgnoreCase(status)) {
+                        // ค้นหาภาพเก่าใน DB
+                        SaleItemImage oldImage = saleItemImageRepository.findByFileNameAndSaleItem(
+                                        imageRequest.getFileName(), existing)
+                                .orElseThrow(() -> new ItemNotFoundException("Image not found: " + imageRequest.getFileName()));
+
+                        // อัปเดตตำแหน่งแสดง
+                        oldImage.setImageViewOrder(imageRequest.getImageViewOrder());
+                        saleItemImageRepository.save(oldImage);
+
+                    } else if ("new".equalsIgnoreCase(status) && imageRequest.getImageFile() != null) {
+                        // อัปโหลดภาพใหม่
+                        String ext = "";
+                        String originalName = imageRequest.getImageFile().getOriginalFilename();
+                        int dotIndex = originalName.lastIndexOf(".");
+                        if (dotIndex > 0) {
+                            ext = originalName.substring(dotIndex);
                         }
+                        String newFileName = UUID.randomUUID().toString() + ext;
+
+                        // เก็บไฟล์ลง disk
+                        fileService.store(imageRequest.getImageFile(), newFileName);
+
+                        // สร้าง record ใหม่
+                        SaleItemImage image = new SaleItemImage();
+                        image.setSaleItem(existing);
+                        image.setImageViewOrder(imageRequest.getImageViewOrder());
+                        image.setFileName(newFileName);
+                        image.setOriginalFileName(originalName);
+
+                        saleItemImageRepository.save(image);
+
+                    } else if ("delete".equalsIgnoreCase(status)) {
+                        // ค้นหาภาพเก่า
+                        saleItemImageRepository.findByFileNameAndSaleItem(imageRequest.getFileName(), existing)
+                                .ifPresent(img -> {
+                                    // ลบไฟล์จาก disk
+                                    fileService.removeFile(img.getFileName());
+                                    // ลบจาก DB
+                                    saleItemImageRepository.delete(img);
+                                });
                     }
                 }
+            }
 
             return saleitemRepository.save(existing);
+
         } catch (Exception e) {
             throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
 
         }
     }
 
+    public SaleItem deleteSaleItem(int id) {
+        SaleItem saleitem = saleitemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Product ID not found"));
 
+        // ลบไฟล์รูปจาก disk
+        if(saleitem.getSaleItemImage() != null){
+            for (SaleItemImage image: saleitem.getSaleItemImage()) {
+                fileService.removeFile(image.getFileName());// ลบไฟล์จาก disk
+            }
+        }
+        // ลบ record รูปจาก DB (ถ้าไม่ได้ตั้ง orphanRemoval = true)
+        for (SaleItemImage img : saleitem.getSaleItemImage()) {
+            saleItemImageRepository.delete(img);
+        }
+        // ลบ product
+        saleitemRepository.deleteById(id);
+        return saleitem;
+    }
 }
