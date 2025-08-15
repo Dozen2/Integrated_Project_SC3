@@ -5,17 +5,21 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
+@ToString
 @Table(name = "saleItem")
 public class SaleItem {
     @Id
@@ -68,5 +72,5 @@ public class SaleItem {
     private Instant updatedOn;
 
     @OneToMany(mappedBy = "saleItem", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<SaleItemImage> saleItemImage = new ArrayList<>();
+    private Set<SaleItemImage> saleItemImage = new LinkedHashSet<>();
 }

@@ -32,7 +32,7 @@ public class SaleItemCreateDTO {
     private Integer storageGb;
     private String color;
 
-//    private List<MultipartFile> images;
+
     public void setQuantity(Integer quantity) {
         if (quantity == null || quantity < 0) {
             this.quantity = 1;
