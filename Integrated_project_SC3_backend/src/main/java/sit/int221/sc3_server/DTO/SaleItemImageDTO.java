@@ -10,7 +10,9 @@ import lombok.NoArgsConstructor;
 public class SaleItemImageDTO {
 
     private String fileName;
+    private String originalFileName;
     private Integer imageViewOrder;
+
 
 
 }

@@ -14,6 +14,7 @@ import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.SaleItem;
+import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.SaleItemServiceV2;
 import sit.int221.sc3_server.utils.ListMapper;
@@ -34,7 +35,7 @@ public class SaleItemControllerV2 {
     @Autowired
     private FileService fileService;
 
-    @GetMapping("/sale-items")
+    @GetMapping("/sale-items")//map เป็น SalesItemDetailFileDto เพื่อที่จะได้ส่งรูปไปได้
     public ResponseEntity<PageDTO<SalesItemDetailDTO>> getAllSaleItem(
             @RequestParam(required = false) List<String> filterBrands,
             @RequestParam(required = false) List<Integer> filterStorages,
@@ -75,6 +76,11 @@ public class SaleItemControllerV2 {
         System.out.println(MediaType.valueOf(fileService.getFileType(file)));
         return ResponseEntity.ok()
                 .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
+    }
+
+    @GetMapping("/sale-items/storages")
+    public ResponseEntity<List<StorageGbView>> getStorageView(){
+        return ResponseEntity.ok().body(saleItemServiceV2.getStorageView());
     }
 
 
