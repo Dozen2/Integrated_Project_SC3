@@ -1,6 +1,36 @@
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const urlV1 = `${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`;
 const urlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items`;
+const test = `${VITE_ROOT_API_URL}/api/files`
+
+async function testSendImage(imgName) {
+  try {
+    // แก้ไขตรงนี้: เพิ่ม imgName เข้าไปใน URL
+    const res = await fetch(`${test}/${imgName}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        // สามารถจัดการ error 404 ให้เฉพาะเจาะจงได้
+        return { error: "Image not found" }; 
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const imageBlob = await res.blob();
+    const imageUrl = URL.createObjectURL(imageBlob);
+    return imageUrl;
+
+  } catch (error) {
+    // ปรับปรุงการจัดการ error ให้แสดงข้อความที่เข้าใจง่ายขึ้น
+    throw new Error(`Failed to fetch image: ${error.message}`);
+  }
+}
+
 
 async function getAllSaleItemV1() {
   try {
@@ -270,4 +300,5 @@ export {
   updateSaleItem,
   deleteSaleItemById,
   // getAllSaleItemPage,
+  testSendImage
 };

@@ -457,8 +457,6 @@ const nextImage = () => {
     </div>
   </div>
 
-
-
       <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
 
         <!-- Brand Selection -->
@@ -712,13 +710,7 @@ const nextImage = () => {
           </button>
         </div>
       </div>
-
-
     </div>
-
-
-
   </div>
 </template>
-
 <style scoped></style>

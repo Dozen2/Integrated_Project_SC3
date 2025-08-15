@@ -63,7 +63,7 @@ const router = createRouter({
       component: BrandEdit
     },
     {
-      path: '/sale-items/:id/edit/test',
+      path: '/sale-items/test',
       name: 'test_BrandEdit',
       component: Test_SaleItem_createEdit
     }
