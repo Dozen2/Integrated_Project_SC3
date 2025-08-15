@@ -105,23 +105,70 @@ const convertStorageValues = (storageNames) => {
   });
 };
 
+// const convertPriceValues = (priceNames) => {
+//   return priceNames.map((name) => {
+//     const option = PRICE_OPTIONS.find((opt) => opt.name === name);
+//     return option ? option.value : name;
+//   });
+// };
+
+// const parsePriceRange = (priceValues) => {
+//   if (!priceValues.length) return { min: null, max: null };
+
+//   let min = null;
+//   let max = null;
+
+//   priceValues.forEach((range) => {
+//     const [lower, upper] = range.split("-").map(Number);
+//     if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+//     if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+//   });
+
+//   return { min, max };
+// };
+
+// แก้ไขฟังก์ชัน convertPriceValues
 const convertPriceValues = (priceNames) => {
   return priceNames.map((name) => {
+    // จัดการ custom price
+    if (name.includes('custom:')) {
+      return name.replace('custom:', '');
+    }
+    
     const option = PRICE_OPTIONS.find((opt) => opt.name === name);
     return option ? option.value : name;
   });
 };
 
+// แก้ไขฟังก์ชัน parsePriceRange
 const parsePriceRange = (priceValues) => {
   if (!priceValues.length) return { min: null, max: null };
 
   let min = null;
   let max = null;
 
-  priceValues.forEach((range) => {
-    const [lower, upper] = range.split("-").map(Number);
-    if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
-    if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+  // priceValues.forEach((range) => {
+  //   const [lower, upper] = range.split("-").map(Number);
+  //   if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+  //   if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+
+  // });
+
+    priceValues.forEach((range) => {
+    // ตรวจสอบว่ามี "-" หรือไม่
+    if (range.includes('-')) {
+      // กรณี range เช่น "1000-2000"
+      const [lower, upper] = range.split("-").map(Number);
+      if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+      if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+    } else {
+      // กรณีค่าเดี่ยว เช่น "1000"
+      const singleValue = Number(range);
+      if (!isNaN(singleValue)) {
+        min = min === null ? singleValue : Math.min(min, singleValue);
+        max = max === null ? singleValue : Math.max(max, singleValue);
+      }
+    }
   });
 
   return { min, max };
@@ -381,7 +428,7 @@ onBeforeUnmount(() => {
       @filterChanged="handleStorageFilter"
     />
 
-    <Filter
+    <!-- <Filter
       :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
       :options="PRICE_OPTIONS"
       label="Filter by Price"
@@ -391,7 +438,20 @@ onBeforeUnmount(() => {
       displayField="name"
       @filterChanged="handlePriceFilter"
       ><template #InputPrice></template> ></Filter
-    >
+    > -->
+
+    <!-- Filter by Price -->
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+      :options="PRICE_OPTIONS"
+      label="Filter by Price"
+      placeholder="Select Price Range"
+      :sessionKey="SESSION_KEYS.PRICE"
+      valueField="value"
+      displayField="name"
+      :isPriceFilter="true"
+      @filterChanged="handlePriceFilter"
+/>
 
     <!-- Clear Button -->
     <div class="flex justify-end mb-4">
