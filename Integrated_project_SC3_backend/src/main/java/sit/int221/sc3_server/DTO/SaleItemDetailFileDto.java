@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -27,7 +28,7 @@ public class SaleItemDetailFileDto {
     private Integer storageGb;
     private BigDecimal screenSizeInch;
     private String color;
-    private List<SaleItemImage> saleItemImages;
+    private Set<SaleItemImageDTO> saleItemImage;
     @Min(0)
     @NotNull(message = "Quantity is required")
     private Integer quantity;

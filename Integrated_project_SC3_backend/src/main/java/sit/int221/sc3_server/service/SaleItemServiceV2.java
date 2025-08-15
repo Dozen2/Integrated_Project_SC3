@@ -142,6 +142,7 @@ public class SaleItemServiceV2 {
                 saleItemImage.setFileName(newFileName);         // ชื่อใหม่
                 saleItemImage.setOriginalFileName(originalFilename); // ชื่อเก่า
                 saleItemImage.setImageViewOrder(sequence++);
+                System.out.println(saleItemImage);
                 saleItemImageRepository.saveAndFlush(saleItemImage);
             }
         }
@@ -157,6 +158,7 @@ public class SaleItemServiceV2 {
             String cleaned = saleitem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
             saleitem.setDescription(cleaned);
         }
+        System.out.println(saleitem);
         return saleitem;
     }
 
