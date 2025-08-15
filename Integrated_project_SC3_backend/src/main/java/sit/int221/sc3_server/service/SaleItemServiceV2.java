@@ -100,7 +100,6 @@ public class SaleItemServiceV2 {
 
     @Transactional
     public SaleItem createSaleItem(SaleItemCreateDTO saleItemCreateDTO, List<MultipartFile> images){
-
         // 1. หา brand
         int brandId = saleItemCreateDTO.getBrand().getId();
         Brand brand = brandRepository.findById(brandId)
@@ -111,15 +110,11 @@ public class SaleItemServiceV2 {
         if(saleitemRepository.existsByModelIgnoreCase(model)){
             throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
         }
-
         // 3. Map DTO → Entity
         SaleItem saleItem = modelMapper.map(saleItemCreateDTO, SaleItem.class);
         saleItem.setBrand(brand);
-
         // 4. Save SaleItem ก่อน เพื่อให้ได้ id
-        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
-        //5สุ่มชื่อไฟล์ใหม่เก็บไว้ใน fileName ชื่อเก่าเก้บไว้ใน originalFilename
-
+//        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
 
         // 6. จัดการไฟล์รูปภาพ
         if(images != null && !images.isEmpty()){
@@ -138,17 +133,21 @@ public class SaleItemServiceV2 {
                 String newFileName = UUID.randomUUID().toString() + keepFileSurname;
                 fileService.store(image,newFileName);
                 SaleItemImage saleItemImage = new SaleItemImage();
-                saleItemImage.setSaleItem(saveItem);
+                saleItemImage.setSaleItem(saleItem);
                 saleItemImage.setFileName(newFileName);         // ชื่อใหม่
                 saleItemImage.setOriginalFileName(originalFilename); // ชื่อเก่า
                 saleItemImage.setImageViewOrder(sequence++);
                 System.out.println(saleItemImage);
-                saleItemImageRepository.saveAndFlush(saleItemImage);
+
+                saleItem.getSaleItemImage().add(saleItemImage);
             }
         }
+//        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
 
-    return saveItem;
+    return saleitemRepository.saveAndFlush(saleItem);
     }
+
+
 
     public SaleItem getProductById(int id) {
         SaleItem saleitem = saleitemRepository.findById(id)
