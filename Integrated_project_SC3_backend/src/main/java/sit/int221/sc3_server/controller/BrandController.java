@@ -17,7 +17,7 @@ import sit.int221.sc3_server.utils.ListMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("sc3/itb-mshop/v1")
+@RequestMapping("/itb-mshop/v1")
 //@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class BrandController {
