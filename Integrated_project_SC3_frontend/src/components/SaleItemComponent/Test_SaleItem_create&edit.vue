@@ -61,10 +61,10 @@ const originalProduct = reactive({});
 
 //-------------Mock-----------------
 const fileImageFirstResponse = [
-  { imgName: "img3.jpg", sequence: 3 },
-  { imgName: "img2.jpg", sequence: 2 },
-  { imgName: "img1.jpg", sequence: 1 },
-  { imgName: "img0.jpg", sequence: 0 },
+  { imgName: "org3.jpg", sequence: 3 },
+  { imgName: "org2.jpg", sequence: 2 },
+  { imgName: "org1.jpg", sequence: 1 },
+  { imgName: "org0.jpg", sequence: 0 },
 ];
 
 const fileImageOrganize = ref([]);
@@ -453,20 +453,6 @@ const nextImage = () => {
             v-show="fileImageOrganize.length > 1"
             class="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
           </button>
           <button
             @click="nextImage"

@@ -313,6 +313,44 @@ const setSessionStorage = () => {
   }
 };
 
+//--------------------------Mock------------------------------
+const fileImageFirstResponse = [
+  { imgName: "org3.jpg", sequence: 3 },
+  { imgName: "org2.jpg", sequence: 2 },
+  { imgName: "org1.jpg", sequence: 1 },
+  { imgName: "org0.jpg", sequence: 0 },
+];
+
+const fileImageOrganize = ref([]);
+
+// Method สำหรับจัดการข้อมูล
+const organizeAndFetchImages = async () => {
+  try {
+    // 1. จัดเรียงข้อมูลตาม sequence
+    // ใช้ .sort() เพื่อจัดเรียง array
+    const fileImageSorted = [...fileImageFirstResponse].sort(
+      (a, b) => a.sequence - b.sequence
+    );
+
+    // 2. Loop เพื่อ fetch API และจัดเก็บข้อมูล
+    for (const item of fileImageSorted) {
+      // เรียกใช้ฟังก์ชัน testSendImage() เพื่อดึงรูป
+      const imageUrl = await testSendImage(item.imgName);
+
+      // 3. push ข้อมูลที่ได้ลงใน fileImageOrganize
+      fileImageOrganize.value.push({
+        imgName: item.imgName,
+        imageUrl: imageUrl, // เก็บ url ของรูปที่ได้จากการ fetch
+        sequence: item.sequence,
+      });
+    }
+    console.log(fileImageOrganize.value);
+  } catch (error) {
+    console.error("Error organizing and fetching images:", error);
+  }
+};
+
+
 const files = ref([]);
 
 // เมื่อเลือกไฟล์
