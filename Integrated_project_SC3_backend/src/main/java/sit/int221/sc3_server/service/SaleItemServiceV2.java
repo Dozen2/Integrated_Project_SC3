@@ -58,45 +58,27 @@ public class SaleItemServiceV2 {
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
 
-//================Ter====================
-        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
-        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
-//================Ter====================
-//        if(filterPriceLower != null && filterPriceUpper == null ){
-//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
-//        }
-//        if(filterPriceLower == null ){
-//            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
-//            }
+////================Ter====================
+//        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
+//        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
+////================Ter====================
+        if(filterPriceLower != null && filterPriceUpper == null ){
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+        }
+        if(filterPriceUpper != null && filterPriceLower == null){
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,pageable);
+        }
 
-
-
-
-//        if(filterPriceLower != null && filterPriceUpper == null){
-//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
-//        }
 
         if (filterStorages != null && filterStorages.contains(-1)) {
             return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
 
         }
 
-        if(filterPriceLower > filterPriceUpper){
-            throw new RuntimeException("Min should be less than Max");
-        }
-
-
-        //No filter
-//        if (filterBrands == null || filterBrands.isEmpty()) {
-//            System.out.println("Non Filter By brand Id");
-//            return productRepository.findAll(PageRequest.of(page, size,Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
+//        if(filterPriceLower > filterPriceUpper){
+//            throw new RuntimeException("Min should be less than Max");
 //        }
-//
-//        //Filter by BrandName
-//        else {
-//            System.out.println("Filter By brand Id filterBrands: "+filterBrands+ storageGb);
-//            return productRepository.findByBrand_NameInAndRamGbIn(filterBrands,storageGb,PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
-//        }
+
         return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
     }
 
