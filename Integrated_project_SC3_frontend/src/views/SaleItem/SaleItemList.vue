@@ -18,6 +18,9 @@ const brand = ref([]);
 const totalPages = ref(0);
 const alertStore = useAlertStore();
 
+// Custom price range state
+const customPriceRange = ref({ min: null, max: null });
+
 // ======================== Configuration ========================
 const STORAGE_OPTIONS = [
   { id: 1, name: "32GB", value: "32" },
@@ -42,6 +45,8 @@ const SESSION_KEYS = {
   BRAND: "SaleItem-FilterBrand",
   STORAGE: "SaleItem-FilterStorage",
   PRICE: "SaleItem-FilterPrice",
+  CUSTOM_PRICE_MIN: "SaleItem-FilterPrice-CustomMin",
+  CUSTOM_PRICE_MAX: "SaleItem-FilterPrice-CustomMax",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
@@ -84,10 +89,25 @@ const setSession = (key, value) => {
   sessionStorage.setItem(key, JSON.stringify(value));
 };
 
+// Get custom price from session storage
+const getSessionCustomPrice = () => {
+  try {
+    const min = sessionStorage.getItem(SESSION_KEYS.CUSTOM_PRICE_MIN);
+    const max = sessionStorage.getItem(SESSION_KEYS.CUSTOM_PRICE_MAX);
+    return {
+      min: min && min !== "" ? parseFloat(min) : null,
+      max: max && max !== "" ? parseFloat(max) : null
+    };
+  } catch {
+    return { min: null, max: null };
+  }
+};
+
 const getCurrentFilters = () => ({
   brands: getSessionArray(SESSION_KEYS.BRAND),
   storages: getSessionArray(SESSION_KEYS.STORAGE),
   prices: getSessionArray(SESSION_KEYS.PRICE),
+  customPrice: getSessionCustomPrice(),
   page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
   size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
   sortDirection: getSessionValue(
@@ -105,70 +125,31 @@ const convertStorageValues = (storageNames) => {
   });
 };
 
-// const convertPriceValues = (priceNames) => {
-//   return priceNames.map((name) => {
-//     const option = PRICE_OPTIONS.find((opt) => opt.name === name);
-//     return option ? option.value : name;
-//   });
-// };
-
-// const parsePriceRange = (priceValues) => {
-//   if (!priceValues.length) return { min: null, max: null };
-
-//   let min = null;
-//   let max = null;
-
-//   priceValues.forEach((range) => {
-//     const [lower, upper] = range.split("-").map(Number);
-//     if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
-//     if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
-//   });
-
-//   return { min, max };
-// };
-
-// แก้ไขฟังก์ชัน convertPriceValues
 const convertPriceValues = (priceNames) => {
   return priceNames.map((name) => {
-    // จัดการ custom price
-    if (name.includes('custom:')) {
-      return name.replace('custom:', '');
-    }
-    
     const option = PRICE_OPTIONS.find((opt) => opt.name === name);
     return option ? option.value : name;
   });
 };
 
-// แก้ไขฟังก์ชัน parsePriceRange
-const parsePriceRange = (priceValues) => {
+const parsePriceRange = (priceValues, customPrice = null) => {
+  // If custom price is set, prioritize it over predefined ranges
+  if (customPrice && (customPrice.min !== null || customPrice.max !== null)) {
+    return {
+      min: customPrice.min,
+      max: customPrice.max
+    };
+  }
+
   if (!priceValues.length) return { min: null, max: null };
 
   let min = null;
   let max = null;
 
-  // priceValues.forEach((range) => {
-  //   const [lower, upper] = range.split("-").map(Number);
-  //   if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
-  //   if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
-
-  // });
-
-    priceValues.forEach((range) => {
-    // ตรวจสอบว่ามี "-" หรือไม่
-    if (range.includes('-')) {
-      // กรณี range เช่น "1000-2000"
-      const [lower, upper] = range.split("-").map(Number);
-      if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
-      if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
-    } else {
-      // กรณีค่าเดี่ยว เช่น "1000"
-      const singleValue = Number(range);
-      if (!isNaN(singleValue)) {
-        min = min === null ? singleValue : Math.min(min, singleValue);
-        max = max === null ? singleValue : Math.max(max, singleValue);
-      }
-    }
+  priceValues.forEach((range) => {
+    const [lower, upper] = range.split("-").map(Number);
+    if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+    if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
   });
 
   return { min, max };
@@ -214,7 +195,19 @@ const loadProductsWithFilters = async (filters) => {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
     const priceValues = convertPriceValues(filters.prices);
-    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
+
+    console.log("Loading products with filters:", {
+      brands: filters.brands,
+      sortField: filters.sortField,
+      sortDirection: filters.sortDirection,
+      size: filters.size,
+      page: filters.page,
+      storageValues,
+      minPrice,
+      maxPrice,
+      customPrice: filters.customPrice
+    }); // Debug log
 
     // Fetch data
     const data = await getAllSaleItemV2(
@@ -261,9 +254,41 @@ const handlePriceFilter = async (newPrices) => {
   setSession(SESSION_KEYS.PRICE, newPrices);
   setSession(SESSION_KEYS.PAGE, 0);
 
+  // Clear custom price when predefined price ranges are selected
+  if (newPrices.length > 0) {
+    sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
+    sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
+    customPriceRange.value = { min: null, max: null };
+  }
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
+
+// New handler for custom price input
+// const handleCustomPriceFilter = async (priceData) => {
+//   console.log("handleCustomPriceFilter called with:", priceData); // Debug log
+  
+//   // Save custom price to session storage
+//   if (priceData.min !== null || priceData.max !== null) {
+//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, priceData.min?.toString() || "");
+//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, priceData.max?.toString() || "");
+    
+//     // Clear predefined price ranges when custom price is used
+//     setSession(SESSION_KEYS.PRICE, []);
+//   } else {
+//     // Clear custom price from session storage
+//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
+//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
+//   }
+  
+//   customPriceRange.value = priceData;
+//   setSession(SESSION_KEYS.PAGE, 0);
+
+//   const filters = getCurrentFilters();
+//   console.log("Filters after custom price:", filters); // Debug log
+//   await loadProductsWithFilters(filters);
+// };
 
 // ======================== Other Event Handlers ========================
 const handleSizeChange = async (newSize) => {
@@ -300,9 +325,39 @@ const handlePageChange = async (pageData) => {
 };
 
 const handleClear = async () => {
+  // Clear custom price as well
+  customPriceRange.value = { min: null, max: null };
+  sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
+  sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
+  
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
+
+let min_price = ref(null)
+let max_price = ref(null)
+
+const applyCustomPrice = () => {
+  const min = min_price.value ?? '';
+  const max = max_price.value ?? '';
+
+  if (min === '' && max === '') {
+    // เคลียร์ filter
+    setSession(SESSION_KEYS.PRICE, []);
+  } else if (min !== '' && max !== '') {
+    const priceRange = `${min}-${max}`
+    console.log(priceRange);
+    setSession(SESSION_KEYS.PRICE, [priceRange]);
+  } else if (min !== '') {
+    setSession(SESSION_KEYS.PRICE, [`${min}-${min}`]);
+  } else if (max !== '') {
+    setSession(SESSION_KEYS.PRICE, [`${max}-${max}`]);
+  }
+
+  // โหลดสินค้าตาม filter ใหม่
+  loadProductsWithFilters(getCurrentFilters());
+};
+
 
 // ======================== Storage Event Handler ========================
 const onStorageChange = (event) => {
@@ -318,6 +373,7 @@ const hasActiveFilters = (filters) => {
     filters.brands.length > 0 ||
     filters.storages.length > 0 ||
     filters.prices.length > 0 ||
+    (filters.customPrice && (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
     filters.page > 0 ||
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
@@ -328,6 +384,9 @@ const hasActiveFilters = (filters) => {
 // ======================== Lifecycle ========================
 onBeforeMount(async () => {
   await loadBrands();
+
+  // Load custom price from session storage
+  customPriceRange.value = getSessionCustomPrice();
 
   const filters = getCurrentFilters();
 
@@ -428,19 +487,7 @@ onBeforeUnmount(() => {
       @filterChanged="handleStorageFilter"
     />
 
-    <!-- <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
-      :options="PRICE_OPTIONS"
-      label="Filter by Price"
-      placeholder="Select Price Range"
-      :sessionKey="SESSION_KEYS.PRICE"
-      valueField="value"
-      displayField="name"
-      @filterChanged="handlePriceFilter"
-      ><template #InputPrice></template> ></Filter
-    > -->
-
-    <!-- Filter by Price -->
+    <!-- Price Filter with Custom Input -->
     <Filter
       :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
       :options="PRICE_OPTIONS"
@@ -449,9 +496,35 @@ onBeforeUnmount(() => {
       :sessionKey="SESSION_KEYS.PRICE"
       valueField="value"
       displayField="name"
-      :isPriceFilter="true"
+      :enableCustomPriceInput="true"
       @filterChanged="handlePriceFilter"
-/>
+    >
+        <template #InputPrice>
+          <div class="flex gap-2 mt-2">
+            <input
+              type="number"
+              class="border rounded px-2 py-1 w-28"
+              placeholder="Min"
+              v-model.number="min_price"
+              
+            />
+            <span>-</span>
+            <input
+              type="number"
+              class="border rounded px-2 py-1 w-28"
+              placeholder="Max"
+              v-model.number="max_price"
+              
+            />
+            <button
+              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              @click="applyCustomPrice"
+            >
+              Apply
+            </button>
+          </div>
+      </template>
+    </Filter>
 
     <!-- Clear Button -->
     <div class="flex justify-end mb-4">
@@ -460,6 +533,8 @@ onBeforeUnmount(() => {
           SESSION_KEYS.BRAND,
           SESSION_KEYS.STORAGE,
           SESSION_KEYS.PRICE,
+          SESSION_KEYS.CUSTOM_PRICE_MIN,
+          SESSION_KEYS.CUSTOM_PRICE_MAX,
           SESSION_KEYS.PAGE,
         ]"
         @cleared="handleClear"
