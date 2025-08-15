@@ -11,16 +11,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.SaleItemImageRequest;
+import sit.int221.sc3_server.DTO.SaleItemWithImageInfo;
 import sit.int221.sc3_server.configuration.FileStorageProperties;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
+import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.CreateFailedException;
 import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.exception.PageNotFoundException;
+import sit.int221.sc3_server.exception.UpdateFailedException;
 import sit.int221.sc3_server.repository.BrandRepository;
 import sit.int221.sc3_server.repository.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.SaleitemRepository;
+import sit.int221.sc3_server.repository.StorageGbViewRepository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,8 +44,8 @@ public class SaleItemServiceV2 {
     private SaleItemImageRepository saleItemImageRepository;
     @Autowired
     private FileService fileService;
-
-
+    @Autowired
+    private StorageGbViewRepository storageGbViewRepository;
 
     public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
@@ -56,51 +61,36 @@ public class SaleItemServiceV2 {
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
 
-//================Ter====================
-        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
-        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
-//================Ter====================
-//        if(filterPriceLower != null && filterPriceUpper == null ){
-//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
-//        }
-//        if(filterPriceLower == null ){
-//            return productRepository.findFilterProductNoPrice(filterBrands,filterStorages,pageable);
-//            }
+////================Ter====================
+//        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
+//        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
+////================Ter====================
+        if(filterPriceLower != null && filterPriceUpper == null ){
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+        }
+        if(filterPriceUpper != null && filterPriceLower == null){
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,pageable);
+        }
 
-
-
-
-//        if(filterPriceLower != null && filterPriceUpper == null){
-//            return productRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
-//        }
 
         if (filterStorages != null && filterStorages.contains(-1)) {
             return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
 
         }
 
-        if(filterPriceLower > filterPriceUpper){
-            throw new RuntimeException("Min should be less than Max");
-        }
-
-
-        //No filter
-//        if (filterBrands == null || filterBrands.isEmpty()) {
-//            System.out.println("Non Filter By brand Id");
-//            return productRepository.findAll(PageRequest.of(page, size,Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
+//        if(filterPriceLower > filterPriceUpper){
+//            throw new RuntimeException("Min should be less than Max");
 //        }
-//
-//        //Filter by BrandName
-//        else {
-//            System.out.println("Filter By brand Id filterBrands: "+filterBrands+ storageGb);
-//            return productRepository.findByBrand_NameInAndRamGbIn(filterBrands,storageGb,PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id"))));
-//        }
+
         return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
+    }
+
+    public List<StorageGbView> getStorageView(){
+        return storageGbViewRepository.findAll();
     }
 
     @Transactional
     public SaleItem createSaleItem(SaleItemCreateDTO saleItemCreateDTO, List<MultipartFile> images){
-
         // 1. หา brand
         int brandId = saleItemCreateDTO.getBrand().getId();
         Brand brand = brandRepository.findById(brandId)
@@ -111,15 +101,11 @@ public class SaleItemServiceV2 {
         if(saleitemRepository.existsByModelIgnoreCase(model)){
             throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
         }
-
         // 3. Map DTO → Entity
         SaleItem saleItem = modelMapper.map(saleItemCreateDTO, SaleItem.class);
         saleItem.setBrand(brand);
-
         // 4. Save SaleItem ก่อน เพื่อให้ได้ id
-        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
-        //5สุ่มชื่อไฟล์ใหม่เก็บไว้ใน fileName ชื่อเก่าเก้บไว้ใน originalFilename
-
+//        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
 
         // 6. จัดการไฟล์รูปภาพ
         if(images != null && !images.isEmpty()){
@@ -138,17 +124,21 @@ public class SaleItemServiceV2 {
                 String newFileName = UUID.randomUUID().toString() + keepFileSurname;
                 fileService.store(image,newFileName);
                 SaleItemImage saleItemImage = new SaleItemImage();
-                saleItemImage.setSaleItem(saveItem);
+                saleItemImage.setSaleItem(saleItem);
                 saleItemImage.setFileName(newFileName);         // ชื่อใหม่
                 saleItemImage.setOriginalFileName(originalFilename); // ชื่อเก่า
                 saleItemImage.setImageViewOrder(sequence++);
                 System.out.println(saleItemImage);
-                saleItemImageRepository.saveAndFlush(saleItemImage);
+
+                saleItem.getSaleItemImage().add(saleItemImage);
             }
         }
+//        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
 
-    return saveItem;
+    return saleitemRepository.saveAndFlush(saleItem);
     }
+
+
 
     public SaleItem getProductById(int id) {
         SaleItem saleitem = saleitemRepository.findById(id)
@@ -162,4 +152,104 @@ public class SaleItemServiceV2 {
         return saleitem;
     }
 
+
+    public SaleItem updateSaleItem(int id, SaleItemWithImageInfo newProduct) {
+        SaleItem existing = saleitemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
+
+        Brand brand = brandRepository.findById(newProduct.getSaleItem().getBrand().getId())
+                .orElseThrow(() -> new ItemNotFoundException("Brand not found with ID."));
+
+        SaleItemCreateDTO saleItem = newProduct.getSaleItem();
+        if (saleItem.getQuantity() == null || saleItem.getQuantity() < 0) {
+            saleItem.setQuantity(1);
+        }
+
+        try {
+            existing.setModel(saleItem.getModel());
+            existing.setBrand(brand);
+            existing.setDescription(saleItem.getDescription());
+            existing.setPrice(saleItem.getPrice());
+            existing.setRamGb(saleItem.getRamGb());
+            existing.setScreenSizeInch(saleItem.getScreenSizeInch());
+            existing.setQuantity(saleItem.getQuantity());
+            existing.setStorageGb(saleItem.getStorageGb());
+            existing.setColor(saleItem.getColor());
+
+            if (newProduct.getImageInfos() != null) {
+                for (SaleItemImageRequest imageRequest : newProduct.getImageInfos()) {
+
+                    String status = imageRequest.getStatus();
+
+                    if ("online".equalsIgnoreCase(status)) {
+                        // ค้นหาภาพเก่าใน DB
+                        SaleItemImage oldImage = saleItemImageRepository.findByFileNameAndSaleItem(
+                                        imageRequest.getFileName(), existing)
+                                .orElseThrow(() -> new ItemNotFoundException("Image not found: " + imageRequest.getFileName()));
+
+                        // อัปเดตตำแหน่งแสดง
+                        oldImage.setImageViewOrder(imageRequest.getImageViewOrder());
+                        saleItemImageRepository.save(oldImage);
+
+                    } else if ("new".equalsIgnoreCase(status) && imageRequest.getImageFile() != null) {
+                        // อัปโหลดภาพใหม่
+                        String ext = "";
+                        String originalName = imageRequest.getImageFile().getOriginalFilename();
+                        int dotIndex = originalName.lastIndexOf(".");
+                        if (dotIndex > 0) {
+                            ext = originalName.substring(dotIndex);
+                        }
+                        String newFileName = UUID.randomUUID().toString() + ext;
+
+                        // เก็บไฟล์ลง disk
+                        fileService.store(imageRequest.getImageFile(), newFileName);
+
+                        // สร้าง record ใหม่
+                        SaleItemImage image = new SaleItemImage();
+                        image.setSaleItem(existing);
+                        image.setImageViewOrder(imageRequest.getImageViewOrder());
+                        image.setFileName(newFileName);
+                        image.setOriginalFileName(originalName);
+
+                        saleItemImageRepository.save(image);
+
+                    } else if ("delete".equalsIgnoreCase(status)) {
+                        // ค้นหาภาพเก่า
+                        saleItemImageRepository.findByFileNameAndSaleItem(imageRequest.getFileName(), existing)
+                                .ifPresent(img -> {
+                                    // ลบไฟล์จาก disk
+                                    fileService.removeFile(img.getFileName());
+                                    // ลบจาก DB
+                                    saleItemImageRepository.delete(img);
+                                });
+                    }
+                }
+            }
+
+            return saleitemRepository.save(existing);
+
+        } catch (Exception e) {
+            throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
+
+        }
+    }
+
+    public SaleItem deleteSaleItem(int id) {
+        SaleItem saleitem = saleitemRepository.findById(id)
+                .orElseThrow(() -> new ItemNotFoundException("Product ID not found"));
+
+        // ลบไฟล์รูปจาก disk
+        if(saleitem.getSaleItemImage() != null){
+            for (SaleItemImage image: saleitem.getSaleItemImage()) {
+                fileService.removeFile(image.getFileName());// ลบไฟล์จาก disk
+            }
+        }
+        // ลบ record รูปจาก DB (ถ้าไม่ได้ตั้ง orphanRemoval = true)
+        for (SaleItemImage img : saleitem.getSaleItemImage()) {
+            saleItemImageRepository.delete(img);
+        }
+        // ลบ product
+        saleitemRepository.deleteById(id);
+        return saleitem;
+    }
 }
