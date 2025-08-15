@@ -8,60 +8,60 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
 import sit.int221.sc3_server.entity.Brand;
-import sit.int221.sc3_server.entity.Product;
+import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.exception.CreateFailedException;
 import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.exception.UpdateFailedException;
 import sit.int221.sc3_server.repository.BrandRepository;
-import sit.int221.sc3_server.repository.ProductRepository;
+import sit.int221.sc3_server.repository.SaleitemRepository;
 
 import java.util.List;
 
 @Service
-public class ProductServices {
+public class SaleItemServices {
     @Autowired
-    private ProductRepository productRepository;
+    private SaleitemRepository saleitemRepository;
     @Autowired
     private BrandRepository brandRepository;
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<Product> getAllProduct() {
-        return productRepository.findAll();
+    public List<SaleItem> getAllProduct() {
+        return saleitemRepository.findAll();
 //        return productRepository.findAllByOrderByCreatedOnDesc();
     }
 
 
-    public Product getProductById(int id) {
-        Product product = productRepository.findById(id)
+    public SaleItem getProductById(int id) {
+        SaleItem saleitem = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("SaleItem not found for this id :: " + id));
-        if (product.getDescription() != null) {
+        if (saleitem.getDescription() != null) {
 
-            String cleaned = product.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
-            product.setDescription(cleaned);
+            String cleaned = saleitem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
+            saleitem.setDescription(cleaned);
         }
-        return product;
+        return saleitem;
     }
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Product createProduct(SaleItemCreateDTO dto) {
+    public SaleItem createProduct(SaleItemCreateDTO dto) {
         int brandId = dto.getBrand().getId();
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new ItemNotFoundException("Brand with ID " + brandId + " not found."));
 
         String model = dto.getModel().trim();
-        boolean isDuplicate = productRepository.existsByModelIgnoreCase(model);
+        boolean isDuplicate = saleitemRepository.existsByModelIgnoreCase(model);
 
         if (isDuplicate) {
             throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
         }
 
-        Product product = modelMapper.map(dto, Product.class);
-        product.setBrand(brand);
+        SaleItem saleitem = modelMapper.map(dto, SaleItem.class);
+        saleitem.setBrand(brand);
 
         try {
-            return productRepository.saveAndFlush(product);
+            return saleitemRepository.saveAndFlush(saleitem);
         } catch (Exception e) {
             throw new CreateFailedException(
                     "Cannot create SaleItem due to: " + e.getMessage()
@@ -69,8 +69,8 @@ public class ProductServices {
         }
     }
 
-    public Product updateProduct(int id, SaleItemCreateDTO newProduct) {
-        Product existing = productRepository.findById(id)
+    public SaleItem updateProduct(int id, SaleItemCreateDTO newProduct) {
+        SaleItem existing = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
 
         Brand brand = brandRepository.findById(newProduct.getBrand().getId())
@@ -92,18 +92,18 @@ public class ProductServices {
             existing.setColor(newProduct.getColor());
 
 
-            return productRepository.save(existing);
+            return saleitemRepository.save(existing);
         } catch (Exception e) {
             throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
 
         }
     }
 
-    public Product deleteProduct(int id) {
-        Product product = productRepository.findById(id)
+    public SaleItem deleteProduct(int id) {
+        SaleItem saleitem = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("Product ID not found"));
-        productRepository.deleteById(id);
-        return product;
+        saleitemRepository.deleteById(id);
+        return saleitem;
     }
 
 }

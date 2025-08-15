@@ -16,10 +16,8 @@ import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.exception.DeleteFailedException;
 import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.repository.BrandRepository;
-import sit.int221.sc3_server.repository.ProductRepository;
+import sit.int221.sc3_server.repository.SaleitemRepository;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +29,7 @@ public class BrandServices {
     private BrandRepository brandRepository;
 
     @Autowired
-    private ProductRepository productRepository;
+    private SaleitemRepository saleitemRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -45,7 +43,7 @@ public class BrandServices {
 
         return brandList.stream().map(brand -> {
             BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-            dto.setNoOfSaleItems(brand.getProducts().size());
+            dto.setNoOfSaleItems(brand.getSaleItems().size());
 //            int count = productRepository.countByBrand_Id(brand.getId()); // อย่าลืมใช้ method ที่ชื่อถูกต้อง
 //            dto.setNoOfSaleItems(count);
             return dto;
@@ -62,7 +60,7 @@ public class BrandServices {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No Brand was found with id: " + id));
 
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-        dto.setNoOfSaleItems(brand.getProducts().size());
+        dto.setNoOfSaleItems(brand.getSaleItems().size());
 //        int count = productRepository.countByBrand_Id(brand.getId());
 //        dto.setNoOfSaleItems(count);
 
@@ -101,7 +99,7 @@ public class BrandServices {
         brand = brandRepository.save(brand);
 
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
-        dto.setNoOfSaleItems(brand.getProducts().size());
+        dto.setNoOfSaleItems(brand.getSaleItems().size());
 //        int count = productRepository.countByBrand_Id(brand.getId());
 //        dto.setNoOfSaleItems(count);
 
@@ -111,7 +109,7 @@ public class BrandServices {
 
     public void deleteBrand(int id) {
         Brand brand = brandRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Brand not found"));
-        boolean hasProduct = productRepository.existsByBrand_Id(brand.getId());
+        boolean hasProduct = saleitemRepository.existsByBrand_Id(brand.getId());
         if (hasProduct) {
             throw new DeleteFailedException("Cannot delete brand because it has products");
         }

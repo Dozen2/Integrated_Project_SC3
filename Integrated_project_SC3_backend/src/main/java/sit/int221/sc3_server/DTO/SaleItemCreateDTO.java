@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -30,6 +32,7 @@ public class SaleItemCreateDTO {
     private Integer storageGb;
     private String color;
 
+//    private List<MultipartFile> images;
     public void setQuantity(Integer quantity) {
         if (quantity == null || quantity < 0) {
             this.quantity = 1;
