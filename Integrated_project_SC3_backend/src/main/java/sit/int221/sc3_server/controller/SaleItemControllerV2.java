@@ -52,7 +52,7 @@ public class SaleItemControllerV2 {
     @PostMapping("")
     public ResponseEntity<SaleItemDetailFileDto> createSaleItem(
             @ModelAttribute SaleItemCreateDTO saleItemCreateDTO ,
-            @RequestPart List<MultipartFile> images){
+            @RequestPart(required = false) List<MultipartFile> images){
 
         SaleItem saleitem = saleItemServiceV2.createSaleItem(saleItemCreateDTO,images);
 
@@ -96,5 +96,6 @@ public class SaleItemControllerV2 {
              saleItemServiceV2.deleteSaleItem(id);
             return ResponseEntity.noContent().build() ;
         }
+
 
 }
