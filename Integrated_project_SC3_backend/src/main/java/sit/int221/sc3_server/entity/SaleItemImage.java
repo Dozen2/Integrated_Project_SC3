@@ -25,8 +25,8 @@ public class SaleItemImage {
     @Column(name = "imageViewOrder")
     private Integer imageViewOrder;
 
-    @Size(max = 50)
-    @Column(name = "originalFileName", length = 50)
+    @Size(max = 70)
+    @Column(name = "originalFileName", length = 70)
     private String originalFileName;
 
     @NotNull

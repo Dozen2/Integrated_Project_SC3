@@ -83,12 +83,13 @@ public class SaleItemControllerV2 {
 
 
     @PutMapping(value = "/sale-items/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SaleItem> updateSaleItem(
+    public ResponseEntity<SaleItemDetailFileDto> updateSaleItem(
             @PathVariable int id,
             @ModelAttribute SaleItemWithImageInfo request
             ){
         SaleItem saleItem = saleItemServiceV2.updateSaleItem(id,request);
-        return ResponseEntity.ok(saleItem);
+        SaleItemDetailFileDto response = modelMapper.map(saleItem, SaleItemDetailFileDto.class);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/sale-items/{id}")

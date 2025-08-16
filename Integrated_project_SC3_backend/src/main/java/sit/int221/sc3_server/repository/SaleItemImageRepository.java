@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,8 +24,11 @@ public interface SaleItemImageRepository extends JpaRepository<SaleItemImage, In
 
     void deleteByFileNameAndSaleItem(String fileName, SaleItem saleItem);
     Optional<SaleItemImage> findByFileNameAndSaleItem(String fileName, SaleItem saleItem);
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM SaleItemImage s WHERE s.saleItem.id = :saleItemId")
-    void deleteBySaleItemId(@Param("saleItemId") Integer saleItemId);
+
+
+    List<SaleItemImage> findBySaleItemOrderByImageViewOrderAsc(SaleItem saleItem);
+
+    List<SaleItemImage> findBySaleItem(SaleItem existing);
+
+    List<SaleItemImage> findAllBySaleItemAndFileNameIn(SaleItem saleItem, Collection<String> fileNames);
 }

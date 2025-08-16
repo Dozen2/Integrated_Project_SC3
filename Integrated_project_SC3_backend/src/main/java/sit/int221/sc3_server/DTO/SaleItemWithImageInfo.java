@@ -10,6 +10,6 @@ import java.util.List;
 public class SaleItemWithImageInfo {
     private SaleItemCreateDTO saleItem;
     private List<SaleItemImageRequest> imageInfos;
-
+    private List<String> deletedImage;
 
 }
