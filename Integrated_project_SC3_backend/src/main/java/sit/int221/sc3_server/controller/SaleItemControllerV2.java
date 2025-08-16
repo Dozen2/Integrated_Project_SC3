@@ -60,7 +60,6 @@ public class SaleItemControllerV2 {
 
         SaleItemDetailFileDto response = modelMapper.map(saleitem, SaleItemDetailFileDto.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
     }
 
     @GetMapping("/sale-items/{id}")
