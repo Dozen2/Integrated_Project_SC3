@@ -16,6 +16,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "gsap": "^3.13.0",
     "json-server": "^1.0.0-beta.3",
+    "lucide-vue-next": "^0.539.0",
     "pinia": "^3.0.2",
     "tailwindcss": "^4.1.4",
     "vite-plugin-vuetify": "^2.1.2",

@@ -16,6 +16,9 @@ import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
+import { ChevronLeft,
+  ChevronRight } from 'lucide-vue-next'; 
+
 
 const boxTextTailwind =
   "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
@@ -116,7 +119,8 @@ const getBrandIdByName = async (brandName) => {
 // อัปเดตฟังก์ชันจัดการ brand
 const handleBrandId = (id) => {
   saleItem.brand.id = id;
-  saleItem.brandId = id; // เก็บไว้สำหรับ backward compatibility
+  // เก็บไว้สำหรับ backward compatibility
+  // saleItem.brandId = id; 
 };
 
 const handleBrandName = (name) => {
@@ -343,7 +347,7 @@ const saveSaleItem = async () => {
       router.go(-1);
     } else {
       await addSaleItemV2(formData);
-      setSessionStorage();
+      setSessionStorage();      
       alertStore.setMessage("The sale item has been successfully added.");
       router.go(-1);
     }
@@ -564,17 +568,19 @@ const nextImage = () => {
       </div>
     </div>
 
-    <div class="h-full m-5 flex flex-row justify-center items-center">
+    <div class="h-full m-5 mt-[-70px] ml-[120px] flex flex-row justify-center items-center">
       <!-- Image Preview Section - ใช้ saleItem.images แทน images -->
-      <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative">
+      <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative mt-[300px]">
+        <p>currentIndex: {{currentIndex}}</p>
         
         <!-- แสดงเฉพาะเมื่อมีรูป -->
         <div v-if="saleItem.images.length > 0">
           <!-- ปุ่มซ้าย -->
           <button @click="prevImage" v-show="saleItem.images.length > 1"
                   class="absolute left-2 top-50 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 z-10">
-            &lt;
+            <ChevronLeft/>
           </button>
+          
 
           <!-- ช่องใหญ่ด้านบน แสดงรูป -->
           <div class="bg-gray-100 rounded border border-blue-400 h-96 flex items-center justify-center">
@@ -584,7 +590,7 @@ const nextImage = () => {
           <!-- ปุ่มขวา -->
           <button @click="nextImage" v-show="saleItem.images.length > 1"
                   class="absolute right-2 top-50 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 z-10">
-            &gt;
+            <ChevronRight/>
           </button>
 
           <!-- ช่องเล็ก 4 ช่องด้านล่าง -->
@@ -607,10 +613,52 @@ const nextImage = () => {
             <p class="text-sm">Upload images to preview them here</p>
           </div>
         </div>
+         <!-- File Upload -->
+        <div class="mb-6 max-w-[500px]">
+          <label for="file-upload"
+            class="cursor-pointer inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
+              <path
+                d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+            </svg>
+            Upload Images
+          </label>
+          <input id="file-upload" type="file" class="hidden" multiple accept="image/*" @change="handleFileChange" />
+          <div class="mt-2 text-sm text-gray-500">
+            <p>Maximum file size: 2MB per image</p>
+            <p>Maximum total size: 5MB for all images</p>
+          </div>
+        </div>
+
+        <!-- File List -->
+        <ul v-if="files.length > 0" class="space-y-2 mb-6">
+          <li v-for="(file, index) in files" :key="index"
+            class="flex items-center justify-between bg-gray-100 p-2 rounded w-125">
+            <!-- ชื่อไฟล์ -->
+            <span class="truncate max-w-[200px]">{{ file.name }}</span>
+
+            <!-- ปุ่ม action -->
+            <div class="flex gap-2">
+              <button @click="moveUp(index)" :disabled="index === 0"
+                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
+                ⬆️
+              </button>
+              <button @click="moveDown(index)" :disabled="index === files.length - 1"
+                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
+                ⬇️
+              </button>
+              <button @click="removeFile(index)"
+                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition">
+                ลบ
+              </button>
+            </div>
+          </li>
+        </ul>
       </div>
 
-      <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
+      <!-- ====================================================Uploader==================================================== -->
 
+      <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
         <!-- Brand Selection -->
         <div class="w-full max-w-[500px] mb-6">
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -804,48 +852,6 @@ const nextImage = () => {
             Description must be 1-65,535 characters long.
           </p>
         </div>
-
-        <!-- File Upload -->
-        <div class="mb-6 max-w-[500px]">
-          <label for="file-upload"
-            class="cursor-pointer inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
-              <path
-                d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-            </svg>
-            Upload Images
-          </label>
-          <input id="file-upload" type="file" class="hidden" multiple accept="image/*" @change="handleFileChange" />
-          <div class="mt-2 text-sm text-gray-500">
-            <p>Maximum file size: 2MB per image</p>
-            <p>Maximum total size: 5MB for all images</p>
-          </div>
-        </div>
-
-        <!-- File List -->
-        <ul v-if="files.length > 0" class="space-y-2 mb-6">
-          <li v-for="(file, index) in files" :key="index"
-            class="flex items-center justify-between bg-gray-100 p-2 rounded w-125">
-            <!-- ชื่อไฟล์ -->
-            <span class="truncate max-w-[200px]">{{ file.name }}</span>
-
-            <!-- ปุ่ม action -->
-            <div class="flex gap-2">
-              <button @click="moveUp(index)" :disabled="index === 0"
-                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
-                ⬆️
-              </button>
-              <button @click="moveDown(index)" :disabled="index === files.length - 1"
-                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
-                ⬇️
-              </button>
-              <button @click="removeFile(index)"
-                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition">
-                ลบ
-              </button>
-            </div>
-          </li>
-        </ul>
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row sm:justify-end gap-4 max-w-[500px]">
