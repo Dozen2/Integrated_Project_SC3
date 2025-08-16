@@ -3,6 +3,7 @@ package sit.int221.sc3_server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -51,7 +52,7 @@ public class FileService {
             if(!isSupportedContentType(file)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Does not support content type: " + file.getContentType());
             }
-
+            Files.createDirectories(this.fileStorageLocation);
             Path targetLocation = this.fileStorageLocation.resolve(newFile);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return newFile;
@@ -134,6 +135,18 @@ public class FileService {
             return Files.probeContentType(resource.getFile().toPath());
         } catch (IOException ex) {
             throw new RuntimeException("ProbeContentType error: " + resource,ex);
+        }
+    }
+    public void removeFile(String fileName) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            } else {
+                throw new ResourceNotFoundException("File not found " + fileName);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("File operation (DELETE) error: " + fileName, ex);
         }
     }
 }

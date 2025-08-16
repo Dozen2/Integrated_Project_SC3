@@ -9,12 +9,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sit.int221.sc3_server.DTO.PageDTO;
-import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
-import sit.int221.sc3_server.DTO.SaleItemDetailFileDto;
-import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
+import sit.int221.sc3_server.DTO.*;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.StorageGbView;
+import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.SaleItemServiceV2;
 import sit.int221.sc3_server.utils.ListMapper;
@@ -54,7 +52,7 @@ public class SaleItemControllerV2 {
     @PostMapping("")
     public ResponseEntity<SaleItemDetailFileDto> createSaleItem(
             @ModelAttribute SaleItemCreateDTO saleItemCreateDTO ,
-            @RequestPart List<MultipartFile> images){
+            @RequestPart(required = false) List<MultipartFile> images){
 
         SaleItem saleitem = saleItemServiceV2.createSaleItem(saleItemCreateDTO,images);
 
@@ -83,6 +81,20 @@ public class SaleItemControllerV2 {
     }
 
 
-//    @PutMapping("")
+    @PutMapping(value = "/sale-items/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SaleItem> updateSaleItem(
+            @PathVariable int id,
+            @ModelAttribute SaleItemWithImageInfo request
+            ){
+        SaleItem saleItem = saleItemServiceV2.updateSaleItem(id,request);
+        return ResponseEntity.ok(saleItem);
+    }
+
+    @DeleteMapping("/sale-items/{id}")
+    public ResponseEntity<SaleItemWithImageInfo> deleteSaleItem(@PathVariable int id){
+             saleItemServiceV2.deleteSaleItem(id);
+            return ResponseEntity.noContent().build() ;
+        }
+
 
 }
