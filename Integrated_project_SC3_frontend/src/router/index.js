@@ -10,6 +10,7 @@ import ProductManage from '@/views/SaleItem/SaleItemManage.vue'
 import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Test_SaleItem_createEdit from '@/components/SaleItemComponent/Test_SaleItem_create&edit.vue'
+import TestImageUploader from '@/components/SaleItemComponent/Test-image-uploader.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -66,6 +67,11 @@ const router = createRouter({
       path: '/sale-items/test',
       name: 'test_BrandEdit',
       component: Test_SaleItem_createEdit
+    },
+    {
+      path: '/sale-items/testImage',
+      name: 'test_image_uploader',
+      component: TestImageUploader
     }
   ],
 })

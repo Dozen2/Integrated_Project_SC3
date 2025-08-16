@@ -1,13 +1,11 @@
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const urlV1 = `${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`;
 const urlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items`;
-// const test = `${VITE_ROOT_API_URL}/api/files`
-const test = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items/file`
 
-async function testSendImage(imgName) {
+async function getImageByImageName(imgName) {
   try {
     // แก้ไขตรงนี้: เพิ่ม imgName เข้าไปใน URL
-    const res = await fetch(`${test}/${imgName}`, {
+    const res = await fetch(`${urlV2}/file/${imgName}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -151,6 +149,17 @@ async function getSaleItemById(id) {
   }
 }
 
+async function getSaleItemByIdV2(id) {
+  try {
+    const SaleItem = await fetch(`${urlV2}/${id}`);
+    if (SaleItem.status === 404) return undefined;
+    const finalSaleItem = await SaleItem.json();
+    return finalSaleItem;
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 async function addSaleItem(newSaleItem) {
   try {
     const res = await fetch(urlV1, {
@@ -166,6 +175,27 @@ async function addSaleItem(newSaleItem) {
     return addedSaleItem;
   } catch (error) {
     throw new Error("can not add your SaleItem");
+  }
+}
+
+//addSaleItemV2 that add to be form data
+async function addSaleItemV2(newSaleItem) {
+  try {
+    const response = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2`, {
+      method: "POST",
+      body: newSaleItem, // FormData จะตั้ง Content-Type เป็น multipart/form-data อัตโนมัติ
+    });
+
+    // ตรวจสอบสถานะการตอบกลับ
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json(); // หรือ return response ตามที่ต้องการ
+  } catch (error) {
+    console.error("Error adding sale item:", error);
+    throw new Error(error.message || "Cannot add your SaleItem");
   }
 }
 
@@ -301,5 +331,7 @@ export {
   updateSaleItem,
   deleteSaleItemById,
   // getAllSaleItemPage,
-  testSendImage
+  getSaleItemByIdV2,
+  getImageByImageName,
+  addSaleItemV2
 };
