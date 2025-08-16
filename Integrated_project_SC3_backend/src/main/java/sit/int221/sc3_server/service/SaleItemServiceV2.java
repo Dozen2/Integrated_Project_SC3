@@ -196,8 +196,8 @@ public class SaleItemServiceV2 {
 
 
             // -------- STEP 2: จัดการรูปจาก imageInfos ----------
-            if (newProduct.getImageInfos() != null) {
-                for (SaleItemImageRequest imgReq : newProduct.getImageInfos()) {
+            if (newProduct.getSaleItemImages() != null) {
+                for (SaleItemImageRequest imgReq : newProduct.getSaleItemImages()) {
                     if (imgReq.getImageFile() != null && !imgReq.getImageFile().isEmpty()) {
                         // 🔹 กรณีอัปโหลดไฟล์ใหม่
                         String originalName = imgReq.getImageFile().getOriginalFilename();
