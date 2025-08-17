@@ -1,4 +1,5 @@
 <script setup>
+
 import {
   defineEmits,
   defineProps,
@@ -35,6 +36,10 @@ const props = defineProps({
     type: String,
     default: "name", // field to use for display (e.g., 'name', 'title')
   },
+  mode:{
+    type: String,
+    default: "price"
+  }
 });
 
 const emit = defineEmits(["filterChanged"]);
@@ -156,6 +161,15 @@ onMounted(async() => {
   selectedValueList.value = [...initialValue];
   document.addEventListener("click", handleClickOutside);
 });
+
+const filteredOptions = computed(() => {
+  // ถ้า type เป็น priceOption ให้ตัดตัวสุดท้ายออก
+  if (props.mode === "price") {
+    return props.options.slice(0,5);
+  }
+  // ถ้าไม่ใช่ก็คืน options ตามเดิม
+  return props.options;
+});
 </script>
 
 <template>
@@ -207,7 +221,7 @@ onMounted(async() => {
         :data-dropdown-open="dropdownOpen"
       >
         <div
-          v-for="(opt, index) in options"
+          v-for="(opt, index) in filteredOptions"
           :key="opt.id || opt[valueField]"
           class="itbms-filter-item flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
           @click="onOptionSelected(opt[valueField])"

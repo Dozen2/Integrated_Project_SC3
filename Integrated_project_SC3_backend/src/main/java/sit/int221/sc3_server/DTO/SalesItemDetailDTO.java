@@ -1,5 +1,6 @@
 package sit.int221.sc3_server.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,7 +10,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-import java.time.Instant;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
 
 
 @Data
@@ -31,7 +34,8 @@ public class SalesItemDetailDTO {
     private String fileName;
     private Instant createdOn;
     private Instant updatedOn;
-
+//    // 🔹 เอาเฉพาะชื่อไฟล์รูปหลัก (imageViewOrder = 1)
+    private String mainImageFileName;
 
     public void setColor(String color) {
         if (color != null && color.trim().isEmpty()) {
@@ -42,4 +46,5 @@ public class SalesItemDetailDTO {
             this.color = color.trim();
         }
     }
+
 }

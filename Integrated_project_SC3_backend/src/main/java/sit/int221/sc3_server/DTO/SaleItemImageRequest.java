@@ -7,7 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class SaleItemImageRequest {
     private Integer imageViewOrder;
     private String fileName;
-    private String status;
     private MultipartFile imageFile;
-
 }
