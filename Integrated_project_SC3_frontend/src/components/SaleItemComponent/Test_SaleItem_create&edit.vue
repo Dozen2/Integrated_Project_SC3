@@ -11,7 +11,7 @@ import {
   addSaleItem,
   getSaleItemById,
   updateSaleItem,
-  testSendImage,
+  getImageByImageName,
 } from "@/libs/callAPI/apiSaleItem.js";
 import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -61,9 +61,9 @@ const originalProduct = reactive({});
 
 //-------------Mock-----------------
 const fileImageFirstResponse = [
-  { imgName: "img3.jpg", sequence: 3 },
-  { imgName: "img2.jpg", sequence: 2 },
-  { imgName: "img1.jpg", sequence: 1 },
+  { imgName: "img1.jpg", sequence: 3 },
+  { imgName: "img3.jpg", sequence: 2 },
+  { imgName: "img2.jpg", sequence: 1 },
   { imgName: "img0.jpg", sequence: 0 },
 ];
 
@@ -80,8 +80,8 @@ const organizeAndFetchImages = async () => {
 
     // 2. Loop เพื่อ fetch API และจัดเก็บข้อมูล
     for (const item of fileImageSorted) {
-      // เรียกใช้ฟังก์ชัน testSendImage() เพื่อดึงรูป
-      const imageUrl = await testSendImage(item.imgName);
+      // เรียกใช้ฟังก์ชัน getImageByImageName() เพื่อดึงรูป
+      const imageUrl = await getImageByImageName(item.imgName);
 
       // 3. push ข้อมูลที่ได้ลงใน fileImageOrganize
       fileImageOrganize.value.push({
@@ -97,8 +97,8 @@ const organizeAndFetchImages = async () => {
 };
 
 // เรียกใช้ method ใน onBeforeMount
-onBeforeMount(async () => {
-  await organizeAndFetchImages();
+  onBeforeMount(async () => {
+    await organizeAndFetchImages();
   // if (prop.mode === "Edit") {
   //     try {
   //         const data = await getSaleItemById(prop.productId);
@@ -594,20 +594,6 @@ const nextImage = () => {
             v-show="fileImageOrganize.length > 1"
             class="absolute left-2 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
           </button>
           <button
             @click="nextImage"

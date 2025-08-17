@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SaleItemWithImageInfo {
     private SaleItemCreateDTO saleItem;
-    private List<SaleItemImageRequest> imageInfos;
-
+    private List<SaleItemImageRequest> saleItemImages;
+    private List<String> deletedImage;
 
 }

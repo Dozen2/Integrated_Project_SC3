@@ -152,13 +152,24 @@ const parsePriceRange = (priceValues, customPrice = null) => {
   let max = null;
 
   priceValues.forEach((range) => {
-    const [lower, upper] = range.split("-").map(Number);
-    if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
-    if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+    // ตรวจสอบว่ามี "-" หรือไม่
+    if (range.includes('-')) {
+      // กรณี range เช่น "1000-2000"
+      const [lower, upper] = range.split("-").map(Number);
+      if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
+      if (!isNaN(upper)) max = max === null ? upper : Math.max(max, upper);
+    } else {
+      // กรณีค่าเดี่ยว เช่น "1000"
+      const singleValue = Number(range);
+      if (!isNaN(singleValue)) {
+        min = min === null ? singleValue : Math.min(min, singleValue);
+        max = max === null ? singleValue : Math.max(max, singleValue);
+      }
+    }
   });
-
   return { min, max };
 };
+
 
 const sortProductsByBrand = (products, brandOrder) => {
   return products.sort((a, b) => {
@@ -465,7 +476,7 @@ onBeforeUnmount(() => {
         }`"
       >
         {{ alertStore.message }}
-      </div>
+      </div>  
     </div>
 
     <!-- Action Buttons -->
