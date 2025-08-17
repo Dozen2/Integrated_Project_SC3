@@ -22,14 +22,14 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
 //    Optional<SaleItem> findByIdWithImages(@Param("id") Integer id);
     @Query("""
     select p from SaleItem p
-    WHERE (:brandName is null or p.brand.name in :brandName)
-and (
-     :storageGb is null
-     or (-1 in :storageGb and p.storageGb is null)
-     or (p.storageGb in :storageGb and -1 not in :storageGb)
- )
-    and (:minPrice is null or p.price >= :minPrice)
-    and (:maxPrice is null or p.price <= :maxPrice)
+        WHERE (:brandName is null or p.brand.name in :brandName)
+    and (
+         :storageGb is null
+         or (-1 in :storageGb and p.storageGb is null)
+         or (p.storageGb in :storageGb and -1 not in :storageGb)
+     )
+        and (:minPrice is null or p.price >= :minPrice)
+        and (:maxPrice is null or p.price <= :maxPrice)
 """)
     Page<SaleItem> findFilteredProduct(
             @Param("brandName") List<String> brandNames,
@@ -59,8 +59,11 @@ and (
     );
 
     @Query("""
-    select p from SaleItem p
-    WHERE (:brandNames is null or p.brand.name in :brandNames)
+    SELECT p
+    FROM SaleItem p
+    LEFT JOIN FETCH p.saleItemImage sii
+    WHERE sii.imageViewOrder = 1 OR sii.imageViewOrder IS NULL
+    AND (:brandNames is null or p.brand.name in :brandNames)
       and (
             :storageGb is null
             or p.storageGb in :storageGb
