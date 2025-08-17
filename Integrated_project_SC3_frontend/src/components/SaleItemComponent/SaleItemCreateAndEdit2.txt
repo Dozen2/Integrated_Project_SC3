@@ -95,12 +95,10 @@ onBeforeMount(async () => {
         await getBrandIdByName(data.brandName);
       }
       
-      // ✅ แก้ไข: ย้ายการ push รูปมาไว้หลัง fetch ข้อมูล
+      // ตั้งค่า saleItemImage ถ้ามี
       if (data.saleItemImage && Array.isArray(data.saleItemImage)) {
         saleItem.saleItemImage = [...data.saleItemImage];
-        fileImageFirstResponse.length = 0; // clear array ก่อน
-        fileImageFirstResponse.push(...data.saleItemImage);
-        console.log("saleItem.saleItemImage", saleItem.saleItemImage);
+        console.log("saleItem.saleItemImage",saleItem.saleItemImage);
         await organizeAndFetchImages();
       }
 
@@ -283,6 +281,7 @@ const normalizeEmptyStringsToNull = (obj) => {
     }
   }
 };
+
 const saveSaleItem = async () => {
   isSaving.value = false;
 
@@ -307,7 +306,7 @@ const saveSaleItem = async () => {
     return;
   }
 
-  // ========================================== สร้าง FormData ========================================== 
+  // สร้าง FormData
   const formData = new FormData();
   
   // สำเนาข้อมูลและทำ normalize
@@ -326,28 +325,17 @@ const saveSaleItem = async () => {
     }
   }
 
-  // ✅ แก้ไข: เพิ่มไฟล์รูปภาพลงใน FormData
-  console.log("fileImageOrganize before sending:", fileImageOrganize.value);
-  console.log("files array before sending:", files.value);
-  
-  // วิธีที่ง่ายกว่า: ส่งไฟล์ใหม่ทั้งหมด
-  let newFileIndex = 0;
+  // เพิ่มไฟล์รูปภาพลงใน FormData
+  // ใช้ fileName === null เป็นเครื่องหมายว่าเป็นไฟล์ใหม่
+  let imageIndex = 0;
   fileImageOrganize.value.forEach((item, index) => {
-    if (item.fileName === null) {
-      // หาไฟล์ใหม่ที่ตรงกับ index นี้
-      const actualFileIndex = fileImageOrganize.value
-        .slice(0, index + 1)
-        .filter(img => img.fileName === null).length - 1;
-      
-      if (files.value[actualFileIndex]) {
-        console.log(`Adding new file at index ${actualFileIndex}:`, files.value[actualFileIndex].name);
-        formData.append(`images`, files.value[actualFileIndex]);
-        formData.append(`imageSequence[${newFileIndex}]`, item.imageViewOrder);
-        newFileIndex++;
-      }
+    if (item.fileName === null && files.value[index]) {
+      // ส่งไฟล์ใหม่
+      formData.append(`saleItemImage`, files.value[index]);
+      formData.append(`imageSequence[${imageIndex}]`, item.imageViewOrder);
+      imageIndex++;
     } else if (item.fileName !== null) {
-      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง
-      console.log(`Keeping existing file: ${item.fileName} at order: ${item.imageViewOrder}`);
+      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง (ถ้า API รองรับ)
       formData.append(`existingImageOrder[${item.fileName}]`, item.imageViewOrder);
     }
   });
@@ -368,8 +356,6 @@ const saveSaleItem = async () => {
       alertStore.setMessage("The sale item has been updated.");
       router.go(-1);
     } else {
-      // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
-      console.log("Creating new sale item with", newFileIndex, "images");
       await addSaleItemV2(formData);
       setSessionStorage();      
       alertStore.setMessage("The sale item has been successfully added.");
@@ -416,13 +402,10 @@ const formatFileSize = (bytes) => {
 };
 
 // เมื่อเลือกไฟล์ - รีโลจิกใหม่เพื่อใช้กับ fileImageOrganize.value (แบบเรียบง่าย)
-// ✅ แก้ไข: เพิ่ม debug ใน handleFileChange
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
   const MAX_IMAGES = 4;
   const MAX_FILENAME_LENGTH = 50;
-  
-  console.log("Selected files:", selectedFiles.map(f => f.name));
   
   // ตรวจสอบความยาวของชื่อไฟล์
   const longFilenames = selectedFiles.filter(file => file.name.length > MAX_FILENAME_LENGTH);
@@ -433,13 +416,14 @@ const handleFileChange = (event) => {
     return;
   }
   
-  // ตรวจสอบจำนวนรูปทั้งหมด
+  // ตรวจสอบจำนวนรูปทั้งหมด (รูปเดิม + รูปใหม่)
   const currentImageCount = fileImageOrganize.value.length;
   const totalAfterUpload = currentImageCount + selectedFiles.length;
   
   let filesToProcess = selectedFiles;
   let warningMessage = "";
   
+  // ถ้าเกิน 4 รูป ให้ตัดให้เหลือแค่ที่สามารถใส่ได้
   if (totalAfterUpload > MAX_IMAGES) {
     const remainingSlots = MAX_IMAGES - currentImageCount;
     
@@ -453,7 +437,7 @@ const handleFileChange = (event) => {
     warningMessage = `คุณเลือกรูป ${selectedFiles.length} รูป แต่สามารถอัปโหลดได้อีกเพียง ${remainingSlots} รูป\nจึงจะอัปโหลดเฉพาะ ${remainingSlots} รูปแรกเท่านั้น`;
   }
   
-  // ตรวจสอบขนาดไฟล์
+  // ตรวจสอบขนาดไฟล์ของไฟล์ที่จะประมวลผล
   const validation = validateFileSize(filesToProcess);
   
   if (!validation.isValid) {
@@ -462,43 +446,37 @@ const handleFileChange = (event) => {
     return;
   }
   
+  // แสดงข้อความเตือนเรื่องจำนวนรูป (ถ้ามี)
   if (warningMessage) {
     alert(warningMessage);
   }
   
-  // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize และ files array
-  const filesProcessed = [];
+  // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize
   filesToProcess.forEach((file, index) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const imageUrl = e.target.result;
-      const nextOrder = fileImageOrganize.value.length;
+      const nextOrder = fileImageOrganize.value.length; // ตำแหน่งถัดไป
       
+      // เพิ่มข้อมูลใหม่ลงใน fileImageOrganize (แค่ 4 field ที่ต้องการ)
       fileImageOrganize.value.push({
-        fileName: null, // ไฟล์ใหม่
-        orgFileName: file.name,
-        imageUrl: imageUrl,
-        imageViewOrder: nextOrder
+        fileName: null, // ไฟล์ใหม่จะไม่มี fileName (ใช้เป็น flag แยกแยะ)
+        orgFileName: file.name, // ชื่อไฟล์ต้นฉบับ
+        imageUrl: imageUrl, // Base64 URL สำหรับแสดงผล
+        imageViewOrder: nextOrder // ลำดับการแสดงผล
       });
       
-      console.log("Added new image to fileImageOrganize:", {
-        fileName: null,
-        orgFileName: file.name,
-        imageViewOrder: nextOrder
-      });
+      console.log("New file added to fileImageOrganize:", fileImageOrganize.value);
     };
     reader.readAsDataURL(file);
-    filesProcessed.push(file);
   });
   
-  // เพิ่มไฟล์ลงใน files array
-  files.value.push(...filesProcessed);
-  
-  console.log("Updated files array:", files.value.map(f => f.name));
-  console.log("Updated fileImageOrganize:", fileImageOrganize.value);
+  // เพิ่มไฟล์ลงใน files array เพื่อใช้ส่งไปเซิร์ฟเวอร์
+  files.value.push(...filesToProcess);
   
   event.target.value = "";
 };
+
 
 const validateFileSize = (selectedFiles) => {
   const errors = [];
@@ -613,15 +591,13 @@ const fileImageFirstResponse = [];
 const fileImageOrganize = ref([]);
 const currentViewImage = ref(0);
 
-// onBeforeMount(async () => {
-//   const saleItemIdParam = prop.productId; // ตัวอย่าง ID ของ Sale Item
-//   const saleItem = await getSaleItemByIdV2(saleItemIdParam);
-//   console.log("Sale Item:", saleItem.saleItemImage);
-//   if(saleItem.saleItemImage != null){
-//     fileImageFirstResponse.push(...saleItem.saleItemImage);
-//   }
+onBeforeMount(async () => {
+  const saleItemIdParam = prop.productId; // ตัวอย่าง ID ของ Sale Item
+  const saleItem = await getSaleItemByIdV2(saleItemIdParam);
+  console.log("Sale Item:", saleItem.saleItemImage);
+  fileImageFirstResponse.push(...saleItem.saleItemImage);
   // await organizeAndFetchImages();
-// });
+});
 
 // // Method สำหรับจัดการข้อมูล
 // const organizeAndFetchImages = async () => {
@@ -679,6 +655,8 @@ const organizeAndFetchImages = async () => {
     console.error("Error organizing and fetching saleItemImage:", error);
   }
 };
+
+
 </script>
 
 <template>
