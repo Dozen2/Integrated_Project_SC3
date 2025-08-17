@@ -386,6 +386,7 @@ let priceOption = ref([...PRICE_OPTIONS])
 let min_price = ref(null)
 let max_price = ref(null)
 
+
 const applyCustomPrice = () => {
   const min = min_price.value ?? '';
   const max = max_price.value ?? '';
@@ -408,13 +409,24 @@ const applyCustomPrice = () => {
     return
   }
 
-  const customOption = {id: 'custom', name: customName, value: customPriceRange}
+  const maxId = priceOption.value.length > 0 
+    ? Math.max(...priceOption.value.map(opt => Number(opt.id)))
+    : 0;
 
-    // รวมกับ options เดิม
-  priceOption.value = [...PRICE_OPTIONS, customOption]
+  const customOption = { 
+    id: maxId + 1, 
+    name: customName, 
+    value: customPriceRange 
+  };
+  console.log(PRICE_OPTIONS);
 
-  setSession(SESSION_KEYS.PRICE, [customPriceRange])
+  priceOption.value.push(customOption);
+  const prevSelected = getSessionArray(SESSION_KEYS.PRICE) || [];
+  const updatedSelected = [...prevSelected, customOption.value];
+
+  setSession(SESSION_KEYS.PRICE, updatedSelected);
   loadProductsWithFilters(getCurrentFilters());
+
 };
 
 

@@ -9,8 +9,9 @@ import {
 } from "vue";
 import {
   addSaleItemV2,
-  getSaleItemById,
+  getSaleItemByIdV2,
   updateSaleItem,
+  getImageByImageName
 } from "@/libs/callAPI/apiSaleItem.js";
 import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -58,8 +59,9 @@ const saleItem = reactive({
   quantity: 1,
   storageGb: null,
   color: "",
-  images: [],
+  saleItemImage: [],
 });
+
 
 const originalSaleItem = reactive({});
 
@@ -70,7 +72,7 @@ const currentIndex = ref(0);
 onBeforeMount(async () => {
   if (prop.mode === "Edit") {
     try {
-      const data = await getSaleItemById(prop.productId);
+      const data = await getSaleItemByIdV2(prop.productId);
       if (!data) {
         saleItem.model = "404_not_found";
         setTimeout(() => router.push("/sale-items"), 2000);
@@ -93,9 +95,11 @@ onBeforeMount(async () => {
         await getBrandIdByName(data.brandName);
       }
       
-      // ตั้งค่า images ถ้ามี
-      if (data.images && Array.isArray(data.images)) {
-        saleItem.images = [...data.images];
+      // ตั้งค่า saleItemImage ถ้ามี
+      if (data.saleItemImage && Array.isArray(data.saleItemImage)) {
+        saleItem.saleItemImage = [...data.saleItemImage];
+        console.log("saleItem.saleItemImage",saleItem.saleItemImage);
+        await organizeAndFetchImages();
       }
 
       Object.assign(originalSaleItem, JSON.parse(JSON.stringify(saleItem)));
@@ -309,13 +313,12 @@ const saveSaleItem = async () => {
   const saleItemCopy = JSON.parse(JSON.stringify(saleItem));
   normalizeEmptyStringsToNull(saleItemCopy);
 
-  // เพิ่มข้อมูลลงใน FormData (ส่ง brand.id ตามที่ backend ต้องการ)
+  // เพิ่มข้อมูลลงใน FormData
   for (const field in saleItemCopy) {
     if (field === 'brand' && saleItemCopy[field]?.id) {
-      // ส่ง brand.id แทน brandId ตามที่ backend ต้องการ
       formData.append('brand.id', saleItemCopy[field].id);
-    } else if (field === 'images') {
-      // ข้าม images ในการ loop นี้ เราจะจัดการแยกด้านล่าง
+    } else if (field === 'saleItemImage') {
+      // ข้าม saleItemImage ในการ loop นี้
       continue;
     } else if (saleItemCopy[field] !== null && saleItemCopy[field] !== undefined) {
       formData.append(field, saleItemCopy[field]);
@@ -323,12 +326,19 @@ const saveSaleItem = async () => {
   }
 
   // เพิ่มไฟล์รูปภาพลงใน FormData
-  if (files.value.length > 0) {
-    files.value.forEach((file, index) => {
-      formData.append(`images`, file);
-      formData.append(`imageSequence[${index}]`, index);
-    });
-  }
+  // ใช้ fileName === null เป็นเครื่องหมายว่าเป็นไฟล์ใหม่
+  let imageIndex = 0;
+  fileImageOrganize.value.forEach((item, index) => {
+    if (item.fileName === null && files.value[index]) {
+      // ส่งไฟล์ใหม่
+      formData.append(`saleItemImage`, files.value[index]);
+      formData.append(`imageSequence[${imageIndex}]`, item.imageViewOrder);
+      imageIndex++;
+    } else if (item.fileName !== null) {
+      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง (ถ้า API รองรับ)
+      formData.append(`existingImageOrder[${item.fileName}]`, item.imageViewOrder);
+    }
+  });
 
   // Debug: แสดงข้อมูลใน FormData
   console.log("FormData entries:");
@@ -391,35 +401,7 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// ตรวจสอบขนาดไฟล์
-const validateFileSize = (selectedFiles) => {
-  const errors = [];
-  let totalSize = 0;
-  
-  // คำนวณขนาดรวมของไฟล์เดิม + ไฟล์ใหม่
-  files.value.forEach(file => {
-    totalSize += file.size;
-  });
-  
-  // ตรวจสอบขนาดของไฟล์ใหม่แต่ละไฟล์
-  selectedFiles.forEach((file, index) => {
-    if (file.size > FILE_SIZE_LIMITS.MAX_FILE_SIZE) {
-      errors.push(`File "${file.name}" (${formatFileSize(file.size)}) exceeds maximum file size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)}`);
-    }
-    totalSize += file.size;
-  });
-  
-  // ตรวจสอบขนาดรวมทั้งหมด
-  if (totalSize > FILE_SIZE_LIMITS.MAX_REQUEST_SIZE) {
-    errors.push(`Total file size (${formatFileSize(totalSize)}) exceeds maximum request size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}`);
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors: errors
-  };
-};
-// เมื่อเลือกไฟล์ - อัปเดตให้ใช้ saleItem.images และตรวจสอบขนาด + จำกัด 4 รูป + ตรวจสอบความยาวชื่อไฟล์
+// เมื่อเลือกไฟล์ - รีโลจิกใหม่เพื่อใช้กับ fileImageOrganize.value (แบบเรียบง่าย)
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
   const MAX_IMAGES = 4;
@@ -435,7 +417,7 @@ const handleFileChange = (event) => {
   }
   
   // ตรวจสอบจำนวนรูปทั้งหมด (รูปเดิม + รูปใหม่)
-  const currentImageCount = files.value.length;
+  const currentImageCount = fileImageOrganize.value.length;
   const totalAfterUpload = currentImageCount + selectedFiles.length;
   
   let filesToProcess = selectedFiles;
@@ -459,7 +441,6 @@ const handleFileChange = (event) => {
   const validation = validateFileSize(filesToProcess);
   
   if (!validation.isValid) {
-    // แสดงข้อความเตือนเรื่องขนาดไฟล์
     alert(validation.errors.join('\n'));
     event.target.value = "";
     return;
@@ -470,79 +451,212 @@ const handleFileChange = (event) => {
     alert(warningMessage);
   }
   
-  // ถ้าผ่านการตรวจสอบแล้ว ให้เพิ่มไฟล์
-  files.value.push(...filesToProcess);
-  
-  // แปลงไฟล์เป็น URL สำหรับแสดงผลและเก็บใน saleItem.images
-  filesToProcess.forEach(file => {
+  // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize
+  filesToProcess.forEach((file, index) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const url = e.target.result;
-      console.log("File URL (Base64):", url);
-      saleItem.images.push(url);
+      const imageUrl = e.target.result;
+      const nextOrder = fileImageOrganize.value.length; // ตำแหน่งถัดไป
+      
+      // เพิ่มข้อมูลใหม่ลงใน fileImageOrganize (แค่ 4 field ที่ต้องการ)
+      fileImageOrganize.value.push({
+        fileName: null, // ไฟล์ใหม่จะไม่มี fileName (ใช้เป็น flag แยกแยะ)
+        orgFileName: file.name, // ชื่อไฟล์ต้นฉบับ
+        imageUrl: imageUrl, // Base64 URL สำหรับแสดงผล
+        imageViewOrder: nextOrder // ลำดับการแสดงผล
+      });
+      
+      console.log("New file added to fileImageOrganize:", fileImageOrganize.value);
     };
     reader.readAsDataURL(file);
   });
   
+  // เพิ่มไฟล์ลงใน files array เพื่อใช้ส่งไปเซิร์ฟเวอร์
+  files.value.push(...filesToProcess);
+  
   event.target.value = "";
 };
-// ลบไฟล์ - อัปเดตให้ลบทั้งใน files และ saleItem.images
+
+
+const validateFileSize = (selectedFiles) => {
+  const errors = [];
+  let totalSize = 0;
+  
+  // คำนวณขนาดรวมของไฟล์เดิมที่เป็นไฟล์ใหม่ (fileName === null)
+  fileImageOrganize.value.forEach((item, index) => {
+    if (item.fileName === null && files.value[index]) {
+      totalSize += files.value[index].size;
+    }
+  });
+  
+  // ตรวจสอบขนาดของไฟล์ใหม่แต่ละไฟล์
+  selectedFiles.forEach((file, index) => {
+    if (file.size > FILE_SIZE_LIMITS.MAX_FILE_SIZE) {
+      errors.push(`File "${file.name}" (${formatFileSize(file.size)}) exceeds maximum file size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)}`);
+    }
+    totalSize += file.size;
+  });
+  
+  // ตรวจสอบขนาดรวมทั้งหมด
+  if (totalSize > FILE_SIZE_LIMITS.MAX_REQUEST_SIZE) {
+    errors.push(`Total file size (${formatFileSize(totalSize)}) exceeds maximum request size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}`);
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors
+  };
+};
 const removeFile = (index) => {
+  // ลบจาก fileImageOrganize
+  fileImageOrganize.value.splice(index, 1);
+  
+  // ลบจาก files array
   files.value.splice(index, 1);
-  saleItem.images.splice(index, 1);
+  
+  // อัปเดต imageViewOrder ใหม่
+  fileImageOrganize.value.forEach((item, idx) => {
+    item.imageViewOrder = idx;
+  });
   
   // ปรับ currentIndex ถ้าจำเป็น
-  if (currentIndex.value >= saleItem.images.length && saleItem.images.length > 0) {
-    currentIndex.value = saleItem.images.length - 1;
-  } else if (saleItem.images.length === 0) {
+  if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
+    currentIndex.value = fileImageOrganize.value.length - 1;
+  } else if (fileImageOrganize.value.length === 0) {
     currentIndex.value = 0;
   }
 };
 
+// ฟังก์ชันเลื่อนขึ้น
 const moveUp = (index) => {
   if (index > 0) {
+    // สลับตำแหน่งใน fileImageOrganize array
+    const temp = fileImageOrganize.value[index];
+    fileImageOrganize.value[index] = fileImageOrganize.value[index - 1];
+    fileImageOrganize.value[index - 1] = temp;
+    
+    // อัปเดต imageViewOrder
+    fileImageOrganize.value[index].imageViewOrder = index;
+    fileImageOrganize.value[index - 1].imageViewOrder = index - 1;
+    
     // สลับใน files array
-    const temp = files.value[index];
+    const tempFile = files.value[index];
     files.value[index] = files.value[index - 1];
-    files.value[index - 1] = temp;
-    
-    // สลับใน saleItem.images array
-    const tempImg = saleItem.images[index];
-    saleItem.images[index] = saleItem.images[index - 1];
-    saleItem.images[index - 1] = tempImg;
+    files.value[index - 1] = tempFile;
   }
 };
 
+// ฟังก์ชันเลื่อนลง
 const moveDown = (index) => {
-  if (index < files.value.length - 1) {
-    // สลับใน files array
-    const temp = files.value[index];
-    files.value[index] = files.value[index + 1];
-    files.value[index + 1] = temp;
+  if (index < fileImageOrganize.value.length - 1) {
+    // สลับตำแหน่งใน fileImageOrganize array
+    const temp = fileImageOrganize.value[index];
+    fileImageOrganize.value[index] = fileImageOrganize.value[index + 1];
+    fileImageOrganize.value[index + 1] = temp;
     
-    // สลับใน saleItem.images array
-    const tempImg = saleItem.images[index];
-    saleItem.images[index] = saleItem.images[index + 1];
-    saleItem.images[index + 1] = tempImg;
+    // อัปเดต imageViewOrder
+    fileImageOrganize.value[index].imageViewOrder = index;
+    fileImageOrganize.value[index + 1].imageViewOrder = index + 1;
+    
+    // สลับใน files array
+    const tempFile = files.value[index];
+    files.value[index] = files.value[index + 1];
+    files.value[index + 1] = tempFile;
   }
 };
 
-// ฟังก์ชันสำหรับนำทางรูปภาพ - ใช้ saleItem.images แทน images
+// ฟังก์ชันสำหรับการนำทางรูปภาพ
 const prevImage = () => {
   if (currentIndex.value > 0) {
     currentIndex.value--;
   } else {
-    currentIndex.value = saleItem.images.length - 1;
+    currentIndex.value = fileImageOrganize.value.length - 1;
   }
 };
 
 const nextImage = () => {
-  if (currentIndex.value < saleItem.images.length - 1) {
+  if (currentIndex.value < fileImageOrganize.value.length - 1) {
     currentIndex.value++;
   } else {
     currentIndex.value = 0;
   }
 };
+
+
+//===================================File image called=============================
+
+
+const fileImageFirstResponse = [];
+
+const fileImageOrganize = ref([]);
+const currentViewImage = ref(0);
+
+onBeforeMount(async () => {
+  const saleItemIdParam = prop.productId; // ตัวอย่าง ID ของ Sale Item
+  const saleItem = await getSaleItemByIdV2(saleItemIdParam);
+  console.log("Sale Item:", saleItem.saleItemImage);
+  fileImageFirstResponse.push(...saleItem.saleItemImage);
+  // await organizeAndFetchImages();
+});
+
+// // Method สำหรับจัดการข้อมูล
+// const organizeAndFetchImages = async () => {
+//   try {
+//     // 1. จัดเรียงข้อมูลตาม imageViewOrder
+//     // ใช้ .sort() เพื่อจัดเรียง array
+//     const fileImageSorted = [...fileImageFirstResponse].sort(
+//       (a, b) => a.imageViewOrder - b.imageViewOrder
+//     );
+
+//     // 2. Loop เพื่อ fetch API และจัดเก็บข้อมูล
+//     for (const item of fileImageSorted) {
+//       // เรียกใช้ฟังก์ชัน getImageByImageName() เพื่อดึงรูป
+//       const imageUrl = await getImageByImageName(item.fileName);
+
+//       // 3. push ข้อมูลที่ได้ลงใน fileImageOrganize
+//       fileImageOrganize.value.push({
+//         fileName: item.fileName,
+//         orgFileName: item.originalFileName,
+//         imageUrl: imageUrl, // เก็บ url ของรูปที่ได้จากการ fetch
+//         imageViewOrder: item.imageViewOrder,
+//       });
+//     }
+//     console.log("After sorted Sale Item:",fileImageOrganize.value);
+//   } catch (error) {
+//     console.error("Error organizing and fetching saleItemImage:", error);
+//   }
+// };
+// Method สำหรับจัดการข้อมูล
+const organizeAndFetchImages = async () => {
+  try {
+    // 1. จัดเรียงข้อมูลตาม imageViewOrder
+    // ใช้ .sort() เพื่อจัดเรียง array
+    const fileImageSorted = [...fileImageFirstResponse].sort(
+      (a, b) => a.imageViewOrder - b.imageViewOrder
+    );
+
+    // 2. Loop เพื่อ fetch API และจัดเก็บข้อมูล
+    for (const item of fileImageSorted) {
+      // เรียกใช้ฟังก์ชัน getImageByImageName() เพื่อดึงรูป
+      const imageUrl = await getImageByImageName(item.fileName);
+
+      // 3. push ข้อมูลที่ได้ลงใน fileImageOrganize
+      fileImageOrganize.value.push({
+        fileName: item.fileName,
+        orgFileName: item.originalFileName,
+        imageUrl: imageUrl, // เก็บ url ของรูปที่ได้จากการ fetch
+        imageViewOrder: item.imageViewOrder,
+      });
+    }
+    console.log("After sorted Sale Item:",fileImageOrganize.value);
+    console.log("After sorted Sale Item:",saleItem.saleItemImage.length);
+
+  } catch (error) {
+    console.error("Error organizing and fetching saleItemImage:", error);
+  }
+};
+
+
 </script>
 
 <template>
@@ -568,15 +682,14 @@ const nextImage = () => {
       </div>
     </div>
 
-    <div class="h-full m-5 mt-[-70px] ml-[120px] flex flex-row justify-center items-center">
-      <!-- Image Preview Section - ใช้ saleItem.images แทน images -->
-      <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative mt-[300px]">
-        <p>currentIndex: {{currentIndex}}</p>
+    <div class=" m-5 ml-[120px] flex flex-row justify-center items-center ">
+      <!-- Image Preview Section - ใช้ saleItem.saleItemImage แทน saleItemImage -->
+      <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative ">
         
         <!-- แสดงเฉพาะเมื่อมีรูป -->
-        <div v-if="saleItem.images.length > 0">
+        <div v-if="fileImageOrganize.length > 0">
           <!-- ปุ่มซ้าย -->
-          <button @click="prevImage" v-show="saleItem.images.length > 1"
+          <button @click="prevImage" v-show="fileImageOrganize.length > 1"
                   class="absolute left-2 top-50 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 z-10">
             <ChevronLeft/>
           </button>
@@ -584,21 +697,21 @@ const nextImage = () => {
 
           <!-- ช่องใหญ่ด้านบน แสดงรูป -->
           <div class="bg-gray-100 rounded border border-blue-400 h-96 flex items-center justify-center">
-            <img :src="saleItem.images[currentIndex]" alt="main image" class="max-h-full max-w-full object-contain" />
+            <img :src="fileImageOrganize[currentIndex].imageUrl" alt="main image" class="max-h-full max-w-full object-contain" />
           </div>
 
           <!-- ปุ่มขวา -->
-          <button @click="nextImage" v-show="saleItem.images.length > 1"
+          <button @click="nextImage" v-show="fileImageOrganize.length > 1"
                   class="absolute right-2 top-50 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 z-10">
             <ChevronRight/>
           </button>
 
           <!-- ช่องเล็ก 4 ช่องด้านล่าง -->
-          <div class="grid grid-cols-4 gap-4 mt-3" v-if="saleItem.images.length > 1">
-            <div v-for="(img, idx) in saleItem.images.slice(0, 4)" :key="idx"
+          <div class="grid grid-cols-4 gap-4 mt-3" v-if="fileImageOrganize.length > 1">
+            <div v-for="(img, idx) in fileImageOrganize.slice(0, 4)" :key="idx"
                  @click="currentIndex = idx"
                  :class="['rounded border', idx === currentIndex ? 'border-blue-600' : 'border-blue-400', 'h-32 cursor-pointer']">
-              <img :src="img" alt="thumbnail" class="w-full h-full object-cover rounded" />
+              <img :src="img.imageUrl" alt="thumbnail" class="w-full h-full object-cover rounded" />
             </div>
           </div>
         </div>
@@ -609,8 +722,8 @@ const nextImage = () => {
             <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
-            <p class="text-lg font-medium">No images uploaded</p>
-            <p class="text-sm">Upload images to preview them here</p>
+            <p class="text-lg font-medium">No saleItemImage uploaded</p>
+            <p class="text-sm">Upload saleItemImage to preview them here</p>
           </div>
         </div>
          <!-- File Upload -->
@@ -621,12 +734,12 @@ const nextImage = () => {
               <path
                 d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
             </svg>
-            Upload Images
+            Upload saleItemImage
           </label>
           <input id="file-upload" type="file" class="hidden" multiple accept="image/*" @change="handleFileChange" />
           <div class="mt-2 text-sm text-gray-500">
             <p>Maximum file size: 2MB per image</p>
-            <p>Maximum total size: 5MB for all images</p>
+            <p>Maximum total size: 5MB for all saleItemImage</p>
           </div>
         </div>
 
@@ -656,7 +769,7 @@ const nextImage = () => {
         </ul>
       </div>
 
-      <!-- ====================================================Uploader==================================================== -->
+      <!-- ====================================================End of Image Uploader==================================================== -->
 
       <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
         <!-- Brand Selection -->
@@ -867,7 +980,7 @@ const nextImage = () => {
           </button>
 
           <button type="submit"
-            class="itbms-save-button order-1 sm:order-2 flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-lg shadow-sm hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="itbms-save-button order-1 sm:order-2 flex items-center  justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-lg shadow-sm hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="!isSaving || !isFormValid || (prop.mode === 'Edit' && !isSaleItemChanged)" @click="saveSaleItem">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -878,6 +991,8 @@ const nextImage = () => {
             Save
           </button>
         </div>
+        <br>
+        <br>
       </div>
     </div>
   </div>

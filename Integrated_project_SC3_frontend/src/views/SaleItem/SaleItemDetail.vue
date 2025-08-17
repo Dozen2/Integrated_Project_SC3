@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   getSaleItemByIdV2,
-  deleteSaleItemById,
+  deleteSaleItemByIdV2,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
@@ -20,7 +20,7 @@ const pendingDeleteId = ref(null);
 
 const confirmDeleteProduct = async () => {
   try {
-    await deleteSaleItemById(pendingDeleteId.value);
+    await deleteSaleItemByIdV2(pendingDeleteId.value);
     alertStore.setMessage("The sale item has been deleted.");
     sessionStorage.setItem("item-just-deleted", "true");
     router.push("/sale-items");

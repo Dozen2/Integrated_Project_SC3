@@ -165,7 +165,7 @@ onMounted(async() => {
 const filteredOptions = computed(() => {
   // ถ้า type เป็น priceOption ให้ตัดตัวสุดท้ายออก
   if (props.mode === "price") {
-    return props.options.slice(0, props.options.length - 1);
+    return props.options.slice(0,5);
   }
   // ถ้าไม่ใช่ก็คืน options ตามเดิม
   return props.options;
