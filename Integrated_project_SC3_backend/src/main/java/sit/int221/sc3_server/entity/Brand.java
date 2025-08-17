@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -50,7 +49,7 @@ public class Brand {
     private Instant updatedOn;
 
     @OneToMany(mappedBy = "brand")
-    private Set<Product> products = new LinkedHashSet<>();
+    private Set<SaleItem> saleItems = new LinkedHashSet<>();
 
 //    @CreationTimestamp
 //    @Column(name = "createdOn", nullable = false, updatable = false)

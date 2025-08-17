@@ -15,13 +15,25 @@ const props = defineProps({
 
 const emit = defineEmits(["brandFilterChanged"]);
 
-const filterBrands = ref(props.initialFilterBrands || "");
+const SESSION_KEY = "SaleItem-FilterBrand";
+const filterBrands = ref("");
 const selectedBrandList = ref([]);
 const brandDropdown = ref(null);
 const options = ref([]);
 const selected = ref(null);
 const dropdownOpen = ref(false);
 const dropdownRef = ref(null);
+
+// Get session storage value
+const getSessionFilterBrands = () => {
+  const raw = sessionStorage.getItem(SESSION_KEY);
+  return raw || "";
+};
+
+// Set session storage value
+const setSessionFilterBrands = (value) => {
+  sessionStorage.setItem(SESSION_KEY, value);
+};
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
@@ -34,23 +46,27 @@ const handleClickOutside = (event) => {
   }
 };
 
-// Watch for prop changes
+// Watch for prop changes (for compatibility if still needed)
 watch(
   () => props.initialFilterBrands,
   (newVal) => {
-    filterBrands.value = newVal || "";
-    if (newVal) {
-      selectedBrandList.value = newVal
-        .split(",")
-        .filter((brand) => brand.trim() !== "");
-    } else {
-      selectedBrandList.value = [];
+    if (newVal !== undefined) {
+      filterBrands.value = newVal || "";
+      if (newVal) {
+        selectedBrandList.value = newVal
+          .split(",")
+          .filter((brand) => brand.trim() !== "");
+      } else {
+        selectedBrandList.value = [];
+      }
     }
   }
 );
 
 const emitBrandFilter = () => {
   const filterValue = selectedBrandList.value.join(",");
+  filterBrands.value = filterValue;
+  setSessionFilterBrands(filterValue);
   emit("brandFilterChanged", filterValue);
 };
 
@@ -60,13 +76,12 @@ function onBrandSelected(brandName) {
   if (brandObj && !selectedBrandList.value.includes(brandObj.name)) {
     selectedBrandList.value.push(brandObj.name);
   }
-  filterBrands.value = selectedBrandList.value.join(",");
   emitBrandFilter();
+  dropdownOpen.value = false; // Close dropdown after selection
 }
 
 function removeBrand(index) {
   selectedBrandList.value.splice(index, 1);
-  filterBrands.value = selectedBrandList.value.join(",");
   if (brandDropdown.value && brandDropdown.value.resetSelection) {
     brandDropdown.value.resetSelection();
   }
@@ -75,7 +90,6 @@ function removeBrand(index) {
 
 function clearBrand() {
   selectedBrandList.value = [];
-  filterBrands.value = "";
   if (brandDropdown.value && brandDropdown.value.resetSelection) {
     brandDropdown.value.resetSelection();
   }
@@ -89,8 +103,13 @@ const toggleDropdown = (event) => {
 };
 
 onMounted(async () => {
-  if (filterBrands.value) {
-    selectedBrandList.value = filterBrands.value
+  // Load from session storage first, then from props as fallback
+  const sessionValue = getSessionFilterBrands();
+  const initialValue = sessionValue || props.initialFilterBrands || "";
+  
+  if (initialValue) {
+    filterBrands.value = initialValue;
+    selectedBrandList.value = initialValue
       .split(",")
       .filter((brand) => brand.trim() !== "");
   }
@@ -100,6 +119,7 @@ onMounted(async () => {
   try {
     const data = await getAllBrand();
     options.value = data.sort((a, b) => a.name.localeCompare(b.name));
+    console.log("แบรนด์ที่โหลด:", options.value);
   } catch (error) {
     console.error("โหลดแบรนด์ล้มเหลว:", error.message);
   }

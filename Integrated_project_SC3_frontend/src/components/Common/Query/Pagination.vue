@@ -9,47 +9,69 @@ import {
 } from "vue";
 
 const props = defineProps({
-  productTotalPages: Number,
+  initialTotalPages: Number,
   initialPage: Number,
 });
 
 const emit = defineEmits(["pageChanged"]);
 
-const page = ref(props.initialPage || 1);
-const itbmPage = ref((props.initialPage || 1) - 1);
+const SESSION_KEYS = {
+  PAGE: "SaleItem-Page",
+  SORT_FIELD: "SaleItem-SortField",
+  SORT_DIRECTION: "SaleItem-SortDirection",
+  FILTER_BRAND: "SaleItem-FilterBrand",
+  SIZE: "SaleItem-Size"
+};
+
+const page = ref(1);
+const itbmPage = ref(0);
+
+// Get session storage value
+const getSessionValue = (key, defaultValue) => {
+  const raw = sessionStorage.getItem(key);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      return raw; // Return as string if not JSON
+    }
+  }
+  return defaultValue;
+};
+
+// Set session storage value
+const setSessionValue = (key, value) => {
+  if (typeof value === 'object') {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } else {
+    sessionStorage.setItem(key, value.toString());
+  }
+};
 
 // Watch for prop changes
 watch(
   () => props.initialPage,
   (newVal) => {
-    if (newVal) {
+    if (newVal !== undefined) {
       page.value = newVal;
       itbmPage.value = newVal - 1;
     }
   }
 );
 
-const totalPage = computed(() => props.productTotalPages);
+const totalPage = computed(() => props.initialTotalPages);
 
 const goToPage = async (pageNumber) => {
   page.value = pageNumber;
   itbmPage.value = pageNumber - 1;
+  
+  setSessionValue(SESSION_KEYS.PAGE, itbmPage.value);
 
-  const sessionStorageRaw = sessionStorage.getItem("product-page-settings");
-  let sessionStorageValue = {};
-  try {
-    if (sessionStorageRaw) {
-      sessionStorageValue = JSON.parse(sessionStorageRaw);
-    }
-  } catch (error) {
-    console.error("Error parsing sessionStorage:", error);
-  }
-
-  // ใช้ค่าปัจจุบันจาก sessionStorage แทนการ hardcode
-  const sortDirection = sessionStorageValue.sortDirection || "desc";
-  const sortField = sessionStorageValue.sortField || "createdOn";
-  const filterBrands = sessionStorageValue.filterBrands || "";
-  const size = sessionStorageValue.size || 10;
+  // Get current session values for all settings
+  const sortDirection = getSessionValue(SESSION_KEYS.SORT_DIRECTION, "desc");
+  const sortField = getSessionValue(SESSION_KEYS.SORT_FIELD, "createdOn");
+  const filterBrands = getSessionValue(SESSION_KEYS.FILTER_BRAND, "");
+  const size = getSessionValue(SESSION_KEYS.SIZE, 10);
 
   emit("pageChanged", {
     page: itbmPage.value,
@@ -67,15 +89,10 @@ const handlePostDelete = () => {
     sessionStorage.removeItem("item-just-deleted");
     // ใช้ setTimeout เพื่อรอให้ข้อมูลโหลดเสร็จก่อน
     setTimeout(() => {
-      const sessionStorageRaw = sessionStorage.getItem("product-page-settings");
-      let sessionStorageValue = {};
-      try {
-        if (sessionStorageRaw) {
-          sessionStorageValue = JSON.parse(sessionStorageRaw);
-        }
-      } catch (error) {
-        console.error("Error parsing sessionStorage:", error);
-      }
+      const sortDirection = getSessionValue(SESSION_KEYS.SORT_DIRECTION, "desc");
+      const sortField = getSessionValue(SESSION_KEYS.SORT_FIELD, "createdOn");
+      const filterBrands = getSessionValue(SESSION_KEYS.FILTER_BRAND, "");
+      const size = getSessionValue(SESSION_KEYS.SIZE, 10);
 
       if (page.value > 1 && page.value > totalPage.value) {
         console.log(
@@ -84,21 +101,23 @@ const handlePostDelete = () => {
         page.value = totalPage.value || 1;
         itbmPage.value = (totalPage.value || 1) - 1;
         
+        setSessionValue(SESSION_KEYS.PAGE, itbmPage.value);
+        
         emit("pageChanged", {
           page: itbmPage.value,
-          sortField: sessionStorageValue.sortField || "createdOn",
-          sortDirection: sessionStorageValue.sortDirection || "desc",
-          filterBrands: sessionStorageValue.filterBrands || "",
-          size: sessionStorageValue.size || 10,
+          sortField,
+          sortDirection,
+          filterBrands,
+          size,
         });
       } else {
         console.log("Current page still has data, staying here");
         emit("pageChanged", {
           page: itbmPage.value,
-          sortField: sessionStorageValue.sortField || "createdOn",
-          sortDirection: sessionStorageValue.sortDirection || "desc",
-          filterBrands: sessionStorageValue.filterBrands || "",
-          size: sessionStorageValue.size || 10,
+          sortField,
+          sortDirection,
+          filterBrands,
+          size,
         });
       }
     }, 200);
@@ -106,6 +125,17 @@ const handlePostDelete = () => {
 };
 
 onMounted(() => {
+  // Load from session storage first, then from props as fallback
+  const sessionPage = getSessionValue(SESSION_KEYS.PAGE, null);
+  
+  if (sessionPage !== null) {
+    itbmPage.value = sessionPage;
+    page.value = sessionPage + 1;
+  } else if (props.initialPage !== undefined) {
+    page.value = props.initialPage;
+    itbmPage.value = props.initialPage - 1;
+  }
+  
   // เช็คการลบหลังจากโหลดข้อมูลเสร็จ
   handlePostDelete();
 });

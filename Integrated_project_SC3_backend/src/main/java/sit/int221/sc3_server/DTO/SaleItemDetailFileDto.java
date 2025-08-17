@@ -6,18 +6,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sit.int221.sc3_server.entity.SaleItemImage;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-
-import java.util.Arrays;
-import java.util.Optional;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
-
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
-public class SalesItemDetailDTO {
+public class SaleItemDetailFileDto {
     private Integer id;
     private String model;
     private String brandName;
@@ -28,17 +28,22 @@ public class SalesItemDetailDTO {
     private Integer storageGb;
     private BigDecimal screenSizeInch;
     private String color;
+    private Set<SaleItemImageDTO> saleItemImage;
     @Min(0)
     @NotNull(message = "Quantity is required")
     private Integer quantity;
 
-//    private String createdOn;
+    //    private String createdOn;
 //    private String updatedOn;
     private Instant createdOn;
     private Instant updatedOn;
-//    // 🔹 เอาเฉพาะชื่อไฟล์รูปหลัก (imageViewOrder = 1)
-    private String mainImageFileName;
 
+//    public List<String> getImageNames() {
+//        return saleItemImages.stream()
+//                .sorted(Comparator.comparing(SaleItemImage::getImageViewOrder))
+//                .map(SaleItemImage::getFileName)
+//                .collect(Collectors.toList());
+//    }
     public void setColor(String color) {
         if (color != null && color.trim().isEmpty()) {
             this.color = null;
@@ -48,5 +53,6 @@ public class SalesItemDetailDTO {
             this.color = color.trim();
         }
     }
+
 
 }

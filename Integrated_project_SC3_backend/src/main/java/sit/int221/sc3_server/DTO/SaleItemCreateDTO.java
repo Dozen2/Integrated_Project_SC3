@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +31,7 @@ public class SaleItemCreateDTO {
     private Integer quantity;
     private Integer storageGb;
     private String color;
+
 
     public void setQuantity(Integer quantity) {
         if (quantity == null || quantity < 0) {

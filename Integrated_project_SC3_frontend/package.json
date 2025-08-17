@@ -13,12 +13,15 @@
     "cy:run": "start-server-and-test dev http://localhost:5173 cypress run"
   },
   "dependencies": {
+    "@primeuix/themes": "^1.2.3",
     "@tailwindcss/vite": "^4.1.4",
-    "ant-design-vue": "^4.2.6",
     "gsap": "^3.13.0",
     "json-server": "^1.0.0-beta.3",
+    "lucide-vue-next": "^0.539.0",
     "pinia": "^3.0.2",
+    "primevue": "^4.3.7",
     "tailwindcss": "^4.1.4",
+    "vite-plugin-vuetify": "^2.1.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
