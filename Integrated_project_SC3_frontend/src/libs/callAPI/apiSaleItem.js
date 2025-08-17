@@ -32,6 +32,23 @@ async function testSendImage(imgName) {
 }
 
 
+async function getViewStorageForSelect() {
+  try {
+    const res = await fetch(`${urlV2}/storages`);
+    if (!res.ok) {
+      if (res.status === 404) {
+        return { error: "not_found" };
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const SaleItem = await res.json();
+    return SaleItem;
+  } catch (error) {
+    throw new Error(`Fetch failed: ${error.message}`);
+  }
+}
+
+
 async function getAllSaleItemV1() {
   try {
     const res = await fetch(urlV1);
@@ -300,5 +317,6 @@ export {
   updateSaleItem,
   deleteSaleItemById,
   // getAllSaleItemPage,
-  testSendImage
+  testSendImage,
+  getViewStorageForSelect
 };

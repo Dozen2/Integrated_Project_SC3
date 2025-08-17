@@ -3,6 +3,7 @@ import { ref, onBeforeUnmount, onBeforeMount } from "vue";
 import {
   getAllSaleItemV1,
   getAllSaleItemV2,
+  getViewStorageForSelect
 } from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
@@ -22,15 +23,17 @@ const alertStore = useAlertStore();
 const customPriceRange = ref({ min: null, max: null });
 
 // ======================== Configuration ========================
-const STORAGE_OPTIONS = [
-  { id: 1, name: "32GB", value: "32" },
-  { id: 2, name: "64GB", value: "64" },
-  { id: 3, name: "128GB", value: "128" },
-  { id: 4, name: "256GB", value: "256" },
-  { id: 5, name: "512GB", value: "512" },
-  { id: 6, name: "1TB", value: "1024" },
-  { id: 7, name: "Not specified", value: "-1" },
-];
+// const STORAGE_OPTIONS = [
+//   { id: 1, name: "32GB", value: "32" },
+//   { id: 2, name: "64GB", value: "64" },
+//   { id: 3, name: "128GB", value: "128" },
+//   { id: 4, name: "256GB", value: "256" },
+//   { id: 5, name: "512GB", value: "512" },
+//   { id: 6, name: "1TB", value: "1024" },
+//   { id: 7, name: "Not specified", value: "-1" },
+// ];
+
+const STORAGE_OPTIONS = ref([])
 
 const PRICE_OPTIONS = [
   { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
@@ -45,8 +48,8 @@ const SESSION_KEYS = {
   BRAND: "SaleItem-FilterBrand",
   STORAGE: "SaleItem-FilterStorage",
   PRICE: "SaleItem-FilterPrice",
-  CUSTOM_PRICE_MIN: "SaleItem-FilterPrice-CustomMin",
-  CUSTOM_PRICE_MAX: "SaleItem-FilterPrice-CustomMax",
+  // CUSTOM_PRICE_MIN: "SaleItem-FilterPrice-CustomMin",
+  // CUSTOM_PRICE_MAX: "SaleItem-FilterPrice-CustomMax",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
@@ -120,8 +123,10 @@ const getCurrentFilters = () => ({
 // ======================== Data Processing Helpers ========================
 const convertStorageValues = (storageNames) => {
   return storageNames.map((name) => {
-    const option = STORAGE_OPTIONS.find((opt) => opt.name === name);
-    return option ? option.value : name;
+    const option = STORAGE_OPTIONS.value.find((opt) => opt.name === name);
+    if (!option) return null;
+
+    return option.value === "-1" ? -1 : Number(option.value);
   });
 };
 
@@ -233,6 +238,38 @@ const loadProductsWithFilters = async (filters) => {
   }
 };
 
+const loadStroage = async () => {
+  try{
+    const data  = await getViewStorageForSelect()
+    console.log(data);
+    
+    // ถ้าเจอ error จาก API ให้ default เป็น array ว่าง
+    if (data.error) {
+      STORAGE_OPTIONS.value = [];
+      return;
+    }
+
+    STORAGE_OPTIONS.value = data.map(item => {
+      if (item == null) {
+        return {name: "Not specified", value: '-1'}
+      }
+      return{
+        name: `${item.storageGb} GB`,
+        value: String(item.storageGb)
+      }
+    })
+
+    STORAGE_OPTIONS.value.sort((a, b) => {
+      if (a.value === "-1") return 1;
+      if (b.value === "-1") return -1;
+      return Number(a.value) - Number(b.value);
+    });
+
+  }catch (error) {
+    console.error("Failed to load storage:", error);
+  }
+}
+
 // ======================== Filter Event Handlers ========================
 const handleBrandFilter = async (newBrands) => {
   setSession(SESSION_KEYS.BRAND, newBrands);
@@ -334,6 +371,7 @@ const handleClear = async () => {
   await loadProductsWithFilters(filters);
 };
 
+let priceOption = ref([...PRICE_OPTIONS])
 let min_price = ref(null)
 let max_price = ref(null)
 
@@ -341,20 +379,30 @@ const applyCustomPrice = () => {
   const min = min_price.value ?? '';
   const max = max_price.value ?? '';
 
-  if (min === '' && max === '') {
-    // เคลียร์ filter
-    setSession(SESSION_KEYS.PRICE, []);
-  } else if (min !== '' && max !== '') {
-    const priceRange = `${min}-${max}`
-    console.log(priceRange);
-    setSession(SESSION_KEYS.PRICE, [priceRange]);
+  let customPriceRange = ""
+  let customName = ""
+
+  if (min !== '' && max !== '') {
+    customPriceRange = `${min}-${max}`
+    customName = `${min} – ${max} Baht`
   } else if (min !== '') {
-    setSession(SESSION_KEYS.PRICE, [`${min}-${min}`]);
+    customPriceRange = `${min}-${min}`
+    customName = `${min} Baht`
   } else if (max !== '') {
-    setSession(SESSION_KEYS.PRICE, [`${max}-${max}`]);
+    customPriceRange = `${max}-${max}`
+    customName = `${max} Baht`
+  } else {
+    setSession(SESSION_KEYS.PRICE, [])
+    loadProductsWithFilters(getCurrentFilters())
+    return
   }
 
-  // โหลดสินค้าตาม filter ใหม่
+  const customOption = {id: 'custom', name: customName, value: customPriceRange}
+
+    // รวมกับ options เดิม
+  priceOption.value = [...PRICE_OPTIONS, customOption]
+
+  setSession(SESSION_KEYS.PRICE, [customPriceRange])
   loadProductsWithFilters(getCurrentFilters());
 };
 
@@ -384,6 +432,7 @@ const hasActiveFilters = (filters) => {
 // ======================== Lifecycle ========================
 onBeforeMount(async () => {
   await loadBrands();
+  loadStroage();
 
   // Load custom price from session storage
   customPriceRange.value = getSessionCustomPrice();
@@ -484,19 +533,21 @@ onBeforeUnmount(() => {
       :sessionKey="SESSION_KEYS.STORAGE"
       valueField="name"
       displayField="name"
+      mode="Storages"
       @filterChanged="handleStorageFilter"
     />
 
     <!-- Price Filter with Custom Input -->
     <Filter
       :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
-      :options="PRICE_OPTIONS"
+      :options="priceOption"
       label="Filter by Price"
       placeholder="Select Price Range"
       :sessionKey="SESSION_KEYS.PRICE"
       valueField="value"
       displayField="name"
       :enableCustomPriceInput="true"
+      mode="price"
       @filterChanged="handlePriceFilter"
     >
         <template #InputPrice>
