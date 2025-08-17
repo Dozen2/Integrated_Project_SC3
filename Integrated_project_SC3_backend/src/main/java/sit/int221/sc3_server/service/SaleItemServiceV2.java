@@ -51,17 +51,9 @@ public class SaleItemServiceV2 {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort.Direction directionId = Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
-//        boolean isNullStorage = filterStorages.contains(-1);
-//        List<Integer> storageFilter = isNullStorage
-//                ? null // ไม่ต้องส่งค่าจริงเพราะเราหา null อยู่แล้ว
-//                : filterStorages;
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
 
-////================Ter====================
-//        filterPriceLower = (filterPriceLower == null)? 0 :filterPriceLower;
-//        filterPriceUpper = (filterPriceUpper == null)? 9999999 :filterPriceUpper;
-////================Ter====================
         if(filterPriceLower != null && filterPriceUpper == null ){
             return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
         }
@@ -75,9 +67,6 @@ public class SaleItemServiceV2 {
 
         }
 
-//        if(filterPriceLower > filterPriceUpper){
-//            throw new RuntimeException("Min should be less than Max");
-//        }
 
         return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
     }
@@ -214,8 +203,8 @@ public class SaleItemServiceV2 {
                         newImage.setSaleItem(existing);
                         newImage.setFileName(newFileName);
                         newImage.setOriginalFileName(originalName);
-                        newImage.setImageViewOrder(imgReq.getImageViewOrder());
-                        saleItemImageRepository.saveAndFlush(newImage);
+                        newImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ set order ที่ client ส่งมา
+                        saleItemImageRepository.save(newImage);
 
                     } else if (imgReq.getFileName() != null) {
                         // 🔹 กรณีอัปเดต order ของรูปเก่า
@@ -224,26 +213,26 @@ public class SaleItemServiceV2 {
                                 .orElseThrow(() -> new ItemNotFoundException("Old image not found: " + imgReq.getFileName()));
 
                         if (imgReq.getImageViewOrder() != null) {
-                            oldImage.setImageViewOrder(imgReq.getImageViewOrder());
+                            oldImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ update ค่าใหม่
                         }
                         saleItemImageRepository.save(oldImage);
                     }
                 }
             }
 
-            // -------- STEP 3: Normalize order (สลับตำแหน่งให้เรียง 1..n) ----------
+// -------- STEP 3: Normalize order ----------
             List<SaleItemImage> images = saleItemImageRepository.findBySaleItem(existing);
 
+// sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
             images.sort(Comparator.comparing(
                     img -> Optional.ofNullable(img.getImageViewOrder()).orElse(Integer.MAX_VALUE)
             ));
 
             int order = 1;
             for (SaleItemImage img : images) {
-                img.setImageViewOrder(order++);
+                img.setImageViewOrder(order++); // ✅ normalize เป็น 1..n
             }
-
-            saleItemImageRepository.saveAll(images); // ✅ batch save ทีเดียว
+            saleItemImageRepository.saveAll(images);
 
             return saleitemRepository.saveAndFlush(existing);
 
