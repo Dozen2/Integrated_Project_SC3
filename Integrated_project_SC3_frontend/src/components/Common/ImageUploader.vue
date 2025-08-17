@@ -7,8 +7,6 @@ import { onBeforeMount, ref } from "vue";
 import {
   ChevronLeft,
   ChevronRight,
-  CircleChevronLeft,
-  CircleChevronRight,
 } from "lucide-vue-next";
 
 //-------------------------------------------Mock-----------------------------------------------
