@@ -391,6 +391,7 @@ const applyCustomPrice = () => {
   const min = min_price.value ?? '';
   const max = max_price.value ?? '';
 
+  
   let customPriceRange = ""
   let customName = ""
 
