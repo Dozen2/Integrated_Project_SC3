@@ -2,11 +2,12 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
-  getSaleItemById,
+  getSaleItemByIdV2,
   deleteSaleItemById,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
+import ImageUploader from "@/components/Common/ImageUploader.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -46,7 +47,7 @@ const deleteProduct = (id) => {
 onMounted(async () => {
   try {
     loading.value = true;
-    const data = await getSaleItemById(route.params.id);
+    const data = await getSaleItemByIdV2(route.params.id);
     if (data == undefined) {
       product.value = "404_not_found";
       console.log("product.value: " + product.value);
@@ -141,17 +142,11 @@ const incrementQuantity = () => {
       <div class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="md:flex">
           <!-- Product Image Section -->
-          <div class="md:w-1/2 p-6 flex items-center justify-center bg-white">
-            <div class="relative group">
-              <img
-                src="https://app-area.riointernational.com.bd/productImages/1738403480BRk6I.png"
-                alt="Smartphone Image"
-                class="w-full h-80 sm:h-96 object-contain transition duration-300 group-hover:scale-105"
+          <div class="md:w-1/2 p-6 md:p-8 bg-gray-50">
+              <ImageUploader
+                :fileImageOrganize="product.fileImageOrganize"
+                :param="route.params.id"
               />
-              <div
-                class="absolute inset-0 bg-blue-600 opacity-0 group-hover:opacity-5 transition duration-300 rounded-xl"
-              ></div>
-            </div>
           </div>
 
           <!-- Product Info Section -->
