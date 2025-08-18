@@ -546,6 +546,7 @@ onBeforeUnmount(() => {
       :sessionKey="SESSION_KEYS.BRAND"
       valueField="name"
       displayField="name"
+      mode="brand"
       @filterChanged="handleBrandFilter"
     />
 
