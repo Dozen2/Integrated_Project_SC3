@@ -3,6 +3,7 @@ import { ref, onBeforeUnmount, onBeforeMount } from "vue";
 import {
   getAllSaleItemV1,
   getAllSaleItemV2,
+  getImageByImageName,
   getViewStorageForSelect
 } from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
@@ -33,8 +34,8 @@ const customPriceRange = ref({ min: null, max: null });
 //   { id: 7, name: "Not specified", value: "-1" },
 // ];
 
-const STORAGE_OPTIONS = ref([])
 
+const STORAGE_OPTIONS = ref([])
 const PRICE_OPTIONS = [
   { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
   { id: 2, name: "5,001-10,000 Baht", value: "5001-10000" },
@@ -122,8 +123,12 @@ const getCurrentFilters = () => ({
 
 // ======================== Data Processing Helpers ========================
 const convertStorageValues = (storageNames) => {
+  console.log("typeof Storage names:", typeof(storageNames)); // Debug log
   return storageNames.map((name) => {
     const option = STORAGE_OPTIONS.value.find((opt) => opt.name === name);
+    console.log("Storage storageNames:", storageNames);
+    console.log("Storage option:", option);
+    console.log("STORAGE_OPTIONS.value:", STORAGE_OPTIONS.value);
     if (!option) return null;
 
     return option.value === "-1" ? -1 : Number(option.value);
@@ -201,6 +206,7 @@ const loadProductsDefault = async () => {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
     totalPages.value = data.totalPages;
+    loadImageUrl()
   } catch (error) {
     console.error("Error loading products:", error);
   }
@@ -210,6 +216,7 @@ const loadProductsWithFilters = async (filters) => {
   try {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
+    console.log("Storage values:", storageValues); // Debug log
     const priceValues = convertPriceValues(filters.prices);
     const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
 
@@ -244,6 +251,7 @@ const loadProductsWithFilters = async (filters) => {
 
     product.value = data;
     totalPages.value = data.totalPages;
+    loadImageUrl()
   } catch (error) {
     console.error("Error loading filtered products:", error);
   }
@@ -453,9 +461,10 @@ const hasActiveFilters = (filters) => {
 };
 
 // ======================== Lifecycle ========================
+const imageUrl = ref([]);
 onBeforeMount(async () => {
   await loadBrands();
-  loadStroage();
+  await loadStroage();
 
   // Load custom price from session storage
   customPriceRange.value = getSessionCustomPrice();
@@ -469,11 +478,31 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
+
+
+  
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
 });
+
+const loadImageUrl = async () => {
+  imageUrl.value = [];
+  for (const item of product.value.content) {
+    if (item.mainImageFileName) {
+      const image = await getImageByImageName(item.mainImageFileName);
+      imageUrl.value.push(image);
+    } else {
+      imageUrl.value.push(
+        "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg"
+      );
+    }
+  }
+
+  console.log("Image URLs loaded:", imageUrl.value);
+};
+
 </script>
 
 <template>
@@ -628,6 +657,7 @@ onBeforeUnmount(() => {
     <SelectAllSaleItemGallery
       v-if="product?.content"
       :product="product.content"
+      :imageUrl="imageUrl"
     />
 
     <!-- Pagination -->
