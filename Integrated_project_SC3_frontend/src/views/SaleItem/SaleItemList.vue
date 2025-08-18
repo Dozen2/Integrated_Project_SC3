@@ -395,6 +395,7 @@ const applyCustomPrice = () => {
   const min = min_price.value ?? '';
   const max = max_price.value ?? '';
 
+  
   let customPriceRange = ""
   let customName = ""
 
@@ -569,6 +570,7 @@ const loadImageUrl = async () => {
       :sessionKey="SESSION_KEYS.BRAND"
       valueField="name"
       displayField="name"
+      mode="brand"
       @filterChanged="handleBrandFilter"
     />
 
