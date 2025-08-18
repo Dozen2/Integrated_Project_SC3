@@ -239,12 +239,6 @@ const loadProductsWithFilters = async (filters) => {
       maxPrice
     );
 
-    console.log("Fetched data:", data); // Debug log
-
-    // Sort by brand order if brands are filtered
-    if (data?.content && filters.brands.length > 0) {
-      data.content = sortProductsByBrand(data.content, filters.brands);
-    }
 
     product.value = data;
     totalPages.value = data.totalPages;
