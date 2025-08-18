@@ -123,12 +123,8 @@ const getCurrentFilters = () => ({
 
 // ======================== Data Processing Helpers ========================
 const convertStorageValues = (storageNames) => {
-  console.log("typeof Storage names:", typeof(storageNames)); // Debug log
   return storageNames.map((name) => {
     const option = STORAGE_OPTIONS.value.find((opt) => opt.name === name);
-    console.log("Storage storageNames:", storageNames);
-    console.log("Storage option:", option);
-    console.log("STORAGE_OPTIONS.value:", STORAGE_OPTIONS.value);
     if (!option) return null;
 
     return option.value === "-1" ? -1 : Number(option.value);
@@ -216,7 +212,6 @@ const loadProductsWithFilters = async (filters) => {
   try {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
-    console.log("Storage values:", storageValues); // Debug log
     const priceValues = convertPriceValues(filters.prices);
     const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
 
@@ -244,6 +239,8 @@ const loadProductsWithFilters = async (filters) => {
       maxPrice
     );
 
+    console.log("Fetched data:", data); // Debug log
+
     // Sort by brand order if brands are filtered
     if (data?.content && filters.brands.length > 0) {
       data.content = sortProductsByBrand(data.content, filters.brands);
@@ -260,7 +257,6 @@ const loadProductsWithFilters = async (filters) => {
 const loadStroage = async () => {
   try{
     const data  = await getViewStorageForSelect()
-    console.log(data);
     
     // ถ้าเจอ error จาก API ให้ default เป็น array ว่าง
     if (data.error) {
@@ -426,7 +422,6 @@ const applyCustomPrice = () => {
     name: customName, 
     value: customPriceRange 
   };
-  console.log(PRICE_OPTIONS);
 
   priceOption.value.push(customOption);
   const prevSelected = getSessionArray(SESSION_KEYS.PRICE) || [];
