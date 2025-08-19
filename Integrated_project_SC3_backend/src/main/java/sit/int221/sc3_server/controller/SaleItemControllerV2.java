@@ -39,12 +39,13 @@ public class SaleItemControllerV2 {
             @RequestParam(required = false) List<Integer> filterStorages,
             @RequestParam(required = false) Integer  filterPriceLower,
             @RequestParam(required = false) Integer filterPriceUpper,
+            @RequestParam(required = false) String searchParam,
             @RequestParam Integer page,
             @RequestParam(defaultValue = "10", required = false) Integer size,
             @RequestParam(defaultValue = "id",required = false) String sortField,
             @RequestParam(defaultValue = "asc", required = false) String sortDirection
     ) {
-        Page<SaleItem> saleitems = saleItemServiceV2.getAllProduct(filterBrands,filterStorages, filterPriceLower,filterPriceUpper, page, size, sortField, sortDirection);
+        Page<SaleItem> saleitems = saleItemServiceV2.getAllProduct(filterBrands,filterStorages, filterPriceLower,filterPriceUpper,searchParam, page, size, sortField, sortDirection);
         PageDTO<SalesItemDetailDTO> pageDTO = listMapper.toPageDTO(saleitems, SalesItemDetailDTO.class, modelMapper);
         return ResponseEntity.ok(pageDTO);
     }
@@ -84,7 +85,8 @@ public class SaleItemControllerV2 {
     @PutMapping(value = "/sale-items/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SaleItemDetailFileDto> updateSaleItem(
             @PathVariable int id,
-            @ModelAttribute SaleItemWithImageInfo request
+            @ModelAttribute SaleItemWithImageInfo request,
+            @RequestPart(required = false) List<MultipartFile> newImages
             ){
         SaleItem saleItem = saleItemServiceV2.updateSaleItem(id,request);
         SaleItemDetailFileDto response = modelMapper.map(saleItem, SaleItemDetailFileDto.class);
