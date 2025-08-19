@@ -17,8 +17,7 @@ import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
-import { ChevronLeft,
-  ChevronRight } from 'lucide-vue-next'; 
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'; 
 
 
 const boxTextTailwind =
@@ -125,8 +124,6 @@ const getBrandIdByName = async (brandName) => {
 // อัปเดตฟังก์ชันจัดการ brand
 const handleBrandId = (id) => {
   saleItem.brand.id = id;
-  // เก็บไว้สำหรับ backward compatibility
-  // saleItem.brandId = id; 
 };
 
 const handleBrandName = (name) => {
@@ -281,107 +278,6 @@ const normalizeEmptyStringsToNull = (obj) => {
     } else if (typeof obj[key] === "object" && obj[key] !== null) {
       normalizeEmptyStringsToNull(obj[key]);
     }
-  }
-};
-const saveSaleItem = async () => {
-  isSaving.value = false;
-
-  // Reset styles
-  boxTextTailwindModel.value = boxTextTailwind;
-  boxTextTailwindPrice.value = boxTextTailwind;
-  boxTextTailwindQuantity.value = boxTextTailwind;
-  boxTextTailwindDesc.value = boxTextTailwind;
-  brandError.value = false;
-
-  // Validate fields
-  if (!saleItem.brand.id || !saleItem.brandName) brandError.value = true;
-  if (!saleItem.model) boxTextTailwindModel.value = boxTextTailwindError;
-  if (!saleItem.price || saleItem.price < 0)
-    boxTextTailwindPrice.value = boxTextTailwindError;
-  if (!saleItem.quantity || saleItem.quantity < 0)
-    boxTextTailwindQuantity.value = boxTextTailwindError;
-  if (!saleItem.description) boxTextTailwindDesc.value = boxTextTailwindError;
-  
-  if (!isFormValid.value) {
-    isSaving.value = true;
-    return;
-  }
-
-  // ========================================== สร้าง FormData ========================================== 
-  const formData = new FormData();
-  
-  // สำเนาข้อมูลและทำ normalize
-  const saleItemCopy = JSON.parse(JSON.stringify(saleItem));
-  normalizeEmptyStringsToNull(saleItemCopy);
-
-  // เพิ่มข้อมูลลงใน FormData
-  for (const field in saleItemCopy) {
-    if (field === 'brand' && saleItemCopy[field]?.id) {
-      formData.append('brand.id', saleItemCopy[field].id);
-    } else if (field === 'saleItemImage') {
-      // ข้าม saleItemImage ในการ loop นี้
-      continue;
-    } else if (saleItemCopy[field] !== null && saleItemCopy[field] !== undefined) {
-      formData.append(field, saleItemCopy[field]);
-    }
-  }
-
-  // ✅ แก้ไข: เพิ่มไฟล์รูปภาพลงใน FormData
-  console.log("fileImageOrganize before sending:", fileImageOrganize.value);
-  console.log("files array before sending:", files.value);
-  
-  // วิธีที่ง่ายกว่า: ส่งไฟล์ใหม่ทั้งหมด
-  let newFileIndex = 0;
-  fileImageOrganize.value.forEach((item, index) => {
-    if (item.fileName === null) {
-      // หาไฟล์ใหม่ที่ตรงกับ index นี้
-      const actualFileIndex = fileImageOrganize.value
-        .slice(0, index + 1)
-        .filter(img => img.fileName === null).length - 1;
-      
-      if (files.value[actualFileIndex]) {
-        console.log(`Adding new file at index ${actualFileIndex}:`, files.value[actualFileIndex].name);
-        formData.append(`images`, files.value[actualFileIndex]);
-        formData.append(`imageSequence[${newFileIndex}]`, item.imageViewOrder);
-        newFileIndex++;
-      }
-    } else if (item.fileName !== null) {
-      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง
-      console.log(`Keeping existing file: ${item.fileName} at order: ${item.imageViewOrder}`);
-      formData.append(`existingImageOrder[${item.fileName}]`, item.imageViewOrder);
-    }
-  });
-
-  // Debug: แสดงข้อมูลใน FormData
-  console.log("FormData entries:");
-  for (let [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
-
-  try {
-    if (saleItem.id) {
-      await updateSaleItem(saleItem.id, formData);
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else if (prop.mode === "Edit") {
-      await updateSaleItem(saleItem.id, formData);
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else {
-      // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
-      console.log("Creating new sale item with", newFileIndex, "images");
-      await addSaleItemV2(formData);
-      setSessionStorage();      
-      alertStore.setMessage("The sale item has been successfully added.");
-      router.go(-1);
-    }
-  } catch (err) {
-    console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
-    alert(err.message);
-    router.push(`/sale-items`);
-  } finally {
-    isSaving.value = true;
-    reloadData.value++;
   }
 };
 
@@ -555,6 +451,8 @@ const removeFile = (index) => {
   }
 };
 
+//===================================Action image change=============================
+
 // ฟังก์ชันเลื่อนขึ้น
 const moveUp = (index) => {
   if (index > 0) {
@@ -612,8 +510,6 @@ const nextImage = () => {
 
 
 //===================================File image called=============================
-
-
 const fileImageFirstResponse = [];
 
 // Method สำหรับจัดการข้อมูล
@@ -643,6 +539,112 @@ const organizeAndFetchImages = async () => {
 
   } catch (error) {
     console.error("Error organizing and fetching saleItemImage:", error);
+  }
+};
+
+//===================================Save form data=============================
+
+const saveSaleItem = async () => {
+  isSaving.value = false;
+
+  // Reset styles
+  boxTextTailwindModel.value = boxTextTailwind;
+  boxTextTailwindPrice.value = boxTextTailwind;
+  boxTextTailwindQuantity.value = boxTextTailwind;
+  boxTextTailwindDesc.value = boxTextTailwind;
+  brandError.value = false;
+
+  // Validate fields
+  if (!saleItem.brand.id || !saleItem.brandName) brandError.value = true;
+  if (!saleItem.model) boxTextTailwindModel.value = boxTextTailwindError;
+  if (!saleItem.price || saleItem.price < 0)
+    boxTextTailwindPrice.value = boxTextTailwindError;
+  if (!saleItem.quantity || saleItem.quantity < 0)
+    boxTextTailwindQuantity.value = boxTextTailwindError;
+  if (!saleItem.description) boxTextTailwindDesc.value = boxTextTailwindError;
+  
+  if (!isFormValid.value) {
+    isSaving.value = true;
+    return;
+  }
+
+  // ------------------ สร้าง FormData ------------------ 
+  const formData = new FormData();
+  
+  // สำเนาข้อมูลและทำ normalize
+  const saleItemCopy = JSON.parse(JSON.stringify(saleItem));
+  normalizeEmptyStringsToNull(saleItemCopy);
+
+  // เพิ่มข้อมูลลงใน FormData
+  for (const field in saleItemCopy) {
+    if (field === 'brand' && saleItemCopy[field]?.id) {
+      formData.append('brand.id', saleItemCopy[field].id);
+    } else if (field === 'saleItemImage') {
+      // ข้าม saleItemImage ในการ loop นี้
+      continue;
+    } else if (saleItemCopy[field] !== null && saleItemCopy[field] !== undefined) {
+      formData.append(field, saleItemCopy[field]);
+    }
+  }
+
+  // ✅ แก้ไข: เพิ่มไฟล์รูปภาพลงใน FormData
+  console.log("fileImageOrganize before sending:", fileImageOrganize.value);
+  console.log("files array before sending:", files.value);
+  
+  // วิธีที่ง่ายกว่า: ส่งไฟล์ใหม่ทั้งหมด
+  let newFileIndex = 0;
+
+  fileImageOrganize.value.forEach((item, index) => {
+    if (item.fileName === null) {
+      // หาไฟล์ใหม่ที่ตรงกับ index นี้
+      const actualFileIndex = fileImageOrganize.value
+        .slice(0, index + 1)
+        .filter(img => img.fileName === null).length - 1;
+      if (files.value[actualFileIndex]) {
+        console.log(`Adding new file at index ${actualFileIndex}:`, files.value[actualFileIndex].name);
+        formData.append(`images`, files.value[actualFileIndex]);
+        formData.append(`imageSequence[${newFileIndex}]`, item.imageViewOrder);
+        newFileIndex++;
+      }
+    } else if (item.fileName !== null) {
+      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง
+      console.log(`Keeping existing file: ${item.fileName} at order: ${item.imageViewOrder}`);
+      formData.append(`existingImageOrder[${item.fileName}]`, item.imageViewOrder);
+    }
+  });
+
+  // Debug: แสดงข้อมูลใน FormData
+  console.log("FormData entries:");
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  try {
+    if (saleItem.id || prop.mode === "Edit") {
+      await updateSaleItem(saleItem.id, formData);
+      alertStore.setMessage("The sale item has been updated.");
+      router.go(-1);
+    } 
+    // else if (prop.mode === "Edit") {
+    //   await updateSaleItem(saleItem.id, formData);
+    //   alertStore.setMessage("The sale item has been updated.");
+    //   router.go(-1);
+    // } 
+    else {
+      // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
+      console.log("Creating new sale item with", newFileIndex, "images");
+      await addSaleItemV2(formData);
+      setSessionStorage();      
+      alertStore.setMessage("The sale item has been successfully added.");
+      router.go(-1);
+    }
+  } catch (err) {
+    console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
+    alert(err.message);
+    router.push(`/sale-items`);
+  } finally {
+    isSaving.value = true;
+    reloadData.value++;
   }
 };
 </script>

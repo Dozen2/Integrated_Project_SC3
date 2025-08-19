@@ -1,10 +1,9 @@
 <script setup>
 import { ref, onBeforeUnmount, onBeforeMount } from "vue";
 import {
-  getAllSaleItemV1,
   getAllSaleItemV2,
   getImageByImageName,
-  getViewStorageForSelect
+  getViewStorageForSelect,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
@@ -24,18 +23,8 @@ const alertStore = useAlertStore();
 const customPriceRange = ref({ min: null, max: null });
 
 // ======================== Configuration ========================
-// const STORAGE_OPTIONS = [
-//   { id: 1, name: "32GB", value: "32" },
-//   { id: 2, name: "64GB", value: "64" },
-//   { id: 3, name: "128GB", value: "128" },
-//   { id: 4, name: "256GB", value: "256" },
-//   { id: 5, name: "512GB", value: "512" },
-//   { id: 6, name: "1TB", value: "1024" },
-//   { id: 7, name: "Not specified", value: "-1" },
-// ];
 
-
-const STORAGE_OPTIONS = ref([])
+const STORAGE_OPTIONS = ref([]);
 const PRICE_OPTIONS = [
   { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
   { id: 2, name: "5,001-10,000 Baht", value: "5001-10000" },
@@ -49,8 +38,6 @@ const SESSION_KEYS = {
   BRAND: "SaleItem-FilterBrand",
   STORAGE: "SaleItem-FilterStorage",
   PRICE: "SaleItem-FilterPrice",
-  // CUSTOM_PRICE_MIN: "SaleItem-FilterPrice-CustomMin",
-  // CUSTOM_PRICE_MAX: "SaleItem-FilterPrice-CustomMax",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
@@ -100,7 +87,7 @@ const getSessionCustomPrice = () => {
     const max = sessionStorage.getItem(SESSION_KEYS.CUSTOM_PRICE_MAX);
     return {
       min: min && min !== "" ? parseFloat(min) : null,
-      max: max && max !== "" ? parseFloat(max) : null
+      max: max && max !== "" ? parseFloat(max) : null,
     };
   } catch {
     return { min: null, max: null };
@@ -143,7 +130,7 @@ const parsePriceRange = (priceValues, customPrice = null) => {
   if (customPrice && (customPrice.min !== null || customPrice.max !== null)) {
     return {
       min: customPrice.min,
-      max: customPrice.max
+      max: customPrice.max,
     };
   }
 
@@ -154,7 +141,7 @@ const parsePriceRange = (priceValues, customPrice = null) => {
 
   priceValues.forEach((range) => {
     // ตรวจสอบว่ามี "-" หรือไม่
-    if (range.includes('-')) {
+    if (range.includes("-")) {
       // กรณี range เช่น "1000-2000"
       const [lower, upper] = range.split("-").map(Number);
       if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
@@ -171,23 +158,24 @@ const parsePriceRange = (priceValues, customPrice = null) => {
   return { min, max };
 };
 
+// ======================== API Functions ========================
 
-const sortProductsByBrand = (products, brandOrder) => {
-  return products.sort((a, b) => {
-    const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-    const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
+const loadImageUrl = async () => {
+  imageUrl.value = [];
+  for (const item of product.value.content) {
+    if (item.mainImageFileName) {
+      const image = await getImageByImageName(item.mainImageFileName);
+      imageUrl.value.push(image);
+    } else {
+      imageUrl.value.push(
+        "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg"
+      );
+    }
+  }
 
-    const indexA = brandOrder.indexOf(brandA);
-    const indexB = brandOrder.indexOf(brandB);
-
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return brandA.localeCompare(brandB);
-  });
+  console.log("Image URLs loaded:", imageUrl.value);
 };
 
-// ======================== API Functions ========================
 const loadBrands = async () => {
   try {
     const data = await getAllBrand();
@@ -202,7 +190,7 @@ const loadProductsDefault = async () => {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
     totalPages.value = data.totalPages;
-    loadImageUrl()
+    loadImageUrl();
   } catch (error) {
     console.error("Error loading products:", error);
   }
@@ -213,7 +201,10 @@ const loadProductsWithFilters = async (filters) => {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
     const priceValues = convertPriceValues(filters.prices);
-    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(
+      priceValues,
+      filters.customPrice
+    );
 
     console.log("Loading products with filters:", {
       brands: filters.brands,
@@ -224,10 +215,9 @@ const loadProductsWithFilters = async (filters) => {
       storageValues,
       minPrice,
       maxPrice,
-      customPrice: filters.customPrice
-    }); // Debug log
+      customPrice: filters.customPrice,
+    });
 
-    // Fetch data
     const data = await getAllSaleItemV2(
       filters.brands,
       filters.sortField,
@@ -238,46 +228,43 @@ const loadProductsWithFilters = async (filters) => {
       minPrice,
       maxPrice
     );
-
-
     product.value = data;
     totalPages.value = data.totalPages;
-    loadImageUrl()
+    loadImageUrl();
   } catch (error) {
     console.error("Error loading filtered products:", error);
   }
 };
 
 const loadStroage = async () => {
-  try{
-    const data  = await getViewStorageForSelect()
-    
+  try {
+    const data = await getViewStorageForSelect();
+
     // ถ้าเจอ error จาก API ให้ default เป็น array ว่าง
     if (data.error) {
       STORAGE_OPTIONS.value = [];
       return;
     }
 
-    STORAGE_OPTIONS.value = data.map(item => {
+    STORAGE_OPTIONS.value = data.map((item) => {
       if (item == null) {
-        return {name: "Not specified", value: '-1'}
+        return { name: "Not specified", value: "-1" };
       }
-      return{
+      return {
         name: `${item.storageGb} GB`,
-        value: String(item.storageGb)
-      }
-    })
+        value: String(item.storageGb),
+      };
+    });
 
     STORAGE_OPTIONS.value.sort((a, b) => {
       if (a.value === "-1") return 1;
       if (b.value === "-1") return -1;
       return Number(a.value) - Number(b.value);
     });
-
-  }catch (error) {
+  } catch (error) {
     console.error("Failed to load storage:", error);
   }
-}
+};
 
 // ======================== Filter Event Handlers ========================
 const handleBrandFilter = async (newBrands) => {
@@ -310,31 +297,6 @@ const handlePriceFilter = async (newPrices) => {
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
-
-// New handler for custom price input
-// const handleCustomPriceFilter = async (priceData) => {
-//   console.log("handleCustomPriceFilter called with:", priceData); // Debug log
-  
-//   // Save custom price to session storage
-//   if (priceData.min !== null || priceData.max !== null) {
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, priceData.min?.toString() || "");
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, priceData.max?.toString() || "");
-    
-//     // Clear predefined price ranges when custom price is used
-//     setSession(SESSION_KEYS.PRICE, []);
-//   } else {
-//     // Clear custom price from session storage
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
-//   }
-  
-//   customPriceRange.value = priceData;
-//   setSession(SESSION_KEYS.PAGE, 0);
-
-//   const filters = getCurrentFilters();
-//   console.log("Filters after custom price:", filters); // Debug log
-//   await loadProductsWithFilters(filters);
-// };
 
 // ======================== Other Event Handlers ========================
 const handleSizeChange = async (newSize) => {
@@ -375,47 +337,46 @@ const handleClear = async () => {
   customPriceRange.value = { min: null, max: null };
   sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
   sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
-  
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
 };
 
-let priceOption = ref([...PRICE_OPTIONS])
-let min_price = ref(null)
-let max_price = ref(null)
-
+let priceOption = ref([...PRICE_OPTIONS]);
+let min_price = ref(null);
+let max_price = ref(null);
 
 const applyCustomPrice = () => {
-  const min = min_price.value ?? '';
-  const max = max_price.value ?? '';
+  const min = min_price.value ?? "";
+  const max = max_price.value ?? "";
 
-  
-  let customPriceRange = ""
-  let customName = ""
+  let customPriceRange = "";
+  let customName = "";
 
-  if (min !== '' && max !== '') {
-    customPriceRange = `${min}-${max}`
-    customName = `${min} – ${max} Baht`
-  } else if (min !== '') {
-    customPriceRange = `${min}-${min}`
-    customName = `${min} Baht`
-  } else if (max !== '') {
-    customPriceRange = `${max}-${max}`
-    customName = `${max} Baht`
+  if (min !== "" && max !== "") {
+    customPriceRange = `${min}-${max}`;
+    customName = `${min} – ${max} Baht`;
+  } else if (min !== "") {
+    customPriceRange = `${min}-${min}`;
+    customName = `${min} Baht`;
+  } else if (max !== "") {
+    customPriceRange = `${max}-${max}`;
+    customName = `${max} Baht`;
   } else {
-    setSession(SESSION_KEYS.PRICE, [])
-    loadProductsWithFilters(getCurrentFilters())
-    return
+    setSession(SESSION_KEYS.PRICE, []);
+    loadProductsWithFilters(getCurrentFilters());
+    return;
   }
 
-  const maxId = priceOption.value.length > 0 
-    ? Math.max(...priceOption.value.map(opt => Number(opt.id)))
-    : 0;
+  const maxId =
+    priceOption.value.length > 0
+      ? Math.max(...priceOption.value.map((opt) => Number(opt.id)))
+      : 0;
 
-  const customOption = { 
-    id: maxId + 1, 
-    name: customName, 
-    value: customPriceRange 
+  const customOption = {
+    id: maxId + 1,
+    name: customName,
+    value: customPriceRange,
   };
 
   priceOption.value.push(customOption);
@@ -424,9 +385,7 @@ const applyCustomPrice = () => {
 
   setSession(SESSION_KEYS.PRICE, updatedSelected);
   loadProductsWithFilters(getCurrentFilters());
-
 };
-
 
 // ======================== Storage Event Handler ========================
 const onStorageChange = (event) => {
@@ -442,7 +401,8 @@ const hasActiveFilters = (filters) => {
     filters.brands.length > 0 ||
     filters.storages.length > 0 ||
     filters.prices.length > 0 ||
-    (filters.customPrice && (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
+    (filters.customPrice &&
+      (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
     filters.page > 0 ||
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
@@ -468,31 +428,11 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
-
-
-  
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
 });
-
-const loadImageUrl = async () => {
-  imageUrl.value = [];
-  for (const item of product.value.content) {
-    if (item.mainImageFileName) {
-      const image = await getImageByImageName(item.mainImageFileName);
-      imageUrl.value.push(image);
-    } else {
-      imageUrl.value.push(
-        "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg"
-      );
-    }
-  }
-
-  console.log("Image URLs loaded:", imageUrl.value);
-};
-
 </script>
 
 <template>
@@ -507,7 +447,7 @@ const loadImageUrl = async () => {
         }`"
       >
         {{ alertStore.message }}
-      </div>  
+      </div>
     </div>
 
     <!-- Action Buttons -->
@@ -593,30 +533,28 @@ const loadImageUrl = async () => {
       mode="price"
       @filterChanged="handlePriceFilter"
     >
-        <template #InputPrice>
-          <div class="flex gap-2 mt-2">
-            <input
-              type="number"
-              class="border rounded px-2 py-1 w-28"
-              placeholder="Min"
-              v-model.number="min_price"
-              
-            />
-            <span>-</span>
-            <input
-              type="number"
-              class="border rounded px-2 py-1 w-28"
-              placeholder="Max"
-              v-model.number="max_price"
-              
-            />
-            <button
-              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              @click="applyCustomPrice"
-            >
-              Apply
-            </button>
-          </div>
+      <template #InputPrice>
+        <div class="flex gap-2 mt-2">
+          <input
+            type="number"
+            class="border rounded px-2 py-1 w-28"
+            placeholder="Min"
+            v-model.number="min_price"
+          />
+          <span>-</span>
+          <input
+            type="number"
+            class="border rounded px-2 py-1 w-28"
+            placeholder="Max"
+            v-model.number="max_price"
+          />
+          <button
+            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+            @click="applyCustomPrice"
+          >
+            Apply
+          </button>
+        </div>
       </template>
     </Filter>
 

@@ -58,9 +58,6 @@ onMounted(async () => {
       product.value = data;
       console.log(product.value);
       console.log(data);
-      console.log("product.value: " + product.value.price);
-      console.log("product.value: " + typeof product.value.price);
-      console.log("product.value: " + product.value.color);
     }
   } catch (error) {
     console.log("โหลดข้อมูลสินค้าไม่สำเร็จ:", error.message);
