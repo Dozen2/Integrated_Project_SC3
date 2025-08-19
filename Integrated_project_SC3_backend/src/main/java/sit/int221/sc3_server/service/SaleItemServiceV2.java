@@ -44,7 +44,7 @@ public class SaleItemServiceV2 {
     @Autowired
     private StorageGbViewRepository storageGbViewRepository;
 
-    public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper, Integer page, Integer size, String sortField, String sortDirection) {
+    public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper,String searchValue, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
             throw new PageNotFoundException("Required parameter 'page' is not present.");
         }
@@ -53,8 +53,10 @@ public class SaleItemServiceV2 {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
+        searchValue = (searchValue == null || searchValue.isBlank())? null : searchValue;
+        String keyword = (searchValue == null || searchValue.isBlank()) ? null : searchValue.toLowerCase();
 
-        if(filterPriceLower != null && filterPriceUpper == null ){
+        if(filterPriceLower != null && filterPriceUpper == null  ){
             return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
         }
         if(filterPriceUpper != null && filterPriceLower == null){
@@ -68,7 +70,7 @@ public class SaleItemServiceV2 {
         }
 
 
-        return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
+        return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
     }
 
     public List<StorageGbView> getStorageView(){

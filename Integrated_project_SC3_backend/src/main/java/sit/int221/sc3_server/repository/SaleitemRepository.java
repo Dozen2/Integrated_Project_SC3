@@ -20,24 +20,32 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
 
 //    @Query("SELECT s FROM SaleItem s LEFT JOIN FETCH s.saleItemImages WHERE s.id = :id")
 //    Optional<SaleItem> findByIdWithImages(@Param("id") Integer id);
-    @Query("""
+@Query("""
     select p from SaleItem p
-        WHERE (:brandName is null or p.brand.name in :brandName)
+    WHERE (:brandNames IS NULL OR p.brand.name IN :brandNames)
     and (
-         :storageGb is null
+         :storageGb IS NULL
          or (-1 in :storageGb and p.storageGb is null)
          or (p.storageGb in :storageGb and -1 not in :storageGb)
-     )
-        and (:minPrice is null or p.price >= :minPrice)
-        and (:maxPrice is null or p.price <= :maxPrice)
+    )
+    and (:minPrice IS NULL OR p.price >= :minPrice)
+    and (:maxPrice IS NULL OR p.price <= :maxPrice)
+    and (
+        :searchValue IS NULL
+        OR lower(p.model) like concat('%', :searchValue, '%')
+        OR lower(cast(p.description as string)) like concat('%', :searchValue, '%')
+        OR lower(p.color) like concat('%', :searchValue, '%')
+    )
 """)
-    Page<SaleItem> findFilteredProduct(
-            @Param("brandName") List<String> brandNames,
-            @Param("storageGb") List<Integer> storageGb,
-            @Param("minPrice") Integer minPrice,
-            @Param("maxPrice") Integer maxPrice,
-            Pageable pageable
-    );
+Page<SaleItem> findFilteredProduct(
+        @Param("brandNames") List<String> brandNames,
+        @Param("storageGb") List<Integer> storageGb,
+        @Param("minPrice") Integer minPrice,
+        @Param("maxPrice") Integer maxPrice,
+        @Param("searchValue") String searchValue,
+        Pageable pageable
+);
+
 
     @Query("""
     select p from SaleItem p
