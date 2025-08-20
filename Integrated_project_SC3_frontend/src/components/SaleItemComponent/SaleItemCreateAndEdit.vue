@@ -399,7 +399,7 @@ const setSessionStorage = () => {
 };
 
 //----------------------------------------------File Management-------------------------------------------------------------------------------------
-
+const fileImageOrganize = ref([]);
 // File size limits ตาม backend spec
 const FILE_SIZE_LIMITS = {
   MAX_FILE_SIZE: 2 * 1024 * 1024, // 2MB
@@ -422,7 +422,9 @@ const handleFileChange = (event) => {
   const MAX_IMAGES = 4;
   const MAX_FILENAME_LENGTH = 50;
   
+
   console.log("Selected files:", selectedFiles.map(f => f.name));
+  console.log("Selected files all:", selectedFiles);
   
   // ตรวจสอบความยาวของชื่อไฟล์
   const longFilenames = selectedFiles.filter(file => file.name.length > MAX_FILENAME_LENGTH);
@@ -465,6 +467,8 @@ const handleFileChange = (event) => {
   if (warningMessage) {
     alert(warningMessage);
   }
+
+  console.log("filesToProcess: ",filesToProcess)
   
   // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize และ files array
   const filesProcessed = [];
@@ -494,7 +498,9 @@ const handleFileChange = (event) => {
   // เพิ่มไฟล์ลงใน files array
   files.value.push(...filesProcessed);
   
-  console.log("Updated files array:", files.value.map(f => f.name));
+  console.log("Updated files array:", files.value);
+  console.log("Updated filesProcessed array:", filesProcessed);
+  console.log("Updated filesName array:", files.value.map(f => f.name));
   console.log("Updated fileImageOrganize:", fileImageOrganize.value);
   
   event.target.value = "";
@@ -610,46 +616,6 @@ const nextImage = () => {
 
 const fileImageFirstResponse = [];
 
-const fileImageOrganize = ref([]);
-const currentViewImage = ref(0);
-
-// onBeforeMount(async () => {
-//   const saleItemIdParam = prop.productId; // ตัวอย่าง ID ของ Sale Item
-//   const saleItem = await getSaleItemByIdV2(saleItemIdParam);
-//   console.log("Sale Item:", saleItem.saleItemImage);
-//   if(saleItem.saleItemImage != null){
-//     fileImageFirstResponse.push(...saleItem.saleItemImage);
-//   }
-  // await organizeAndFetchImages();
-// });
-
-// // Method สำหรับจัดการข้อมูล
-// const organizeAndFetchImages = async () => {
-//   try {
-//     // 1. จัดเรียงข้อมูลตาม imageViewOrder
-//     // ใช้ .sort() เพื่อจัดเรียง array
-//     const fileImageSorted = [...fileImageFirstResponse].sort(
-//       (a, b) => a.imageViewOrder - b.imageViewOrder
-//     );
-
-//     // 2. Loop เพื่อ fetch API และจัดเก็บข้อมูล
-//     for (const item of fileImageSorted) {
-//       // เรียกใช้ฟังก์ชัน getImageByImageName() เพื่อดึงรูป
-//       const imageUrl = await getImageByImageName(item.fileName);
-
-//       // 3. push ข้อมูลที่ได้ลงใน fileImageOrganize
-//       fileImageOrganize.value.push({
-//         fileName: item.fileName,
-//         orgFileName: item.originalFileName,
-//         imageUrl: imageUrl, // เก็บ url ของรูปที่ได้จากการ fetch
-//         imageViewOrder: item.imageViewOrder,
-//       });
-//     }
-//     console.log("After sorted Sale Item:",fileImageOrganize.value);
-//   } catch (error) {
-//     console.error("Error organizing and fetching saleItemImage:", error);
-//   }
-// };
 // Method สำหรับจัดการข้อมูล
 const organizeAndFetchImages = async () => {
   try {
@@ -730,10 +696,14 @@ const organizeAndFetchImages = async () => {
 
           <!-- ช่องเล็ก 4 ช่องด้านล่าง -->
           <div class="grid grid-cols-4 gap-4 mt-3" v-if="fileImageOrganize.length > 1">
-            <div v-for="(img, idx) in fileImageOrganize.slice(0, 4)" :key="idx"
-                 @click="currentIndex = idx"
-                 :class="['rounded border', idx === currentIndex ? 'border-blue-600' : 'border-blue-400', 'h-32 cursor-pointer']">
-              <img :src="img.imageUrl" alt="thumbnail" class="w-full h-full object-cover rounded" />
+            <div v-for="(idx) in 4 " :key="idx"
+                 :class="['rounded border', (idx-1) === currentIndex ? 'border-blue-600' : 'border-blue-400', 'h-32 cursor-pointer']">
+                <span v-if="fileImageOrganize.length > (idx-1)" @click="currentIndex = (idx-1)">
+                  <img :src="fileImageOrganize[idx-1].imageUrl" alt="thumbnail" class="w-full h-full object-cover rounded" />
+                </span>
+                <span v-else class="w-full h-full flex items-center justify-center text-gray-500">
+                  No Image
+                </span>
             </div>
           </div>
         </div>
@@ -766,11 +736,11 @@ const organizeAndFetchImages = async () => {
         </div>
 
         <!-- File List -->
-        <ul v-if="files.length > 0" class="space-y-2 mb-6">
-          <li v-for="(file, index) in files" :key="index"
+        <ul v-if="fileImageOrganize.length > 0" class="space-y-2 mb-6">
+          <li v-for="(file, index) in fileImageOrganize" :key="index"
             class="flex items-center justify-between bg-gray-100 p-2 rounded w-125">
             <!-- ชื่อไฟล์ -->
-            <span class="truncate max-w-[200px]">{{ file.name }}</span>
+            <span class="truncate max-w-[200px]">{{ file.orgFileName }}</span>
 
             <!-- ปุ่ม action -->
             <div class="flex gap-2">
@@ -778,7 +748,7 @@ const organizeAndFetchImages = async () => {
                 class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
                 ⬆️
               </button>
-              <button @click="moveDown(index)" :disabled="index === files.length - 1"
+              <button @click="moveDown(index)" :disabled="index === fileImageOrganize.length - 1"
                 class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
                 ⬇️
               </button>
