@@ -12,6 +12,8 @@ import Filter from "@/components/Common/Query/Filter.vue";
 import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
+import Search from "@/components/Common/Query/Search.vue";
+
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -23,15 +25,6 @@ const alertStore = useAlertStore();
 const customPriceRange = ref({ min: null, max: null });
 
 // ======================== Configuration ========================
-// const STORAGE_OPTIONS = [
-//   { id: 1, name: "32GB", value: "32" },
-//   { id: 2, name: "64GB", value: "64" },
-//   { id: 3, name: "128GB", value: "128" },
-//   { id: 4, name: "256GB", value: "256" },
-//   { id: 5, name: "512GB", value: "512" },
-//   { id: 6, name: "1TB", value: "1024" },
-//   { id: 7, name: "Not specified", value: "-1" },
-// ];
 
 const STORAGE_OPTIONS = ref([])
 
@@ -48,12 +41,13 @@ const SESSION_KEYS = {
   BRAND: "SaleItem-FilterBrand",
   STORAGE: "SaleItem-FilterStorage",
   PRICE: "SaleItem-FilterPrice",
-  // CUSTOM_PRICE_MIN: "SaleItem-FilterPrice-CustomMin",
-  // CUSTOM_PRICE_MAX: "SaleItem-FilterPrice-CustomMax",
   PAGE: "SaleItem-Page",
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
+
+  SEARCH: "SaleItem-Search"
+
 };
 
 const DEFAULT_VALUES = {
@@ -118,6 +112,7 @@ const getCurrentFilters = () => ({
     DEFAULT_VALUES.sortDirection
   ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
+  search: getSessionValue(SESSION_KEYS.SEARCH, "")
 });
 
 // ======================== Data Processing Helpers ========================
@@ -234,7 +229,8 @@ const loadProductsWithFilters = async (filters) => {
       filters.page,
       storageValues,
       minPrice,
-      maxPrice
+      maxPrice,
+      filters.search
     );
 
     // Sort by brand order if brands are filtered
@@ -313,30 +309,14 @@ const handlePriceFilter = async (newPrices) => {
   await loadProductsWithFilters(filters);
 };
 
-// New handler for custom price input
-// const handleCustomPriceFilter = async (priceData) => {
-//   console.log("handleCustomPriceFilter called with:", priceData); // Debug log
-  
-//   // Save custom price to session storage
-//   if (priceData.min !== null || priceData.max !== null) {
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, priceData.min?.toString() || "");
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, priceData.max?.toString() || "");
-    
-//     // Clear predefined price ranges when custom price is used
-//     setSession(SESSION_KEYS.PRICE, []);
-//   } else {
-//     // Clear custom price from session storage
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
-//     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
-//   }
-  
-//   customPriceRange.value = priceData;
-//   setSession(SESSION_KEYS.PAGE, 0);
+const handleSearch = async (keyword) => {
+  console.log(keyword);
+  setSession(SESSION_KEYS.SEARCH, keyword);
+  setSession(SESSION_KEYS.PAGE, 0);
 
-//   const filters = getCurrentFilters();
-//   console.log("Filters after custom price:", filters); // Debug log
-//   await loadProductsWithFilters(filters);
-// };
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
 
 // ======================== Other Event Handlers ========================
 const handleSizeChange = async (newSize) => {
@@ -535,6 +515,9 @@ onBeforeUnmount(() => {
         <span class="itbms-manage-brand tracking-wide">Manage Sale Items</span>
       </RouterLink>
     </div>
+
+    <Search 
+    @search="handleSearch" />
 
     <!-- Filters -->
     <Filter
