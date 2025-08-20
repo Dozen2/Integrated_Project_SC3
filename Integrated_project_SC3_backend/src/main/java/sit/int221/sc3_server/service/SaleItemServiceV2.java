@@ -53,19 +53,18 @@ public class SaleItemServiceV2 {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
-        searchValue = (searchValue == null || searchValue.isBlank())? null : searchValue;
         String keyword = (searchValue == null || searchValue.isBlank()) ? null : searchValue.toLowerCase();
 
         if(filterPriceLower != null && filterPriceUpper == null  ){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,keyword,pageable);
         }
         if(filterPriceUpper != null && filterPriceLower == null){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,keyword,pageable);
         }
 
 
         if (filterStorages != null && filterStorages.contains(-1)) {
-            return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
 
         }
 
