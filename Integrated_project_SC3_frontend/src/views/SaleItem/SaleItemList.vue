@@ -528,6 +528,7 @@ onBeforeUnmount(() => {
       :sessionKey="SESSION_KEYS.BRAND"
       valueField="name"
       displayField="name"
+      mode="brand"
       @filterChanged="handleBrandFilter"
     />
 
@@ -593,6 +594,7 @@ onBeforeUnmount(() => {
           SESSION_KEYS.CUSTOM_PRICE_MIN,
           SESSION_KEYS.CUSTOM_PRICE_MAX,
           SESSION_KEYS.PAGE,
+          SESSION_KEYS.SEARCH
         ]"
         @cleared="handleClear"
       />

@@ -100,7 +100,7 @@ const getAllSaleItemV2 = async (
 
   // เพิ่ม search keyword
   if (search && search.trim() !== "") {
-    params.append("search", search.trim());
+    params.append("searchParam", search.trim());
   }
   
   // Sorting and pagination

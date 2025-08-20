@@ -15,7 +15,7 @@ import org.hibernate.annotations.Immutable;
 @Setter
 @Entity
 @Immutable
-@Table(name = "storagegb_view")
+@Table(name = "storageGb_view")
 public class StorageGbView {
     @Id
     @Column(name = "storageGb")
