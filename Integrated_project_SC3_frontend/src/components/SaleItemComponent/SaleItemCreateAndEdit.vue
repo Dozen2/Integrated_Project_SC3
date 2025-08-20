@@ -11,6 +11,7 @@ import {
   addSaleItemV2,
   getSaleItemByIdV2,
   updateSaleItem,
+  updateSaleItemV2,
   getImageByImageName
 } from "@/libs/callAPI/apiSaleItem.js";
 import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
@@ -104,6 +105,8 @@ onBeforeMount(async () => {
       }
 
       Object.assign(originalSaleItem, JSON.parse(JSON.stringify(saleItem)));
+
+      console.log("Original Sale Item:", originalSaleItem);
     } catch (error) {
       console.error("Error loading product:", error);
     }
@@ -378,26 +381,35 @@ const handleFileChange = (event) => {
         fileName: null, // ไฟล์ใหม่
         orgFileName: file.name,
         imageUrl: imageUrl,
-        imageViewOrder: nextOrder
+        imageViewOrder: nextOrder +1
       });
-      
-      console.log("Added new image to fileImageOrganize:", {
-        fileName: null,
-        orgFileName: file.name,
-        imageViewOrder: nextOrder
-      });
+
+      saleItem.saleItemImage.push({
+      imageFile: file,
+      imageUrl: imageUrl,
+      orgFileName: file.name,
+      imageViewOrder: nextOrder + 1
+    });
     };
     reader.readAsDataURL(file);
     filesProcessed.push(file);
+    console.log("index: " +Number( index + saleItem.saleItemImage.length + 1));
   });
   
   // เพิ่มไฟล์ลงใน files array
   files.value.push(...filesProcessed);
+
+  // saleItem.saleItemImage.push( ...filesProcessed.map((file, index) => ({
+  //   imageFile: file,
+  //   orgFileName: file.name,
+  //   imageViewOrder: fileImageOrganize.value.length + index +1
+  // })));
   
   console.log("Updated files array:", files.value);
   console.log("Updated filesProcessed array:", filesProcessed);
   console.log("Updated filesName array:", files.value.map(f => f.name));
   console.log("Updated fileImageOrganize:", fileImageOrganize.value);
+  console.log("Updated saleItem eiei:", saleItem);
   
   event.target.value = "";
 };
@@ -432,6 +444,21 @@ const validateFileSize = (selectedFiles) => {
   };
 };
 const removeFile = (index) => {
+  
+  //push name deleted to deletedImage
+  if (fileImageOrganize.value[index].fileName) {
+    deletedImage.value.push(fileImageOrganize.value[index].fileName);
+
+    let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
+      (item) => item.fileName === fileImageOrganize.value[index].fileName
+    );
+    console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+    if (findIndexSaleItemImage !== -1) {
+      saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
+    }
+  }
+
+  console.log("deletedImage:", deletedImage.value);
   // ลบจาก fileImageOrganize
   fileImageOrganize.value.splice(index, 1);
   
@@ -442,6 +469,11 @@ const removeFile = (index) => {
   fileImageOrganize.value.forEach((item, idx) => {
     item.imageViewOrder = idx;
   });
+
+  // อัปเดต 
+  saleItem.saleItemImage.forEach((img, idx) => {
+    img.imageViewOrder = idx + 1; // เริ่มนับจาก 1
+  });
   
   // ปรับ currentIndex ถ้าจำเป็น
   if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
@@ -449,9 +481,25 @@ const removeFile = (index) => {
   } else if (fileImageOrganize.value.length === 0) {
     currentIndex.value = 0;
   }
+
+  
+
 };
 
+const deletedImage = ref([]);
 //===================================Action image change=============================
+
+const positionImageChange = () => {
+  // อัปเดต imageViewOrder ใน saleItem.saleItemImage
+  // imageFile != imageURL
+    saleItem.saleItemImage.forEach(img => {
+      const found = fileImageOrganize.value.find(f => f.fileName === img.fileName || f.imageUrl === img.imageUrl);
+      if (found) {
+        img.imageViewOrder = found.imageViewOrder;
+  }
+    })
+  
+  };
 
 // ฟังก์ชันเลื่อนขึ้น
 const moveUp = (index) => {
@@ -460,15 +508,22 @@ const moveUp = (index) => {
     const temp = fileImageOrganize.value[index];
     fileImageOrganize.value[index] = fileImageOrganize.value[index - 1];
     fileImageOrganize.value[index - 1] = temp;
-    
+
     // อัปเดต imageViewOrder
-    fileImageOrganize.value[index].imageViewOrder = index;
-    fileImageOrganize.value[index - 1].imageViewOrder = index - 1;
-    
+    fileImageOrganize.value[index].imageViewOrder = index+1;
+    fileImageOrganize.value[index - 1].imageViewOrder = index;
+
     // สลับใน files array
     const tempFile = files.value[index];
     files.value[index] = files.value[index - 1];
     files.value[index - 1] = tempFile;
+
+    positionImageChange()
+
+    //log saleItem.saleItemImage after move
+    console.log("After move up saleItem.saleItemImage:", saleItem.saleItemImage);
+    console.log("After move up fileImageOrganize:", fileImageOrganize.value);
+
   }
 };
 
@@ -488,6 +543,8 @@ const moveDown = (index) => {
     const tempFile = files.value[index];
     files.value[index] = files.value[index + 1];
     files.value[index + 1] = tempFile;
+
+    positionImageChange()
   }
 };
 
@@ -574,43 +631,70 @@ const saveSaleItem = async () => {
   // สำเนาข้อมูลและทำ normalize
   const saleItemCopy = JSON.parse(JSON.stringify(saleItem));
   normalizeEmptyStringsToNull(saleItemCopy);
+  // ดึง imageFile จาก saleItem.saleItemImage มาใส่ใน saleItemCopy.saleItemImage
+if (Array.isArray(saleItem.saleItemImage)) {
+  saleItemCopy.saleItemImage = saleItem.saleItemImage.map((img, idx) => {
+    const copied = { ...img };
+    if (img.imageFile) {
+      copied.imageFile = img.imageFile; // copy File object ด้วย
+    }
+    return copied;
+  });
+}
+  console.log("saleItemCopy:", saleItemCopy);
+  console.log("saleItem:", saleItem);
+
+
+  let appendControlByMode = ""
+  if(prop.mode === "Edit") {
+    appendControlByMode = "saleItem."
+  }
+  console.log("appendControlByMode: ",appendControlByMode)
 
   // เพิ่มข้อมูลลงใน FormData
   for (const field in saleItemCopy) {
     if (field === 'brand' && saleItemCopy[field]?.id) {
-      formData.append('brand.id', saleItemCopy[field].id);
+      formData.append(`${appendControlByMode}brand.id`, saleItemCopy[field].id);
     } else if (field === 'saleItemImage') {
-      // ข้าม saleItemImage ในการ loop นี้
-      continue;
+      //ส่ง saleItemImage.fileName กับ imageViewOrder
+      saleItemCopy[field].forEach((image, index) => {
+        if (image.fileName) {
+          formData.append(`saleItemImages[${index}].fileName`, image.fileName);
+          formData.append(`saleItemImages[${index}].imageViewOrder`, image.imageViewOrder);
+        }
+        if(image.imageFile) {
+          formData.append(`saleItemImages[${index}].imageFile`, image.imageFile);
+          console.log(`Appending imageFile for index ${index}:`, image.imageFile);
+          formData.append(`saleItemImages[${index}].imageViewOrder`, image.imageViewOrder);
+        }
+      });
+      
     } else if (saleItemCopy[field] !== null && saleItemCopy[field] !== undefined) {
-      formData.append(field, saleItemCopy[field]);
+      formData.append(`${appendControlByMode}`+field, saleItemCopy[field]);
     }
   }
 
-  // ✅ แก้ไข: เพิ่มไฟล์รูปภาพลงใน FormData
   console.log("fileImageOrganize before sending:", fileImageOrganize.value);
   console.log("files array before sending:", files.value);
   
-  // วิธีที่ง่ายกว่า: ส่งไฟล์ใหม่ทั้งหมด
-  let newFileIndex = 0;
-
-  fileImageOrganize.value.forEach((item, index) => {
+  // if(prop.mode != 'Edit' ){
+   fileImageOrganize.value.forEach((item, index) => {
     if (item.fileName === null) {
       // หาไฟล์ใหม่ที่ตรงกับ index นี้
       const actualFileIndex = fileImageOrganize.value
         .slice(0, index + 1)
         .filter(img => img.fileName === null).length - 1;
       if (files.value[actualFileIndex]) {
-        console.log(`Adding new file at index ${actualFileIndex}:`, files.value[actualFileIndex].name);
         formData.append(`images`, files.value[actualFileIndex]);
-        formData.append(`imageSequence[${newFileIndex}]`, item.imageViewOrder);
-        newFileIndex++;
+        console.log(`Appending new file: ${files.value[actualFileIndex]}`);
       }
-    } else if (item.fileName !== null) {
-      // สำหรับไฟล์เดิมที่ต้องการเก็บตำแหน่ง
-      console.log(`Keeping existing file: ${item.fileName} at order: ${item.imageViewOrder}`);
-      formData.append(`existingImageOrder[${item.fileName}]`, item.imageViewOrder);
-    }
+    } 
+  });
+// }
+
+  //loop deletedImage and append to formData
+  deletedImage.value.forEach((fileName) => {
+    formData.append(`deletedImage[]`, fileName);
   });
 
   // Debug: แสดงข้อมูลใน FormData
@@ -621,7 +705,8 @@ const saveSaleItem = async () => {
 
   try {
     if (saleItem.id || prop.mode === "Edit") {
-      await updateSaleItem(saleItem.id, formData);
+      await updateSaleItemV2(saleItem.id, formData);
+      console.log("FormData after update:", formData);
       alertStore.setMessage("The sale item has been updated.");
       router.go(-1);
     } 
@@ -632,7 +717,6 @@ const saveSaleItem = async () => {
     // } 
     else {
       // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
-      console.log("Creating new sale item with", newFileIndex, "images");
       await addSaleItemV2(formData);
       setSessionStorage();      
       alertStore.setMessage("The sale item has been successfully added.");

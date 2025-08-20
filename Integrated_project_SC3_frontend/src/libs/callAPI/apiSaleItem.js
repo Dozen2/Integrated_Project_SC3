@@ -182,6 +182,23 @@ async function addSaleItemV2(newSaleItem) {
   }
 }
 
+//updateSaleItemV2 function to update sale item by id
+async function updateSaleItemV2(id, updatedSaleItem) {
+  try {
+    const res = await fetch(`${urlV2}/${id}`, {
+     method: "PUT",
+      body: updatedSaleItem,
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update SaleItem");
+    }
+    const updatedResponse = await res.json();
+    return updatedResponse;
+  } catch (error) {
+    throw new Error("Cannot update your SaleItem");
+  }
+}
+
 async function updateSaleItem(id, updatedSaleItem) {
   try {
     const res = await fetch(`${urlV1}/${id}`, {
@@ -241,5 +258,6 @@ export {
   getSaleItemByIdV2,
   getImageByImageName,
   addSaleItemV2,
-  getViewStorageForSelect
+  getViewStorageForSelect,
+  updateSaleItemV2
 };
