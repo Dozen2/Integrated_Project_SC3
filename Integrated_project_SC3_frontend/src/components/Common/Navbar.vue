@@ -23,17 +23,17 @@ const handleSearch = (keyword) => {
     </RouterLink>
 
     <!-- Search -->
-    <Search @search="handleSearch" />
+    <!-- <Search @search="handleSearch" /> -->
 
 
     <!-- Menu -->
-    <div class="font-mono flex flex-row gap-5">
+    <!-- <div class="font-mono flex flex-row gap-5">
       <span>shop</span>
       <span>new</span>
       <span>phon</span>
       <span>IT</span>
       <span>about</span>
-    </div>
+    </div> -->
 
     <!-- Icons -->
     <div class="flex flex-row gap-4">

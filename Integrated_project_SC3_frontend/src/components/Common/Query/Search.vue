@@ -22,6 +22,7 @@ const clearSearch = () => {
       v-model="searchQuery" 
       type="text" 
       placeholder="Search ..."
+      @keyup.enter="handleSearch"
       class="w-full pr-20 pl-4 py-2 border rounded-full focus:outline-none"
     />
 
