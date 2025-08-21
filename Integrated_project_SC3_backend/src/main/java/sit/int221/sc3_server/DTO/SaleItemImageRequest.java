@@ -8,4 +8,5 @@ public class SaleItemImageRequest {
     private Integer imageViewOrder;
     private String fileName;
     private MultipartFile imageFile;
+    /////
 }
