@@ -4,13 +4,11 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import sit.int221.sc3_server.DTO.SaleItemImageDTO;
-import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemImageDTO;
+import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
 
-import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 @Configuration

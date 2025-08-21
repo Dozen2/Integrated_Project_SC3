@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.service;
+package sit.int221.sc3_server.service.brand;
 
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -7,16 +7,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.server.ResponseStatusException;
-import sit.int221.sc3_server.DTO.CreateBrandDTO;
-import sit.int221.sc3_server.DTO.UpdateBrandDTO;
+import sit.int221.sc3_server.DTO.Brand.CreateBrandDTO;
+import sit.int221.sc3_server.DTO.saleItem.UpdateBrandDTO;
 
-import sit.int221.sc3_server.DTO.BrandDetailDTO;
+import sit.int221.sc3_server.DTO.Brand.BrandDetailDTO;
 
 import sit.int221.sc3_server.entity.Brand;
-import sit.int221.sc3_server.exception.DeleteFailedException;
-import sit.int221.sc3_server.exception.ItemNotFoundException;
-import sit.int221.sc3_server.repository.BrandRepository;
-import sit.int221.sc3_server.repository.SaleitemRepository;
+import sit.int221.sc3_server.exception.crudException.DeleteFailedException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
+import sit.int221.sc3_server.repository.brand.BrandRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;

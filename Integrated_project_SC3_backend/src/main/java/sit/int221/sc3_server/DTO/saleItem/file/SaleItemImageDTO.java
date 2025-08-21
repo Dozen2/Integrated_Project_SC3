@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.DTO;
+package sit.int221.sc3_server.DTO.saleItem.file;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

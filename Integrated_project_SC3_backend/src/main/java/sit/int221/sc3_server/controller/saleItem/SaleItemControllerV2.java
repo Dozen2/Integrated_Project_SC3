@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.controller;
+package sit.int221.sc3_server.controller.saleItem;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.*;
+import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
+import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.StorageGbView;
-import sit.int221.sc3_server.exception.ItemNotFoundException;
 import sit.int221.sc3_server.service.FileService;
-import sit.int221.sc3_server.service.SaleItemServiceV2;
+import sit.int221.sc3_server.service.saleItem.SaleItemServiceV2;
 import sit.int221.sc3_server.utils.ListMapper;
 
 import java.util.List;

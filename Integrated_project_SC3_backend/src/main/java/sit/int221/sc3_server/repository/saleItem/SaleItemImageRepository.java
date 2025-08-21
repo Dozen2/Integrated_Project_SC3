@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.repository;
+package sit.int221.sc3_server.repository.saleItem;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

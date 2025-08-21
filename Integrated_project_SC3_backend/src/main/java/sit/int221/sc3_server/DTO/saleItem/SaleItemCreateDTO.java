@@ -1,17 +1,13 @@
-package sit.int221.sc3_server.DTO;
+package sit.int221.sc3_server.DTO.saleItem;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+import sit.int221.sc3_server.DTO.Brand.BrandDTO;
 
 import java.math.BigDecimal;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor

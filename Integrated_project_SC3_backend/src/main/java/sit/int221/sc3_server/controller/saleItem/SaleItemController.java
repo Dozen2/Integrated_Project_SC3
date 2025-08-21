@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.controller;
+package sit.int221.sc3_server.controller.saleItem;
 
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
-import sit.int221.sc3_server.DTO.SalesItemDTO;
-import sit.int221.sc3_server.DTO.SalesItemDetailDTO;
+import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.saleItem.SalesItemDTO;
+import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.SaleItem;
-import sit.int221.sc3_server.service.SaleItemServices;
+import sit.int221.sc3_server.service.saleItem.SaleItemServices;
 import sit.int221.sc3_server.utils.ListMapper;
 
 import java.util.List;
