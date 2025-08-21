@@ -9,8 +9,8 @@ import BrandCreate from '@/views/Brand/BrandCreate.vue'
 import ProductManage from '@/views/SaleItem/SaleItemManage.vue'
 import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
-import Test_SaleItem_createEdit from '@/components/SaleItemComponent/Test_SaleItem_create&edit.vue'
-import TestImageUploader from '@/components/SaleItemComponent/Test-image-uploader.vue'
+import Register from '@/views/AuthUser/Register.vue'
+import Login from '@/views/AuthUser/Login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -64,15 +64,15 @@ const router = createRouter({
       component: BrandEdit
     },
     {
-      path: '/sale-items/test',
-      name: 'test_BrandEdit',
-      component: Test_SaleItem_createEdit
+      path: '/sale-items/register',
+      name: 'Register',
+      component: Register
     },
     {
-      path: '/sale-items/testImage',
-      name: 'test_image_uploader',
-      component: TestImageUploader
-    }
+      path: '/sale-items/login',
+      name: 'Login',
+      component: Login
+    },
   ],
 })
 
