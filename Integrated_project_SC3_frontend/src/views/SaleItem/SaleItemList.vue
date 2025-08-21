@@ -12,6 +12,7 @@ import Filter from "@/components/Common/Query/Filter.vue";
 import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
+import Search from "@/components/Common/Query/Search.vue";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -42,6 +43,8 @@ const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
+
+  SEARCH: "SaleItem-Search",
 };
 
 const DEFAULT_VALUES = {
@@ -106,6 +109,7 @@ const getCurrentFilters = () => ({
     DEFAULT_VALUES.sortDirection
   ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
+  search: getSessionValue(SESSION_KEYS.SEARCH, ""),
 });
 
 // ======================== Data Processing Helpers ========================
@@ -226,7 +230,8 @@ const loadProductsWithFilters = async (filters) => {
       filters.page,
       storageValues,
       minPrice,
-      maxPrice
+      maxPrice,
+      filters.search
     );
     product.value = data;
     totalPages.value = data.totalPages;
@@ -293,6 +298,15 @@ const handlePriceFilter = async (newPrices) => {
     sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
     customPriceRange.value = { min: null, max: null };
   }
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handleSearch = async (keyword) => {
+  console.log(keyword);
+  setSession(SESSION_KEYS.SEARCH, keyword);
+  setSession(SESSION_KEYS.PAGE, 0);
 
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
@@ -436,7 +450,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 mx-[225px] mt-[50px]">
+  <div class="flex flex-col gap-6 m-10">
     <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
@@ -452,148 +466,156 @@ onBeforeUnmount(() => {
 
     <!-- Action Buttons -->
     <div class="flex items-center justify-between gap-4">
+      <!-- New Product -->
       <RouterLink
         :to="{ name: 'ProuctCreate' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
         <span class="itbms-sale-item-add tracking-wide">New Product</span>
       </RouterLink>
 
+      <!-- Manage Items -->
       <RouterLink
         :to="{ name: 'ProductManage' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
         <span class="itbms-manage-brand tracking-wide">Manage Sale Items</span>
       </RouterLink>
     </div>
 
-    <!-- Filters -->
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
-      :options="brand"
-      label="Filter by brands"
-      placeholder="Select brands"
-      :sessionKey="SESSION_KEYS.BRAND"
-      valueField="name"
-      displayField="name"
-      mode="brand"
-      @filterChanged="handleBrandFilter"
-    />
-
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
-      :options="STORAGE_OPTIONS"
-      label="Filter by Storages"
-      placeholder="Select StoragesGB"
-      :sessionKey="SESSION_KEYS.STORAGE"
-      valueField="name"
-      displayField="name"
-      mode="Storages"
-      @filterChanged="handleStorageFilter"
-    />
-
-    <!-- Price Filter with Custom Input -->
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
-      :options="priceOption"
-      label="Filter by Price"
-      placeholder="Select Price Range"
-      :sessionKey="SESSION_KEYS.PRICE"
-      valueField="value"
-      displayField="name"
-      :enableCustomPriceInput="true"
-      mode="price"
-      @filterChanged="handlePriceFilter"
-    >
-      <template #InputPrice>
-        <div class="flex gap-2 mt-2">
-          <input
-            type="number"
-            class="border rounded px-2 py-1 w-28"
-            placeholder="Min"
-            v-model.number="min_price"
-          />
-          <span>-</span>
-          <input
-            type="number"
-            class="border rounded px-2 py-1 w-28"
-            placeholder="Max"
-            v-model.number="max_price"
-          />
-          <button
-            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-            @click="applyCustomPrice"
-          >
-            Apply
-          </button>
-        </div>
-      </template>
-    </Filter>
-
-    <!-- Clear Button -->
-    <div class="flex justify-end mb-4">
-      <ClearButton
-        :sessionKeys="[
-          SESSION_KEYS.BRAND,
-          SESSION_KEYS.STORAGE,
-          SESSION_KEYS.PRICE,
-          SESSION_KEYS.CUSTOM_PRICE_MIN,
-          SESSION_KEYS.CUSTOM_PRICE_MAX,
-          SESSION_KEYS.PAGE,
-        ]"
-        @cleared="handleClear"
+    <!-- 🔹 Search + SizeAndSort แนวนอน -->
+    <div class="flex justify-between items-center gap-4">
+      <SizeAndSort
+        :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
+        :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+        :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
+        @sizeChanged="handleSizeChange"
+        @sortChanged="handleSortChange"
       />
+      <Search @search="handleSearch" />
     </div>
 
-    <!-- Size and Sort -->
-    <SizeAndSort
-      :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
-      :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
-      :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
-      @sizeChanged="handleSizeChange"
-      @sortChanged="handleSortChange"
-    />
+    <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
+    <div class="flex gap-6">
+      <!-- Filters -->
+      <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
+        <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
+          Filter by:
+        </div>
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
+          :options="brand"
+          label="Brands"
+          placeholder="Select brands"
+          :sessionKey="SESSION_KEYS.BRAND"
+          valueField="name"
+          displayField="name"
+          mode="brand"
+          @filterChanged="handleBrandFilter"
+        />
 
-    <!-- Product Gallery -->
-    <SelectAllSaleItemGallery
-      v-if="product?.content"
-      :product="product.content"
-      :imageUrl="imageUrl"
-    />
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
+          :options="STORAGE_OPTIONS"
+          label="Storages"
+          placeholder="Select StoragesGB"
+          :sessionKey="SESSION_KEYS.STORAGE"
+          valueField="name"
+          displayField="name"
+          mode="Storages"
+          @filterChanged="handleStorageFilter"
+        />
 
-    <!-- Pagination -->
-    <Pagination
-      :initialTotalPages="totalPages"
-      :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
-      @pageChanged="handlePageChange"
-    />
+        <!-- Price Filter -->
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+          :options="priceOption"
+          label="Price"
+          placeholder="Select Price Range"
+          :sessionKey="SESSION_KEYS.PRICE"
+          valueField="value"
+          displayField="name"
+          :enableCustomPriceInput="true"
+          mode="price"
+          @filterChanged="handlePriceFilter"
+        >
+          <template #InputPrice>
+            <div class="items-center px-4 py-3 border-t border-gray-100 gap-2">
+              <div class="mb-[7px] text-gray-800 font-semibold">
+                Custom Price
+              </div>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Min</span>
+                <input
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
+                  placeholder="Min"
+                  v-model.number="min_price"
+                />
+              </div>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Max</span>
+                <input
+                  :disabled="min_price === null"
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
+                  placeholder="Max"
+                  v-model.number="max_price"
+                />
+              </div>
+              <div v-if="min_price > max_price && max_price != 0">
+                <p class="text-red-500 text-sm">
+                  * Min price must be least than max price
+                </p>
+              </div>
+              <div class="flex justify-end">
+                <button
+                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
+                  @click="applyCustomPrice"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </template>
+        </Filter>
+
+        <!-- Clear Button -->
+        <div class="flex justify-end mr-[25px]">
+          <ClearButton
+            :sessionKeys="[
+              SESSION_KEYS.BRAND,
+              SESSION_KEYS.STORAGE,
+              SESSION_KEYS.PRICE,
+              SESSION_KEYS.CUSTOM_PRICE_MIN,
+              SESSION_KEYS.CUSTOM_PRICE_MAX,
+              SESSION_KEYS.PAGE,
+              SESSION_KEYS.SEARCH,
+            ]"
+            @cleared="handleClear"
+          />
+        </div>
+      </div>
+
+      <!-- Product Gallery -->
+      <div class="flex-1">
+        <SelectAllSaleItemGallery
+          v-if="product?.content"
+          :product="product.content"
+          :imageUrl="imageUrl"
+        />
+      </div>
+    </div>
+
+    <!-- 🔹 Pagination ด้านล่าง -->
+    <div class="mt-4">
+      <Pagination
+        :initialTotalPages="totalPages"
+        :initialPage="
+          getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1
+        "
+        @pageChanged="handlePageChange"
+      />
+    </div>
   </div>
 </template>

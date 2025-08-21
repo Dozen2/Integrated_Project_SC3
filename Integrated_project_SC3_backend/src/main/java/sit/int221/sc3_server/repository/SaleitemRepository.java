@@ -67,11 +67,8 @@ Page<SaleItem> findFilteredProduct(
     );
 
     @Query("""
-    SELECT p
-    FROM SaleItem p
-    LEFT JOIN FETCH p.saleItemImage sii
-    WHERE sii.imageViewOrder = 1 OR sii.imageViewOrder IS NULL
-    AND (:brandNames is null or p.brand.name in :brandNames)
+    select p from SaleItem p
+    WHERE (:brandNames is null or p.brand.name in :brandNames)
       and (
             :storageGb is null
             or p.storageGb in :storageGb

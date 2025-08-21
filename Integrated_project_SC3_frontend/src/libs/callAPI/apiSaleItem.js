@@ -72,7 +72,8 @@ const getAllSaleItemV2 = async (
   page,
   filterStorages = [],
   filterPriceLower = null,
-  filterPriceUpper = null
+  filterPriceUpper = null,
+  search = ""
 ) => {
   filterBrand = filterBrand || [];
   filterStorages = filterStorages || [];
@@ -95,6 +96,11 @@ const getAllSaleItemV2 = async (
   }
   if (filterPriceUpper !== null && filterPriceUpper !== "") {
     params.append("filterPriceUpper", filterPriceUpper);
+  }
+
+  // เพิ่ม search keyword
+  if (search && search.trim() !== "") {
+    params.append("searchParam", search.trim());
   }
   
   // Sorting and pagination
