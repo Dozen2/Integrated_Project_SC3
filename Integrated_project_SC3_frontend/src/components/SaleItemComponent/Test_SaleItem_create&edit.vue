@@ -457,19 +457,18 @@ const saveProduct = async () => {
   try {
     if (product.id) {
       await updateSaleItem(product.id, product);
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else if (prop.mode === "Edit") {
-      await updateSaleItem(product.id, product);
-
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else {
-      await addSaleItem(product);
-      setSessionStorage();
-      alertStore.setMessage("The sale item has been successfully added.");
-      router.go(-1);
-    }
+alertStore.addToast("The sale item has been updated.", "Update success", "success");
+router.go(-1);
+} else if (prop.mode === "Edit") {
+await updateSaleItem(product.id, product);
+alertStore.addToast("The sale item has been updated.", "Update success", "success");
+router.go(-1);
+} else {
+await addSaleItem(product);
+setSessionStorage();
+alertStore.addToast("The sale item has been successfully added.", "Add success", "success");
+router.go(-1);
+}
   } catch (err) {
     console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
     alert(err.message);

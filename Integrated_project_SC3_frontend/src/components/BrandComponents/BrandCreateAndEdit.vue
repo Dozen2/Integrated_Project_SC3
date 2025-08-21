@@ -49,6 +49,7 @@ onBeforeMount(async () => {
       brand.countryOfOrigin = data.countryOfOrigin;
       brand.isActive = data.isActive;
       Object.assign(originalBrand, JSON.parse(JSON.stringify(brand)));
+      console.log("Brand data loaded for editing:", data);
     } catch (err) {
       console.log(err);
     }
@@ -178,15 +179,16 @@ const handleSave = async () => {
         isEdit,
         newBrand
       );
-      alertStore.setMessage("The sale item has been updated.");
-      router.push({ name: "BrandManage" });
-      alertStore.setMessage("The brand has been updated.");
-    } else {
-      await addData(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, newBrand);
-      alertStore.setMessage("The brand has been added.");
-      router.push({ name: "BrandManage" });
-      alertStore.setMessage("The brand has been added.");
-    }
+      alertStore.addToast("The sale item has been updated.", "Update success", "success");
+router.push({ name: "BrandManage" });
+alertStore.addToast("The brand has been updated.", "Update success", "success");
+} else {
+  await addData(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, newBrand);
+  alertStore.addToast("The brand has been added.", "Add success", "success");
+  router.push({ name: "BrandManage" });
+  alertStore.addToast("The brand has been added.", "Add success", "success");
+}
+
   } catch (err) {
     console.log(err);
   } finally {

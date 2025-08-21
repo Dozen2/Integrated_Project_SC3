@@ -1,11 +1,13 @@
 <script setup>
 import navbar  from "./components/Common/Navbar.vue";
-import { useToast } from "primevue/usetoast";
-import Toast from 'primevue/toast';
-import Button from 'primevue/button';
-const toast = useToast();
-const show = () => {
-    toast.add({ severity: 'info', summary: 'Info', detail: 'Message Content', life: 3000 });
+// import { useToast } from "primevue/usetoast";
+// import Toast from 'primevue/toast';
+import Toast from './components/Common/Toast.vue';
+import { useAlertStore } from "@/stores/alertStore.js";
+const alertStore = useAlertStore();
+
+const click = () => {
+alertStore.addToast("The sale item has been updated.", "Success", "error");
 };
 </script>
 <template>
@@ -15,5 +17,8 @@ const show = () => {
         <Button label="Show" @click="show()" />
         <p></p>
     </div> -->
+    <!-- <button @click="click">Click</button> -->
+    <Toast />
+
   <RouterView />
 </template>
