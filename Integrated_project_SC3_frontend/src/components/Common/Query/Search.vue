@@ -11,7 +11,7 @@ const handleSearch = () => {
 
 const clearSearch = () => {
   searchQuery.value = ""
-  emit("search", "")
+  emit("search", "") 
 }
 </script>
 

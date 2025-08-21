@@ -490,7 +490,7 @@ onBeforeUnmount(() => {
         :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
         :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
         @sizeChanged="handleSizeChange"
-        @sortChanged="handleSortChange"
+        @sortChanged="handleSortChange" 
       />
       <Search @search="handleSearch" />
     </div>
