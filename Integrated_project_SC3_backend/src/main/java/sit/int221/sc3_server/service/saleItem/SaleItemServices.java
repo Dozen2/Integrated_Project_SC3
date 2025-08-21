@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.service;
+package sit.int221.sc3_server.service.saleItem;
 
 
 import org.modelmapper.ModelMapper;
@@ -6,14 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
-import sit.int221.sc3_server.exception.CreateFailedException;
-import sit.int221.sc3_server.exception.ItemNotFoundException;
-import sit.int221.sc3_server.exception.UpdateFailedException;
-import sit.int221.sc3_server.repository.BrandRepository;
-import sit.int221.sc3_server.repository.SaleitemRepository;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
+import sit.int221.sc3_server.exception.crudException.UpdateFailedException;
+import sit.int221.sc3_server.repository.brand.BrandRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
 
 import java.util.List;
 

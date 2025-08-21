@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.exception;
+package sit.int221.sc3_server.exception.crudException;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Getter
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class UpdateFailedException extends RuntimeException {
-    private String appErrorCode = "500-01";
-
-    public UpdateFailedException(String message) {
+public class CreateFailedException extends RuntimeException {
+    public CreateFailedException (String message){
         super(message);
     }
 

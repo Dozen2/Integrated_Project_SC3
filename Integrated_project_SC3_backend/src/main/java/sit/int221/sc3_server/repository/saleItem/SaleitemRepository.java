@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.repository;
+package sit.int221.sc3_server.repository.saleItem;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,12 +57,19 @@ Page<SaleItem> findFilteredProduct(
           )
       and (:minPrice is null or p.price >= :minPrice)
       and (:maxPrice is null or p.price <= :maxPrice)
+      and (
+        :searchValue IS NULL
+        OR lower(p.model) like concat('%', :searchValue, '%')
+        OR lower(cast(p.description as string)) like concat('%', :searchValue, '%')
+        OR lower(p.color) like concat('%', :searchValue, '%')
+    )
 """)
     Page<SaleItem> findFilteredProductAndNullStorageGb(
             @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,
             @Param("maxPrice") Integer maxPrice,
+            @Param("searchValue") String searchValue,
             Pageable pageable
     );
 
@@ -75,12 +82,18 @@ Page<SaleItem> findFilteredProduct(
             or p.storageGb IS NULL
           )
       and (:minPrice is null or p.price = :minPrice)
-
+       and (
+        :searchValue IS NULL
+        OR lower(p.model) like concat('%', :searchValue, '%')
+        OR lower(cast(p.description as string)) like concat('%', :searchValue, '%')
+        OR lower(p.color) like concat('%', :searchValue, '%')
+    )
 """)
     Page<SaleItem> findFilteredProductAndNullStorageGbAndMinPrice(
             @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,
+            @Param("searchValue") String searchValue,
             Pageable pageable
     );
 

@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.DTO;
+package sit.int221.sc3_server.DTO.Brand;
 
 
 import lombok.Data;

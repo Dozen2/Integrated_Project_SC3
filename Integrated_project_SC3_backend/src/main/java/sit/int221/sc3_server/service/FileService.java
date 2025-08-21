@@ -10,8 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.configuration.FileStorageProperties;
-import sit.int221.sc3_server.repository.SaleItemImageRepository;
-import sit.int221.sc3_server.repository.SaleitemRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleItemImageRepository;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

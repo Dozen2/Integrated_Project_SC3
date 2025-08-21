@@ -1,12 +1,13 @@
-package sit.int221.sc3_server.DTO;
+package sit.int221.sc3_server.DTO.saleItem;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateBrandDTO {
+public class UpdateBrandDTO {
     @NotBlank(message = "name is required")
     private String Name;
     private String websiteUrl;

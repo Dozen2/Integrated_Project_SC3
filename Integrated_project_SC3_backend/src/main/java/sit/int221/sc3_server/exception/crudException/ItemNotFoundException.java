@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.exception;
+package sit.int221.sc3_server.exception.crudException;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
