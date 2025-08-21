@@ -18,7 +18,8 @@ import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'; 
+import { ChevronLeft, ChevronRight, Upload, X } from 'lucide-vue-next'; 
+import {ChevronDown, ChevronUp} from 'lucide-vue-next';
 
 
 const boxTextTailwind =
@@ -443,8 +444,8 @@ const validateFileSize = (selectedFiles) => {
     errors: errors
   };
 };
-const removeFile = (index) => {
-  
+
+const removeFile = (index) => {  
   //push name deleted to deletedImage
   if (fileImageOrganize.value[index].fileName) {
     deletedImage.value.push(fileImageOrganize.value[index].fileName);
@@ -805,19 +806,16 @@ if (Array.isArray(saleItem.saleItemImage)) {
           </div>
         </div>
          <!-- File Upload -->
-        <div class="mb-6 max-w-[500px]">
+        <div class="mb-6 max-w-[500px] ">
           <label for="file-upload"
-            class="cursor-pointer inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff">
-              <path
-                d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-            </svg>
-            Upload saleItemImage
+            class="flex cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-[200px] transition justify-center">
+            <Upload class="mr-[7px]"/>
+            <span class="font-semibold">Upload Image</span>
           </label>
           <input id="file-upload" type="file" class="hidden" multiple accept="image/*" @change="handleFileChange" />
           <div class="mt-2 text-sm text-gray-500">
-            <p>Maximum file size: 2MB per image</p>
-            <p>Maximum total size: 5MB for all saleItemImage</p>
+            <p>* Maximum file size: 2MB per image</p>
+            <p>* Maximum total size: 5MB for all saleItemImage</p>
           </div>
         </div>
 
@@ -829,18 +827,18 @@ if (Array.isArray(saleItem.saleItemImage)) {
             <span class="truncate max-w-[200px]">{{ file.orgFileName }}</span>
 
             <!-- ปุ่ม action -->
-            <div class="flex gap-2">
+            <div class="flex ">
+              <button @click="removeFile(index)"
+              class="px-2 py-1 mr-2 text-red-500 hover:text-red-700 transition">
+                <X />
+              </button>
               <button @click="moveUp(index)" :disabled="index === 0"
-                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
-                ⬆️
+                class="py-1 disabled:opacity-50 transition hover:text-blue-400">
+                <ChevronUp/>
               </button>
               <button @click="moveDown(index)" :disabled="index === fileImageOrganize.length - 1"
-                class="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400 transition">
-                ⬇️
-              </button>
-              <button @click="removeFile(index)"
-                class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition">
-                ลบ
+                class="pr-2 py-1 disabled:opacity-50 transition hover:text-blue-400">
+                <ChevronDown/>
               </button>
             </div>
           </li>
