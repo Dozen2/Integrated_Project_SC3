@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.service;
+package sit.int221.sc3_server.service.saleItem;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,26 +8,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import sit.int221.sc3_server.DTO.SaleItemCreateDTO;
-import sit.int221.sc3_server.DTO.SaleItemImageRequest;
-import sit.int221.sc3_server.DTO.SaleItemWithImageInfo;
-import sit.int221.sc3_server.configuration.FileStorageProperties;
+import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemImageRequest;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
 import sit.int221.sc3_server.entity.Brand;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.SaleItemImage;
 import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.*;
-import sit.int221.sc3_server.repository.BrandRepository;
-import sit.int221.sc3_server.repository.SaleItemImageRepository;
-import sit.int221.sc3_server.repository.SaleitemRepository;
-import sit.int221.sc3_server.repository.StorageGbViewRepository;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
+import sit.int221.sc3_server.exception.crudException.DeleteFailedException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
+import sit.int221.sc3_server.exception.crudException.UpdateFailedException;
+import sit.int221.sc3_server.repository.brand.BrandRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleItemImageRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
+import sit.int221.sc3_server.repository.saleItem.StorageGbViewRepository;
+import sit.int221.sc3_server.service.FileService;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SaleItemServiceV2 {
@@ -53,19 +53,18 @@ public class SaleItemServiceV2 {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField).and(Sort.by(directionId, "id")));
         filterBrands = (filterBrands == null || filterBrands.isEmpty())? null :filterBrands;
         filterStorages = (filterStorages == null || filterStorages.isEmpty())? null : filterStorages;
-        searchValue = (searchValue == null || searchValue.isBlank())? null : searchValue;
         String keyword = (searchValue == null || searchValue.isBlank()) ? null : searchValue.toLowerCase();
 
         if(filterPriceLower != null && filterPriceUpper == null  ){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,keyword,pageable);
         }
         if(filterPriceUpper != null && filterPriceLower == null){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,keyword,pageable);
         }
 
 
         if (filterStorages != null && filterStorages.contains(-1)) {
-            return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
 
         }
 

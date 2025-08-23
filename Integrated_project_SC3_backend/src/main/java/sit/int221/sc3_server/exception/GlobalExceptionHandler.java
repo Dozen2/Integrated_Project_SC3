@@ -3,9 +3,12 @@ package sit.int221.sc3_server.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
+import sit.int221.sc3_server.exception.crudException.DeleteFailedException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
+import sit.int221.sc3_server.exception.crudException.UpdateFailedException;
 
 
 @RestControllerAdvice

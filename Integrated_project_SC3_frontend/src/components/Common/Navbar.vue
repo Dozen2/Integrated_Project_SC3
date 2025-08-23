@@ -1,13 +1,9 @@
 <script setup>
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
-// import Search from './Query/Search.vue'; // สมมติว่ามีไฟล์นี้
 
-const cartItemCount = ref(3) // ตัวแปรสมมติสำหรับจำนวนสินค้าในตะกร้า
+import { ref } from "vue"
 
-const handleSearch = (keyword) => {
-  console.log("ค้นหา:", keyword)
-}
+const showMenu = ref(false)
+const toggleMenu = () => (showMenu.value = !showMenu.value)
 </script>
 
 <template>
@@ -45,11 +41,49 @@ const handleSearch = (keyword) => {
       </div>
 
       <div class="flex items-center gap-6">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28px" height="28px" fill="currentColor"
-          class="cursor-pointer hover:text-sky-400 transition-colors duration-300"
-          viewBox="0 0 16 16">
-          <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-        </svg>
+        <div class="relative inline-block">
+        <!-- ปุ่มหลัก -->
+        <button
+          @click="toggleMenu"
+          class="p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 -960 960 960" width="28" fill="#1d4ed8">
+            <path
+              d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+          </svg>
+        </button>
+
+        <!-- เมนู Login/Signup -->
+        <div
+          v-if="showMenu"
+          class="absolute right-0 mt-3 w-40 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden z-50"
+        >
+          <RouterLink 
+            :to="{name: 'Login'}"
+            class="flex items-center gap-2 w-full px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors"
+            @click="toggleMenu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
+              <path
+                d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z" />
+            </svg>
+            <span class="font-medium">Login</span>
+          </RouterLink>
+
+          <RouterLink
+            :to="{name: 'Register'}"
+            class="flex items-center gap-2 w-full px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors"
+            @click="toggleMenu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
+              <path
+                d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm0-240q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm0-240q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640ZM480-400q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm40 240v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T863-380L643-160H520Z" />
+            </svg>
+            <span class="font-medium">Signup</span>
+          </RouterLink>
+          
+        </div>
+      </div>
 
         <div class="relative">
           <svg xmlns="http://www.w3.org/2000/svg" height="28px" width="28px" viewBox="0 -960 960 960"

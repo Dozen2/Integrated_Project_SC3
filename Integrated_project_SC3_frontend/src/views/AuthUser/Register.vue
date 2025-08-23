@@ -25,3 +25,4 @@ import RegisterSeller from "@/components/AuthUserComponent/RegisterSeller.vue";
     </Tabs>
   </div>
 </template>
+

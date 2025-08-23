@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.controller;
+package sit.int221.sc3_server.controller.brand;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,12 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import sit.int221.sc3_server.DTO.BrandDetailDTO;
-import sit.int221.sc3_server.DTO.CreateBrandDTO;
-import sit.int221.sc3_server.DTO.UpdateBrandDTO;
+import sit.int221.sc3_server.DTO.Brand.BrandDetailDTO;
+import sit.int221.sc3_server.DTO.Brand.CreateBrandDTO;
+import sit.int221.sc3_server.DTO.saleItem.UpdateBrandDTO;
 
 import sit.int221.sc3_server.entity.Brand;
-import sit.int221.sc3_server.service.BrandServices;
+import sit.int221.sc3_server.service.brand.BrandServices;
 import sit.int221.sc3_server.utils.ListMapper;
 
 import java.util.List;
