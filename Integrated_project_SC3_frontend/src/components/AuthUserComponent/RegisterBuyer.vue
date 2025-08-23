@@ -57,7 +57,7 @@
             Sign Up
           </button>
           <RouterLink 
-            :to="{ name: 'Home' }"
+            :to="{ name: 'Products' }"
             class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition">
             Cancel
           </RouterLink>

@@ -331,6 +331,7 @@ const handleFileChange = (event) => {
   if (longFilenames.length > 0) {
     const fileList = longFilenames.map(file => `"${file.name}" (${file.name.length} ตัวอักษร)`).join('\n');
     alert(`ชื่อไฟล์ต่อไปนี้ยาวเกิน ${MAX_FILENAME_LENGTH} ตัวอักษร:\n${fileList}\n\nกรุณาเปลี่ยนชื่อไฟล์ให้สั้นลงก่อนอัปโหลด`);
+    
     event.target.value = "";
     return;
   }
@@ -346,13 +347,15 @@ const handleFileChange = (event) => {
     const remainingSlots = MAX_IMAGES - currentImageCount;
     
     if (remainingSlots <= 0) {
-      alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
+      // alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
+       alertStore.addToast(`You've reached the upload limit of ${MAX_IMAGES} images.`, "Image upload limit exceeded.", "warning", 8000);
+      
       event.target.value = "";
       return;
     }
     
     filesToProcess = selectedFiles.slice(0, remainingSlots);
-    warningMessage = `คุณเลือกรูป ${selectedFiles.length} รูป แต่สามารถอัปโหลดได้อีกเพียง ${remainingSlots} รูป\nจึงจะอัปโหลดเฉพาะ ${remainingSlots} รูปแรกเท่านั้น`;
+    warningMessage = `You can only upload ${remainingSlots} more images. Your selection of ${selectedFiles.length} will be trimmed.`;
   }
   
   // ตรวจสอบขนาดไฟล์
@@ -365,13 +368,16 @@ const handleFileChange = (event) => {
   // }
 
   if (!validation.isValid) {
-  alert(validation.errors.join("\n"));
+  // alert(validation.errors.join("\n"));
+      alertStore.addToast(validation.errors.join("\n"), "Image upload limit exceeded.", "warning", 8000);
+
 }
 
 filesToProcess = validation.validFiles;
   
   if (warningMessage) {
-    alert(warningMessage);
+    // alert(warningMessage);
+    alertStore.addToast(warningMessage, "Image upload limit exceeded.", "warning", 8000);
   }
 
   console.log("filesToProcess: ",filesToProcess)
@@ -438,8 +444,7 @@ const validateFileSize = (selectedFiles) => {
   const validFiles = selectedFiles.filter((file) => {
     if (file.size > FILE_SIZE_LIMITS.MAX_FILE_SIZE) {
       errors.push(
-        `ไฟล์ "${file.name}" (${formatFileSize(file.size)}) มีขนาดเกิน ` +
-        `${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)} และจะถูกลบออก`
+        `File ${file.name} (${formatFileSize(file.size)}) exceeds the maximum size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)} and will be removed.`
       );
       return false; // ตัดไฟล์นี้ออก
     }
@@ -450,8 +455,7 @@ const validateFileSize = (selectedFiles) => {
   // ตรวจสอบขนาดรวมทั้งหมด
   if (totalSize > FILE_SIZE_LIMITS.MAX_REQUEST_SIZE) {
     errors.push(
-      `ขนาดรวมไฟล์ทั้งหมด (${formatFileSize(totalSize)}) ` +
-      `เกินขนาดสูงสุดที่อนุญาต ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}`
+      `The total file size (${formatFileSize(totalSize)}) exceeds the maximum allowed size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}.`
     );
   }
 

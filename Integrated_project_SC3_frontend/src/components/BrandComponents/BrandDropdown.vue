@@ -128,13 +128,15 @@ defineExpose({
       @change="handleChange"
       :class="`itbms-brand w-full px-4 py-2 text-sm border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errorColor}`"
     >
-      <option value="">-- เลือกแบรนด์ --</option>
+      <option value="">{{ prop.brandName || "Select Brand" }}</option>
+
       <option
         v-for="option in options"
         :key="option.id"
         :value="option.id"
         class=""
       >
+      
         {{ option.name }}
       </option>
     </select>
