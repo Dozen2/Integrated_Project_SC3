@@ -770,7 +770,7 @@ else {
       </div>
     </div>
 
-    <div class=" m-5 ml-[120px] flex flex-row justify-center items-center ">
+    <div class=" m-5 ml-[120px] flex flex-row justify-center ">
       <!-- Image Preview Section - ใช้ saleItem.saleItemImage แทน saleItemImage -->
       <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative ">
         

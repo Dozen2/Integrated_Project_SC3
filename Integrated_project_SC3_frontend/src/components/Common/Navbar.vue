@@ -65,7 +65,3 @@ const handleSearch = (keyword) => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* คุณสามารถเพิ่ม custom styles ที่นี่ได้ถ้าต้องการ */
-</style>
