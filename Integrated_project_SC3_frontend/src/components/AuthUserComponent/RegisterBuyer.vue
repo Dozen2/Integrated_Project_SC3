@@ -2,6 +2,9 @@
 import { computed, reactive, ref } from "vue";
 import InputBox from "./../Common/InputBox.vue";
 
+const submittedForms = ref([]); // เก็บ submission หลายชุด
+
+
 const nickname = ref("");
 const fullname = ref("");
 const email = ref("");
@@ -45,16 +48,12 @@ const isFormValid = computed(() => {
 // =================== Validation ===================
 const validateNickname = () => {
   form.nickname.isValid = nickname.value.trim().length > 0;
-  // form.nickname.isFirstInput =
-  //   form.nickname.isFirstInput && nickname.value === "" ? true : false;
   updateIsFirstInput("nickname", nickname.value);
 };
 
 const validateFullname = () => {
   const len = fullname.value.trim().length;
   form.fullname.isValid = len >= 4 && len <= 40;
-  // form.fullname.isFirstInput =
-  //   form.fullname.isFirstInput && fullname.value === "" ? true : false;
   updateIsFirstInput("fullname", fullname.value);
 };
 
@@ -76,16 +75,25 @@ const validatePassword = () => {
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
-};
-
-// Submit
-const summitForm = () => {
+};const summitForm = () => {
   if (isFormValid.value) {
-    console.log("Form is valid. Submitting...");
+    // รวมค่าแต่ละ field เป็น object
+    const formData = {
+      nickname: nickname.value,
+      fullname: fullname.value,
+      email: email.value,
+      password: password.value,
+    };
+
+    // push เข้า array เก็บ submission
+    submittedForms.value.push(formData);
+
+    console.log("Form is valid. Submitting...", formData);
   } else {
     console.log("Form has errors. Please fix them.");
   }
 };
+
 </script>
 <template>
   <div
