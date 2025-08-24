@@ -9,7 +9,7 @@ import RegisterSeller from "@/components/AuthUserComponent/RegisterSeller.vue";
 </script>
 <template>
   <div class="card">
-    <Tabs value="0">
+    <Tabs value="1">
       <TabList>     
         <Tab value="0">Buyer</Tab>
         <Tab value="1">Seller</Tab>
