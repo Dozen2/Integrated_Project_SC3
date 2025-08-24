@@ -14,7 +14,7 @@ public class WebConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable()) // ปิด cors ชั่วคราว เพื่อตัดสาเหตุ
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/itb-mshop/v2/register", "/itb-mshop/v2/**").permitAll()
+                        .requestMatchers("/itb-mshop/v2/user/register", "/itb-mshop/v2/**").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();
