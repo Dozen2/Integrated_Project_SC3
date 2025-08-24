@@ -42,9 +42,8 @@ function validateValue() {
     <input
       :type="type"
       :placeholder="placeholder"
-      :value="modelValue"
-      @input="updateValue"
-      @blur="validateValue"
+      :value="modelValue" 
+       @input="(e) => { updateValue(e); validateValue(); }"
       :class="[
         'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2',
         isValid || isFirstInput
