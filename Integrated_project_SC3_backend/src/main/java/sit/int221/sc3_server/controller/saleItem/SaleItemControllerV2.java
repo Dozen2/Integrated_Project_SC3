@@ -79,6 +79,7 @@ public class SaleItemControllerV2 {
                 .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
     }
 
+
     @GetMapping("/sale-items/storages")
     public ResponseEntity<List<StorageGbView>> getStorageView(){
         return ResponseEntity.ok().body(saleItemServiceV2.getStorageView());

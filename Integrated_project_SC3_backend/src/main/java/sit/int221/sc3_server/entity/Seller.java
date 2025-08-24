@@ -49,7 +49,7 @@ public class Seller {
     @Column(name = "nationalIdPhotoBack", nullable = false, length = 70)
     private String nationalIdPhotoBack;
 
-    @OneToMany(mappedBy = "seller")
-    private Set<User> users = new LinkedHashSet<>();
+    @OneToOne(mappedBy = "seller")
+    private User user;
 
 }

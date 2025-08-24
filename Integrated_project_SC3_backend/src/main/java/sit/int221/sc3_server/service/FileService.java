@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.configuration.FileStorageProperties;
 import sit.int221.sc3_server.repository.saleItem.SaleItemImageRepository;
+import sit.int221.sc3_server.repository.user.SellerRepository;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,23 +26,30 @@ import java.util.stream.Collectors;
 @Service
 public class FileService {
     private final Path fileStorageLocation;
+    private final Path nationalIdProfilePath;
     @Autowired
     private FileStorageProperties fileStorageProperties;
     @Autowired
     private SaleItemImageRepository saleItemImageRepository;
+    @Autowired
+    private SellerRepository sellerRepository;
 
     public FileService(FileStorageProperties fileStorageProperties){
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
+        this.nationalIdProfilePath = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
         try{
             if (!Files.exists(this.fileStorageLocation)){
                 Files.createDirectories(this.fileStorageLocation);
+            }
+            if (!Files.exists(this.nationalIdProfilePath)){
+                Files.createDirectories(this.nationalIdProfilePath);
             }
         }catch (Exception e){
             throw new RuntimeException("Can’t create the directory where the uploaded files will be stored", e);
         }
     }
 
-    public String store(MultipartFile file,String newFileName){
+    public String store(MultipartFile file,String newFileName,String folderType){
         String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         String newFile = StringUtils.cleanPath(newFileName);
         try {
@@ -51,8 +59,14 @@ public class FileService {
             if(!isSupportedContentType(file)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Does not support content type: " + file.getContentType());
             }
-            Files.createDirectories(this.fileStorageLocation);
-            Path targetLocation = this.fileStorageLocation.resolve(newFile);
+            Path targetDir;
+            switch (folderType.toLowerCase()){
+                case "salitem" ->targetDir = Paths.get("/saleItemImages").toAbsolutePath().normalize();
+                case "nationalid" ->targetDir = Paths.get("./nationalIdPhoto").toAbsolutePath().normalize();
+                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
+            }
+            Files.createDirectories(targetDir);
+            Path targetLocation = targetDir.resolve(newFile);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return newFile;
         }catch (IOException exception){
@@ -114,10 +128,28 @@ public class FileService {
     }
 
     public Resource loadFileAsResource(String fileName) {
-
+    //รับ parameter เพิ่ม 1 ตัวคือ String folderType แล้วเช็คเป็น case
         try {
+
             String file01 = saleItemImageRepository.findFileName(fileName);
             Path filePath = this.fileStorageLocation.resolve(file01).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists()) {
+                return resource;
+            } else {
+                throw new RuntimeException("File not found " + fileName);
+            }
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException("File operation error: "
+                    + fileName, ex);
+        }
+    }
+
+    public Resource loadFileAsResourceNational(String fileName) {
+        //รับ parameter เพิ่ม 1 ตัวคือ String folderType แล้วเช็คเป็น case
+        try {
+            String file01 = sellerRepository.findFileName(fileName);
+            Path filePath = this.nationalIdProfilePath.resolve(file01).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists()) {
                 return resource;
@@ -136,9 +168,15 @@ public class FileService {
             throw new RuntimeException("ProbeContentType error: " + resource,ex);
         }
     }
-    public void removeFile(String fileName) {
+    public void removeFile(String fileName,String folderType) {
         try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Path targetDir;
+            switch (folderType.toLowerCase()){
+                case "salItemImages" -> targetDir = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
+                case "nationalId" -> targetDir = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
+                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
+            }
+            Path filePath = targetDir.resolve(fileName).normalize();
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
             } else {
