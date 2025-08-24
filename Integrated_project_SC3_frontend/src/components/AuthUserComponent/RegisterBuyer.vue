@@ -2,9 +2,6 @@
 import { computed, reactive, ref } from "vue";
 import InputBox from "./../Common/InputBox.vue";
 
-const submittedForms = ref([]); // เก็บ submission หลายชุด
-
-
 const nickname = ref("");
 const fullname = ref("");
 const email = ref("");

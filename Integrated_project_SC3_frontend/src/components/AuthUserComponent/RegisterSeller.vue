@@ -15,6 +15,7 @@ const nationalId = ref("");
 const phoneNumber = ref("");
 const nationalIdFront = ref([]);
 const nationalIdBack = ref([]);
+const role = ref("seller");
 
 const bank = ref("");
 
@@ -156,6 +157,7 @@ const summitForm = () => {
       bankAccount: bankAccount.value,
       nationalId: nationalId.value,
       phoneNumber: phoneNumber.value,
+      role: role.value,
       nationalIdFront: [...nationalIdFront.value], // clone array ของไฟล์
       nationalIdBack: [...nationalIdBack.value],   // clone array ของไฟล์
     };
