@@ -10,20 +10,65 @@ const shopName = ref("");
 const bankAccount = ref("");
 const nationalId = ref("");
 const phoneNumber = ref("");
+const nationalIdFront = ref([]);
+const nationalIdBack = ref([]);
+
+const bank = ref("");
 
 // รวมทุก state ไว้ใน form
 const form = reactive({
-  nickname: { errorText: "Nickname is required", isValid: false, isFirstInput: true },
-  fullname: { errorText: "Full name must be 4–40 characters", isValid: false, isFirstInput: true },
-  email: { errorText: "Invalid email format", isValid: false, isFirstInput: true },
-  password: { errorText: "Password must be 8+ chars with uppercase, lowercase, number, special char", isValid: false, isFirstInput: true },
-  shopName: { errorText: "Shop name is required", isValid: false, isFirstInput: true },
-  bankAccount: { errorText: "Bank account must be at least 6 digits", isValid: false, isFirstInput: true },
-  nationalId: { errorText: "National ID must be 13 digits", isValid: false, isFirstInput: true },
-  phoneNumber: { errorText: "Phone number is required", isValid: false, isFirstInput: true },
-  bank: { errorText: "Hello eiei" },
-  nationalIdFront: { file: "Hello eiei", isValid: true },
-  nationalIdBack: { file: "Hello eiei", isValid: true },
+  nickname: {
+    errorText: "Nickname is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  fullname: {
+    errorText: "Full name must be 4–40 characters",
+    isValid: false,
+    isFirstInput: true,
+  },
+  email: {
+    errorText: "Invalid email format",
+    isValid: false,
+    isFirstInput: true,
+  },
+  password: {
+    errorText:
+      "Password must be 8+ chars with uppercase, lowercase, number, special char",
+    isValid: false,
+    isFirstInput: true,
+  },
+  shopName: {
+    errorText: "Shop name is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  bankAccount: {
+    errorText: "Bank account must be at least 6 digits",
+    isValid: false,
+    isFirstInput: true,
+  },
+  nationalId: {
+    errorText: "National ID must be 13 digits",
+    isValid: false,
+    isFirstInput: true,
+  },
+  phoneNumber: {
+    errorText: "Phone number is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  bank: { errorText: "Hello eiei", isValid: false, isFirstInput: true },
+  nationalIdFront: {
+    errorText: "Hello eiei",
+    isValid: false,
+    isFirstInput: true,
+  },
+  nationalIdBack: {
+    errorText: "Hello eiei",
+    isValid: false,
+    isFirstInput: true,
+  },
 });
 
 const isFormValid = computed(() => {
@@ -35,9 +80,7 @@ const isFormValid = computed(() => {
 
   console.table(results); // log สวยๆ ดูได้ว่าฟิลด์ไหนผ่านไม่ผ่าน
 
-  return results
-    .filter((r) => r.isValid !== null)
-    .every((r) => r.isValid);
+  return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
 });
 
 // =================== Validation ===================
@@ -63,7 +106,10 @@ const validateEmail = () => {
 };
 
 const validatePassword = () => {
-  form.password.isValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password.value);
+  form.password.isValid =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+      password.value
+    );
   updateIsFirstInput("password", password.value);
 };
 
@@ -87,7 +133,6 @@ const validatePhoneNumber = () => {
   form.phoneNumber.isValid = phoneNumber.value.trim().length > 0;
   updateIsFirstInput("phoneNumber", phoneNumber.value);
 };
-
 
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
@@ -179,11 +224,16 @@ const summitForm = () => {
 
         <!-- Bank -->
         <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600">Bank</label>
+          <label class="text-sm font-medium text-blue-600">Bank</label>
           <select
             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            v-model="bank"
+            @change="
+              form.bank.isValid = form.bank.selected !== '';
+              updateIsFirstInput('bank', form.bank.selected);
+            "
           >
-            <option value="">Select bank</option>
+            <option value="" disabled selected hidden>Select Bank</option>
             <option value="kbank">Kasikorn Bank</option>
             <option value="scb">Siam Commercial Bank</option>
             <option value="bbl">Bangkok Bank</option>
