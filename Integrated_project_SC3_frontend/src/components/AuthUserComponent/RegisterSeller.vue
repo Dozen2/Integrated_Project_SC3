@@ -10,89 +10,138 @@ const shopName = ref("");
 const bankAccount = ref("");
 const nationalId = ref("");
 const phoneNumber = ref("");
+const nationalIdFront = ref([]);
+const nationalIdBack = ref([]);
 
-// เก็บ state ของ validation
-const valid = reactive({
-  nickname: false,
-  fullname: false,
-  email: false,
-  password: false,
-  shopName: false,
-  bankAccount: false,
-  nationalId: false,
-  phoneNumber: false,
-});
-const isFirstInput = reactive({
-  nickname: true,
-  fullname: true,
-  email: true,
-  password: true,
-  shopName: true,
-  bankAccount: true,
-  nationalId: true,
-  phoneNumber: true,
+const bank = ref("");
+
+// รวมทุก state ไว้ใน form
+const form = reactive({
+  nickname: {
+    errorText: "Nickname is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  fullname: {
+    errorText: "Full name must be 4–40 characters",
+    isValid: false,
+    isFirstInput: true,
+  },
+  email: {
+    errorText: "Invalid email format",
+    isValid: false,
+    isFirstInput: true,
+  },
+  password: {
+    errorText:
+      "Password must be 8+ chars with uppercase, lowercase, number, special char",
+    isValid: false,
+    isFirstInput: true,
+  },
+  shopName: {
+    errorText: "Shop name is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  bankAccount: {
+    errorText: "Bank account must be at least 6 digits",
+    isValid: false,
+    isFirstInput: true,
+  },
+  nationalId: {
+    errorText: "National ID must be 13 digits",
+    isValid: false,
+    isFirstInput: true,
+  },
+  phoneNumber: {
+    errorText: "Phone number is required",
+    isValid: false,
+    isFirstInput: true,
+  },
+  bank: { errorText: "Hello eiei", isValid: false, isFirstInput: true },
+  nationalIdFront: {
+    errorText: "Hello eiei",
+    isValid: false,
+    isFirstInput: true,
+  },
+  nationalIdBack: {
+    errorText: "Hello eiei",
+    isValid: false,
+    isFirstInput: true,
+  },
 });
 
-// Computed property เพื่อเช็คว่าฟอร์มทั้งหมด valid หรือไม่
 const isFormValid = computed(() => {
-  console.log(Object.values(valid).every((v) => v));
-  return Object.values(valid).every((v) => v);
+  const results = Object.entries(form).map(([key, f]) => ({
+    field: key,
+    isValid: f.isValid ?? null, // ถ้าไม่มี isValid จะได้ null
+    isFirstInput: f.isFirstInput ?? null,
+  }));
+
+  console.table(results); // log สวยๆ ดูได้ว่าฟิลด์ไหนผ่านไม่ผ่าน
+
+  return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
 });
 
-// Validation functions สำหรับแต่ละ field
+// =================== Validation ===================
 const validateNickname = () => {
-  valid.nickname =
-    nickname.value.trim().length > 0 && nickname.value.trim().length <= 2;
-  isFirstInput.nickname =
-    isFirstInput.nickname && nickname.value == "" ? true : false;
+  form.nickname.isValid = nickname.value.trim().length > 0;
+  // form.nickname.isFirstInput =
+  //   form.nickname.isFirstInput && nickname.value === "" ? true : false;
+  updateIsFirstInput("nickname", nickname.value);
 };
 
 const validateFullname = () => {
-  valid.fullname = fullname.value.trim().length > 0;
-  isFirstInput.fullname =
-    isFirstInput.fullname && fullname.value == "" ? true : false;
+  const len = fullname.value.trim().length;
+  form.fullname.isValid = len >= 4 && len <= 40;
+  // form.fullname.isFirstInput =
+  //   form.fullname.isFirstInput && fullname.value === "" ? true : false;
+  updateIsFirstInput("fullname", fullname.value);
 };
 
 const validateEmail = () => {
-  valid.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
-
-  isFirstInput.email = isFirstInput.email && email.value == "" ? true : false;
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  form.email.isValid = regex.test(email.value);
+  updateIsFirstInput("email", email.value);
 };
 
 const validatePassword = () => {
-  valid.password = password.value.length >= 6;
-  isFirstInput.password =
-    isFirstInput.password && password.value == "" ? true : false;
+  form.password.isValid =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+      password.value
+    );
+  updateIsFirstInput("password", password.value);
 };
 
 const validateShopName = () => {
-  valid.shopName = shopName.value.trim().length > 0;
-  isFirstInput.shopName =
-    isFirstInput.shopName && shopName.value == "" ? true : false;
+  form.shopName.isValid = shopName.value.trim().length > 0;
+  updateIsFirstInput("shopName", shopName.value);
 };
 
 const validateBankAccount = () => {
-  valid.bankAccount =
+  form.bankAccount.isValid =
     /^[0-9]+$/.test(bankAccount.value) && bankAccount.value.length >= 6;
-  isFirstInput.bankAccount =
-    isFirstInput.bankAccount && bankAccount.value == "" ? true : false;
+  updateIsFirstInput("bankAccount", bankAccount.value);
 };
 
 const validateNationalId = () => {
-  valid.nationalId = /^[0-9]{13}$/.test(nationalId.value);
-  isFirstInput.nationalId =
-    isFirstInput.nationalId && nationalId.value == "" ? true : false;
+  form.nationalId.isValid = /^[0-9]{13}$/.test(nationalId.value);
+  updateIsFirstInput("nationalId", nationalId.value);
 };
 
 const validatePhoneNumber = () => {
-  valid.phoneNumber = phoneNumber.value.trim().length > 0;
-  isFirstInput.phoneNumber =
-    isFirstInput.phoneNumber && phoneNumber.value == "" ? true : false;
+  form.phoneNumber.isValid = phoneNumber.value.trim().length > 0;
+  updateIsFirstInput("phoneNumber", phoneNumber.value);
 };
 
+// Update isFirstInput
+const updateIsFirstInput = (field, value) => {
+  form[field].isFirstInput = form[field].isFirstInput && value === "";
+};
+
+// Submit
 const summitForm = () => {
   if (isFormValid.value) {
-    // Submit form
     console.log("Form is valid. Submitting...");
   } else {
     console.log("Form has errors. Please fix them.");
@@ -114,27 +163,29 @@ const summitForm = () => {
           label="Nickname"
           placeholder="Enter nickname"
           v-model="nickname"
-          :isValid="valid.nickname"
-          :isFirstInput="isFirstInput.nickname"
+          :isValid="form.nickname.isValid"
+          :isFirstInput="form.nickname.isFirstInput"
+          :errorText="form.nickname.errorText"
           @validateValue="validateNickname"
         />
-        {{ nickname }}
+
         <InputBox
           label="Full Name"
           placeholder="Enter full name"
           v-model="fullname"
-          :isValid="valid.fullname"
-          :isFirstInput="isFirstInput.fullname"
+          :isValid="form.fullname.isValid"
+          :isFirstInput="form.fullname.isFirstInput"
+          :errorText="form.fullname.errorText"
           @validateValue="validateFullname"
         />
-
         <InputBox
           label="Email"
           type="email"
           placeholder="Enter email"
           v-model="email"
-          :isValid="valid.email"
-          :isFirstInput="isFirstInput.email"
+          :isValid="form.email.isValid"
+          :isFirstInput="form.email.isFirstInput"
+          :errorText="form.email.errorText"
           @validateValue="validateEmail"
         />
 
@@ -143,8 +194,9 @@ const summitForm = () => {
           type="password"
           placeholder="Enter password"
           v-model="password"
-          :isValid="valid.password"
-          :isFirstInput="isFirstInput.password"
+          :isValid="form.password.isValid"
+          :isFirstInput="form.password.isFirstInput"
+          :errorText="form.password.errorText"
           @validateValue="validatePassword"
         />
 
@@ -152,8 +204,9 @@ const summitForm = () => {
           label="Shop Name"
           placeholder="Enter shop name"
           v-model="shopName"
-          :isValid="valid.shopName"
-          :isFirstInput="isFirstInput.shopName"
+          :isValid="form.shopName.isValid"
+          :isFirstInput="form.shopName.isFirstInput"
+          :errorText="form.shopName.errorText"
           @validateValue="validateShopName"
         />
 
@@ -163,18 +216,24 @@ const summitForm = () => {
           type="tel"
           placeholder="Enter phone number"
           v-model="phoneNumber"
-          :isValid="valid.phoneNumber"
-          :isFirstInput="isFirstInput.phoneNumber"
+          :isValid="form.phoneNumber.isValid"
+          :isFirstInput="form.phoneNumber.isFirstInput"
+          :errorText="form.phoneNumber.errorText"
           @validateValue="validatePhoneNumber"
         />
 
         <!-- Bank -->
         <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600">Bank</label>
+          <label class="text-sm font-medium text-blue-600">Bank</label>
           <select
             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            v-model="bank"
+            @change="
+              form.bank.isValid = form.bank.selected !== '';
+              updateIsFirstInput('bank', form.bank.selected);
+            "
           >
-            <option value="">Select bank</option>
+            <option value="" disabled selected hidden>Select Bank</option>
             <option value="kbank">Kasikorn Bank</option>
             <option value="scb">Siam Commercial Bank</option>
             <option value="bbl">Bangkok Bank</option>
@@ -186,8 +245,9 @@ const summitForm = () => {
           label="Bank Account"
           placeholder="Enter bank account number"
           v-model="bankAccount"
-          :isValid="valid.bankAccount"
-          :isFirstInput="isFirstInput.bankAccount"
+          :isValid="form.bankAccount.isValid"
+          :isFirstInput="form.bankAccount.isFirstInput"
+          :errorText="form.bankAccount.errorText"
           @validateValue="validateBankAccount"
         />
 
@@ -195,8 +255,9 @@ const summitForm = () => {
           label="National ID"
           placeholder="Enter national ID"
           v-model="nationalId"
-          :isValid="valid.nationalId"
-          :isFirstInput="isFirstInput.nationalId"
+          :isValid="form.nationalId.isValid"
+          :isFirstInput="form.nationalId.isFirstInput"
+          :errorText="form.nationalId.errorText"
           @validateValue="validateNationalId"
         />
 
