@@ -19,7 +19,8 @@ const props = defineProps({
   errorText: String,
 });
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "validateValue"]);
+
 
 function updateValue(e) {
   emits("update:modelValue", e.target.value);
