@@ -109,7 +109,7 @@ public class SaleItemServiceV2 {
 
                 //สุ่มชื่อใหม่
                 String newFileName = UUID.randomUUID().toString() + keepFileSurname;
-                fileService.store(image,newFileName);
+                fileService.store(image,newFileName,"salitem");
                 SaleItemImage saleItemImage = new SaleItemImage();
                 saleItemImage.setSaleItem(saleItem);
                 saleItemImage.setFileName(newFileName);         // ชื่อใหม่
@@ -176,7 +176,7 @@ public class SaleItemServiceV2 {
 
                     for (SaleItemImage img : images) {
                         saleItemImageRepository.delete(img);
-                        fileService.removeFile(img.getFileName());
+                        fileService.removeFile(img.getFileName(),"salitem");
                     }
 
                 }
@@ -198,7 +198,7 @@ public class SaleItemServiceV2 {
                         }
 
                         String newFileName = UUID.randomUUID().toString() + fileExt;
-                        fileService.store(imgReq.getImageFile(), newFileName);
+                        fileService.store(imgReq.getImageFile(), newFileName,"salitem");
 
                         SaleItemImage newImage = new SaleItemImage();
                         newImage.setSaleItem(existing);
@@ -252,7 +252,7 @@ public class SaleItemServiceV2 {
         // ลบไฟล์รูปจาก disk
         if(saleitem.getSaleItemImage() != null){
             for (SaleItemImage image: saleitem.getSaleItemImage()) {
-                fileService.removeFile(image.getFileName());// ลบไฟล์จาก disk
+                fileService.removeFile(image.getFileName(),"salitem");// ลบไฟล์จาก disk
             }
         }
         // ลบ record รูปจาก DB (ถ้าไม่ได้ตั้ง orphanRemoval = true)
