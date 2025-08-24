@@ -1,6 +1,27 @@
 <script setup>
+import { ref } from "vue"
+import { RouterLink } from "vue-router"
 
+const nickname = ref("")
+const fullname = ref("")
+const email = ref("")
+const password = ref("")
+
+// emit event ออกไปให้ parent ใช้ได้
+const emit = defineEmits(["signup"])
+
+const handleSignUp = () => {
+  const formData = {
+    nickname: nickname.value,
+    fullname: fullname.value,
+    email: email.value,
+    password: password.value
+  }
+  // ส่งข้อมูลออกไปให้ parent ใช้
+  emit("signup", formData)
+}
 </script>
+
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">
     <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
@@ -8,11 +29,12 @@
       <h2 class="text-2xl font-bold text-blue-700 text-center mb-6">Buyer Signup</h2>
 
       <!-- Form -->
-      <form class="flex flex-col gap-4">
+      <form class="flex flex-col gap-4" @submit.prevent="handleSignUp">
         <!-- Nickname -->
         <div>
           <label class="block text-sm font-medium text-blue-800 mb-1">Nickname</label>
           <input 
+            v-model="nickname"
             type="text" 
             placeholder="Enter your nickname"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -23,6 +45,7 @@
         <div>
           <label class="block text-sm font-medium text-blue-800 mb-1">Full Name</label>
           <input 
+            v-model="fullname"
             type="text" 
             placeholder="Enter your full name"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -33,6 +56,7 @@
         <div>
           <label class="block text-sm font-medium text-blue-800 mb-1">Email</label>
           <input 
+            v-model="email"
             type="email" 
             placeholder="Enter your email"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -43,6 +67,7 @@
         <div>
           <label class="block text-sm font-medium text-blue-800 mb-1">Password</label>
           <input 
+            v-model="password"
             type="password" 
             placeholder="Enter your password"
             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
