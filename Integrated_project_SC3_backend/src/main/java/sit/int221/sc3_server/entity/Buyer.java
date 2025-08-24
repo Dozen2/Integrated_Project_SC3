@@ -17,7 +17,7 @@ public class Buyer {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @OneToMany(mappedBy = "buyer")
-    private Set<User> users = new LinkedHashSet<>();
+    @OneToOne(mappedBy = "buyer")
+    private User user;
 
 }

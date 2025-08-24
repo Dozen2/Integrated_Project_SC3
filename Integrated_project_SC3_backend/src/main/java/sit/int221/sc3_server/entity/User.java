@@ -28,9 +28,9 @@ public class User {
     @Column(name = "email", nullable = false, length = 70)
     private String email;
 
-    @Size(max = 50)
+    @Size(max = 100)
     @NotNull
-    @Column(name = "passwords", nullable = false, length = 50)
+    @Column(name = "passwords", nullable = false, length = 100)
     private String passwords;
 
     @Size(max = 50)
@@ -38,14 +38,16 @@ public class User {
     @Column(name = "fullName", nullable = false, length = 50)
     private String fullName;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "buyer_id", nullable = false)
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "buyer_id", referencedColumnName = "id")
     private Buyer buyer;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "seller_id", nullable = false)
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "seller_id", referencedColumnName = "id")
     private Seller seller;
+
+
 
 }

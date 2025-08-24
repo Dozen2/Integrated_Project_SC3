@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class FileStorageProperties {
     private String uploadDir;
+    private String uploadIdNationalPhoto;
     private String[] allowFileType;
 
 }
