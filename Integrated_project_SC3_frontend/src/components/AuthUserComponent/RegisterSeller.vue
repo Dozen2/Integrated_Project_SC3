@@ -2,6 +2,9 @@
 import { ref, reactive, computed } from "vue";
 import InputBox from "./../Common/InputBox.vue";
 
+const submittedForms = ref([]); // เก็บ object ของแต่ละ submission
+
+
 const nickname = ref("");
 const fullname = ref("");
 const email = ref("");
@@ -140,13 +143,32 @@ const updateIsFirstInput = (field, value) => {
 };
 
 // Submit
+
 const summitForm = () => {
   if (isFormValid.value) {
-    console.log("Form is valid. Submitting...");
+    // สร้าง object จากค่าต่าง ๆ
+    const formData = {
+      nickname: nickname.value,
+      fullname: fullname.value,
+      email: email.value,
+      password: password.value,
+      shopName: shopName.value,
+      bankAccount: bankAccount.value,
+      nationalId: nationalId.value,
+      phoneNumber: phoneNumber.value,
+      nationalIdFront: [...nationalIdFront.value], // clone array ของไฟล์
+      nationalIdBack: [...nationalIdBack.value],   // clone array ของไฟล์
+    };
+
+    // push เข้า array
+    submittedForms.value.push(formData);
+
+    console.log("Form submitted:", formData);
   } else {
     console.log("Form has errors. Please fix them.");
   }
 };
+
 </script>
 
 <template>
