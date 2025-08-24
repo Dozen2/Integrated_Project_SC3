@@ -331,6 +331,7 @@ const handleFileChange = (event) => {
   if (longFilenames.length > 0) {
     const fileList = longFilenames.map(file => `"${file.name}" (${file.name.length} ตัวอักษร)`).join('\n');
     alert(`ชื่อไฟล์ต่อไปนี้ยาวเกิน ${MAX_FILENAME_LENGTH} ตัวอักษร:\n${fileList}\n\nกรุณาเปลี่ยนชื่อไฟล์ให้สั้นลงก่อนอัปโหลด`);
+    
     event.target.value = "";
     return;
   }
@@ -346,26 +347,37 @@ const handleFileChange = (event) => {
     const remainingSlots = MAX_IMAGES - currentImageCount;
     
     if (remainingSlots <= 0) {
-      alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
+      // alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
+       alertStore.addToast(`You've reached the upload limit of ${MAX_IMAGES} images.`, "Image upload limit exceeded.", "warning", 8000);
+      
       event.target.value = "";
       return;
     }
     
     filesToProcess = selectedFiles.slice(0, remainingSlots);
-    warningMessage = `คุณเลือกรูป ${selectedFiles.length} รูป แต่สามารถอัปโหลดได้อีกเพียง ${remainingSlots} รูป\nจึงจะอัปโหลดเฉพาะ ${remainingSlots} รูปแรกเท่านั้น`;
+    warningMessage = `You can only upload ${remainingSlots} more images. Your selection of ${selectedFiles.length} will be trimmed.`;
   }
   
   // ตรวจสอบขนาดไฟล์
   const validation = validateFileSize(filesToProcess);
   
+  // if (!validation.isValid) {
+  //   alert(validation.errors.join('\n'));
+  //   event.target.value = "";
+  //   return;
+  // }
+
   if (!validation.isValid) {
-    alert(validation.errors.join('\n'));
-    event.target.value = "";
-    return;
-  }
+  // alert(validation.errors.join("\n"));
+      alertStore.addToast(validation.errors.join("\n"), "Image upload limit exceeded.", "warning", 8000);
+
+}
+
+filesToProcess = validation.validFiles;
   
   if (warningMessage) {
-    alert(warningMessage);
+    // alert(warningMessage);
+    alertStore.addToast(warningMessage, "Image upload limit exceeded.", "warning", 8000);
   }
 
   console.log("filesToProcess: ",filesToProcess)
@@ -406,44 +418,54 @@ const handleFileChange = (event) => {
   //   imageViewOrder: fileImageOrganize.value.length + index +1
   // })));
   
-  console.log("Updated files array:", files.value);
-  console.log("Updated filesProcessed array:", filesProcessed);
-  console.log("Updated filesName array:", files.value.map(f => f.name));
-  console.log("Updated fileImageOrganize:", fileImageOrganize.value);
-  console.log("Updated saleItem eiei:", saleItem);
+  // console.log("Updated files array:", files.value);
+  // console.log("Updated filesProcessed array:", filesProcessed);
+  // console.log("Updated filesName array:", files.value.map(f => f.name));
+  // console.log("Updated fileImageOrganize:", fileImageOrganize.value);
+  // console.log("Updated saleItem eiei:", saleItem);
   
   event.target.value = "";
 };
 
 const validateFileSize = (selectedFiles) => {
+  console.log("Validating file sizes...", selectedFiles);
+
   const errors = [];
   let totalSize = 0;
-  
+
   // คำนวณขนาดรวมของไฟล์เดิมที่เป็นไฟล์ใหม่ (fileName === null)
   fileImageOrganize.value.forEach((item, index) => {
     if (item.fileName === null && files.value[index]) {
       totalSize += files.value[index].size;
     }
   });
-  
-  // ตรวจสอบขนาดของไฟล์ใหม่แต่ละไฟล์
-  selectedFiles.forEach((file, index) => {
+
+  // ตรวจสอบไฟล์ใหม่ทีละไฟล์ และกรองไฟล์ที่ไม่เกินออกมา
+  const validFiles = selectedFiles.filter((file) => {
     if (file.size > FILE_SIZE_LIMITS.MAX_FILE_SIZE) {
-      errors.push(`File "${file.name}" (${formatFileSize(file.size)}) exceeds maximum file size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)}`);
+      errors.push(
+        `File ${file.name} (${formatFileSize(file.size)}) exceeds the maximum size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_FILE_SIZE)} and will be removed.`
+      );
+      return false; // ตัดไฟล์นี้ออก
     }
     totalSize += file.size;
+    return true; // เก็บไฟล์นี้ไว้
   });
-  
+
   // ตรวจสอบขนาดรวมทั้งหมด
   if (totalSize > FILE_SIZE_LIMITS.MAX_REQUEST_SIZE) {
-    errors.push(`Total file size (${formatFileSize(totalSize)}) exceeds maximum request size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}`);
+    errors.push(
+      `The total file size (${formatFileSize(totalSize)}) exceeds the maximum allowed size of ${formatFileSize(FILE_SIZE_LIMITS.MAX_REQUEST_SIZE)}.`
+    );
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors: errors
+    errors: errors,
+    validFiles: validFiles // เอาไว้ใช้อัปเดต selectedFiles ต่อ
   };
 };
+
 
 const removeFile = (index) => {  
   //push name deleted to deletedImage
@@ -706,23 +728,18 @@ if (Array.isArray(saleItem.saleItemImage)) {
 
   try {
     if (saleItem.id || prop.mode === "Edit") {
-      await updateSaleItemV2(saleItem.id, formData);
-      console.log("FormData after update:", formData);
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } 
-    // else if (prop.mode === "Edit") {
-    //   await updateSaleItem(saleItem.id, formData);
-    //   alertStore.setMessage("The sale item has been updated.");
-    //   router.go(-1);
-    // } 
-    else {
-      // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
-      await addSaleItemV2(formData);
-      setSessionStorage();      
-      alertStore.setMessage("The sale item has been successfully added.");
-      router.go(-1);
-    }
+  await updateSaleItemV2(saleItem.id, formData);
+  console.log("FormData after update:", formData);
+  alertStore.addToast("The sale item has been updated.", "Update success", "success");
+  router.go(-1);
+}
+else {
+  // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
+  await addSaleItemV2(formData);
+  setSessionStorage();      
+  alertStore.addToast("The sale item has been successfully added.", "Add success", "success");
+  router.go(-1);
+}
   } catch (err) {
     console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
     alert(err.message);
@@ -757,7 +774,7 @@ if (Array.isArray(saleItem.saleItemImage)) {
       </div>
     </div>
 
-    <div class=" m-5 ml-[120px] flex flex-row justify-center items-center ">
+    <div class=" m-5 ml-[120px] flex flex-row justify-center ">
       <!-- Image Preview Section - ใช้ saleItem.saleItemImage แทน saleItemImage -->
       <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative ">
         

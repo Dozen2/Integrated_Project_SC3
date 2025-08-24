@@ -23,19 +23,16 @@ const pendingDeleteId = ref(null);
 const confirmDeleteProduct = async () => {
   try {
     await deleteUserById(`${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`, pendingDeleteId.value);
-    alertStore.setMessage('The sale item has been deleted.');
-    // router.push('/sale-items/list');
+alertStore.addToast('The sale item has been deleted.', 'Delete success', 'success');
+emit("selestDeleted");
+} catch (error) {
+  if (error.status === 404) {
+    alertStore.addToast('The requested sale item does not exist.', 'Delete failed', 'error');
     emit("selestDeleted");
-  } catch (error) {
-    if (error.status === 404) {
-      alertStore.setMessage('The requested sale item does not exist.', 'error')
-      // router.push('/sale-items/list');
-      emit("selestDeleted");
-    } else {
-      alertStore.setMessage('The requested sale item does not exist.', 'error')
-      // router.push('/sale-items/list');
-      emit("selestDeleted");
-    }
+  } else {
+    alertStore.addToast('The requested sale item does not exist.', 'Delete failed', 'error');
+    emit("selestDeleted");
+  }
   } finally {
     showDeleteModal.value = false;
     // localStorage.setItem('product-updated', Date.now().toString());

@@ -31,19 +31,19 @@ const goToEdit = (id) => {
 const confirmDeleteProduct = async () => {
   try {
     await deleteUserById(`${VITE_ROOT_API_URL}/itb-mshop/v1/brands`, pendingDeleteId.value);
-    alertStore.setMessage('The brand has been deleted.');
+    alertStore.addToast('The brand has been deleted.','Delete success', 'success');
     // router.push('/brands');
     emit("brandDeleted");
   } catch (error) {
     if (error.status === 400) {
       const data = await error.json?.();
-      alertStore.setMessage(data?.message || 'Cannot delete brand.', 'error');
+      alertStore.addToast(data?.message || 'Cannot delete brand.','Delete failed', 'error');
     }
     else if (error.status === 404) {
-      alertStore.setMessage('An error has occurred, the brand does not exist.', 'error')
+      alertStore.addToast('An error has occurred, the brand does not exist.','Delete failed', 'error')
       router.push('/brands');
     } else {
-      alertStore.setMessage('The requested sale item does not exists.', 'error')
+      alertStore.addToast('The requested sale item does not exists.','Delete failed', 'error')
       router.push('/brands');
     }
   } finally {
@@ -103,14 +103,6 @@ onMounted(() => {
         class="itbms-add-button px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-md shadow-sm transition">
         ➕ Add New Brand
       </RouterLink>
-    </div>
-
-
-    <!-- Alert Message -->
-    <div v-if="alertStore.message" :class="`itbms-message px-4 py-2 rounded mb-4 ${alertStore.type === 'error'
-      ? 'bg-red-100 text-red-700'
-      : 'bg-blue-100 text-blue-700'}`">
-      {{ alertStore.message }}
     </div>
 
     <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

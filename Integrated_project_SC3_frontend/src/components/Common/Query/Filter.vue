@@ -193,8 +193,8 @@ const filteredOptions = computed(() => {
           }">
             {{
               selectedValueList.length > 0
-                ? `${selectedValueList.length} รายการที่เลือก`
-                : placeholder || 'เลือกตัวกรอง...'
+                ? `${selectedValueList.length} Selected`
+                : placeholder || 'SelectFilter...'
             }}
           </span>
 
@@ -219,9 +219,7 @@ const filteredOptions = computed(() => {
       <!-- Selected Values Display (Tags) -->
       <div v-if="selectedValueList.length > 0"
         class="flex flex-wrap gap-2 mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-        <div class="w-full mb-1">
-          <span class="text-xs font-medium text-gray-600 uppercase tracking-wide">รายการที่เลือก:</span>
-        </div>
+        
         <span v-for="(value, i) in selectedValueList" :key="i"
           class="group inline-flex items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full px-3 py-1.5 text-sm font-medium shadow-sm hover:from-blue-600 hover:to-blue-700 hover:shadow-md transition-all duration-200">
           <span class="mr-2">{{ getDisplayText(value) }}</span>
@@ -244,15 +242,7 @@ const filteredOptions = computed(() => {
         <div v-if="dropdownOpen"
           class="top-full left-0 z-30 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-80 overflow-hidden"
           data-cy="filter-options" :data-dropdown-open="dropdownOpen">
-          <!-- Header -->
-          <div class="sticky top-0 bg-gray-50 px-4 py-3 border-b border-gray-100">
-            <div class="flex items-center justify-between">
-              <span class="text-sm font-semibold text-gray-700">เลือกตัวกรอง</span>
-              <span class="text-xs text-gray-500">
-                {{ selectedValueList.length }} / {{ filteredOptions.length }} รายการ
-              </span>
-            </div>
-          </div>
+          
 
           <!-- Options List -->
           <div class="overflow-y-auto max-h-56">

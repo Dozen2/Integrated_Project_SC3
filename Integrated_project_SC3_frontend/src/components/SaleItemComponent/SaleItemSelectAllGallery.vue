@@ -62,14 +62,14 @@ onMounted(async () => {
           <p class="itbms-model text-sm text-gray-600">
             {{ item.model }}
           </p>
-          <p class="itbms-ramGb text-sm text-gray-600">
-            {{ nullCatching(item.ramGb) }}
-          </p>
-          <p class="itbms-storageGb text-sm text-gray-600">
-            {{ nullCatching(item.storageGb) }}
+          <span class="itbms-ramGb text-sm text-gray-600">
+            {{ nullCatching(item.ramGb) }} / 
+          </span>
+          <span class="itbms-storageGb text-sm text-gray-600">
+            {{ nullCatching(item.storageGb) }} 
             <span class="itbms-storageGb-unit">GB</span>
-          </p>
-          <p class="itbms-price text-blue-600 text-base font-semibold">
+          </span>
+          <p class="itbms-price text-blue-600 font-semibold mt-3 text-lg">
             {{ unitPrice(item.price) }}
             <span class="itbms-price-unit">Baht</span>
           </p>
