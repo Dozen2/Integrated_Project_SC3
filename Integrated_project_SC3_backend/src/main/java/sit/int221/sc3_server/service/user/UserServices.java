@@ -33,6 +33,10 @@ public class UserServices {
     if(userRepository.existsUserByEmail(userDTO.getEmail())){
         throw new RuntimeException("User already exist");
     }
+    if(userDTO.getRole().equalsIgnoreCase("seller")
+            && sellerRepository.existsSellerByMobileNumberAndNationalId(userDTO.getMobileNumber(),userDTO.getNationalId())){
+        throw new RuntimeException("User already exist");
+    }
     }
 
     @Transactional
