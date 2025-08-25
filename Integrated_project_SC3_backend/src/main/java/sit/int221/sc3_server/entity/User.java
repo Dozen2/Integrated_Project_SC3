@@ -49,5 +49,12 @@ public class User {
     private Seller seller;
 
 
+    @Column(name = "isActive")
+    private Boolean isActive;
+
+    @Size(max = 10)
+    @NotNull
+    @Column(name = "mobileNumber", nullable = false, length = 10)
+    private String mobileNumber;
 
 }

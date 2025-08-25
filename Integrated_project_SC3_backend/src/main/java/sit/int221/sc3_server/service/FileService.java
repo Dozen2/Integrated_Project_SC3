@@ -65,7 +65,7 @@ public class FileService {
                 case "nationalid" ->targetDir = Paths.get("./nationalIdPhoto").toAbsolutePath().normalize();
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
-//            Files.createDirectories(targetDir);
+            Files.createDirectories(targetDir);
             Path targetLocation = targetDir.resolve(newFile);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return newFile;
@@ -130,7 +130,6 @@ public class FileService {
     public Resource loadFileAsResource(String fileName) {
     //รับ parameter เพิ่ม 1 ตัวคือ String folderType แล้วเช็คเป็น case
         try {
-
             String file01 = saleItemImageRepository.findFileName(fileName);
             Path filePath = this.fileStorageLocation.resolve(file01).normalize();
             Resource resource = new UrlResource(filePath.toUri());

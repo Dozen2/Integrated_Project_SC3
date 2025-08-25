@@ -45,6 +45,8 @@ public class UserServices {
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
+        user.setMobileNumber(userDTO.getMobileNumber());
+        user.setIsActive(false);
 
         // ✅ เข้ารหัสรหัสผ่าน
         String hashPassword = passwordEncoder.encode(userDTO.getPasswords());
@@ -68,7 +70,6 @@ public class UserServices {
             seller.setBankName(userDTO.getBankName());
             seller.setBankAccountNumber(userDTO.getBankAccountNumber());
             seller.setNationalId(userDTO.getNationalId());
-            seller.setMobileNumber(userDTO.getMobileNumber());
             seller.setNationalIdPhotoFront(frontFileName);
             seller.setNationalIdPhotoBack(backFileName);
 
@@ -91,20 +92,14 @@ public class UserServices {
         dto.setNickName(user.getNickName());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setPasswords(user.getPasswords());
+        dto.setMobileNumber(user.getMobileNumber());
+        dto.setIsActive(user.getIsActive());
 
-        if (user.getBuyer() != null) {
-            dto.setBuyerId(user.getBuyer().getId());
+        if(user.getBuyer() != null){
+            dto.setUserType("BUYER");
         }
-
-        if (user.getSeller() != null) {
-            dto.setSellerId(user.getSeller().getId());
-            dto.setMobileNumber(user.getSeller().getMobileNumber());
-            dto.setBankAccountNumber(user.getSeller().getBankAccountNumber());
-            dto.setBankName(user.getSeller().getBankName());
-            dto.setNationalId(user.getSeller().getNationalId());
-            dto.setNationalIdPhotoFront(user.getSeller().getNationalIdPhotoFront());
-            dto.setNationalIdPhotoBack(user.getSeller().getNationalIdPhotoBack());
+        if(user.getSeller() != null){
+            dto.setUserType("SELLER");
         }
 
         return dto;
