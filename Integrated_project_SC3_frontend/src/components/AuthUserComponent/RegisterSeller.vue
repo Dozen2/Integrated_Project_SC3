@@ -7,14 +7,12 @@ import { useAlertStore } from "@/stores/alertStore.js";
 
 const alertStore = useAlertStore();
 const route = useRouter();
-// const submittedForms = ref([]);
 
 
 const nickName = ref("");
 const fullName = ref("");
 const email = ref("");
 const password = ref("");
-// const shopName = ref("");
 const bankAccount = ref("");
 const nationalId = ref("");
 const phoneNumber = ref("");
@@ -48,11 +46,6 @@ const form = reactive({
     isValid: false,
     isFirstInput: true,
   },
-  // shopName: {
-  //   errorText: "Shop name is required",
-  //   isValid: false,
-  //   isFirstInput: true,
-  // },
   bankAccount: {
     errorText: "Bank account must be at least 6 digits",
     isValid: false,
@@ -88,7 +81,7 @@ const isFormValid = computed(() => {
     isFirstInput: f.isFirstInput ?? null,
   }));
 
-  console.table(results); // log สวยๆ ดูได้ว่าฟิลด์ไหนผ่านไม่ผ่าน
+  console.table(results); 
 
   return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
 });
@@ -96,16 +89,12 @@ const isFormValid = computed(() => {
 // =================== Validation ===================
 const validateNickname = () => {
   form.nickname.isValid = nickName.value.trim().length > 0;
-  // form.nickname.isFirstInput =
-  //   form.nickname.isFirstInput && nickname.value === "" ? true : false;
   updateIsFirstInput("nickname", nickName.value);
 };
 
 const validateFullname = () => {
   const len = fullName.value.trim().length;
   form.fullname.isValid = len >= 4 && len <= 40;
-  // form.fullname.isFirstInput =
-  //   form.fullname.isFirstInput && fullname.value === "" ? true : false;
   updateIsFirstInput("fullname", fullName.value);
 };
 
@@ -123,11 +112,6 @@ const validatePassword = () => {
   updateIsFirstInput("password", password.value);
 };
 
-// const validateShopName = () => {
-//   form.shopName.isValid = shopName.value.trim().length > 0;
-//   updateIsFirstInput("shopName", shopName.value);
-// };
-
 const validateBankAccount = () => {
   form.bankAccount.isValid =
     /^[0-9]+$/.test(bankAccount.value) && bankAccount.value.length >= 6;
@@ -144,13 +128,14 @@ const validatePhoneNumber = () => {
   updateIsFirstInput("phoneNumber", phoneNumber.value);
 };
 
+
+// =================== Summit Form ===================
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
 };
 
 // Submit
-
 const summitForm = async () => {
     try {
       const userData = {
@@ -163,11 +148,7 @@ const summitForm = async () => {
         bankAccountNumber: bankAccount.value,
         bankName: bank.value,
         nationalId: nationalId.value,
-        // nationalIdPhotoFront: nationalIdFront.value,
-        // nationalIdPhotoBack: nationalIdBack.value    
       }
-
-      // const res = await registerUser(userData)
 
       const res = await registerUser(
         userData, 
@@ -175,7 +156,6 @@ const summitForm = async () => {
         nationalIdBack.value
       )
 
-      // submittedForms.value.push(res)
       console.log("✅ Registered success:", res)
       alertStore.addToast("Your seller profile is created", "Create user successful ", "success",5000);
       route.push({ name: "Products" });
@@ -254,17 +234,6 @@ function handleFileChangeBack(e) {
           @validateValue="validatePassword"
         />
 
-        <!-- <InputBox
-          label="Shop Name"
-          placeholder="Enter shop name"
-          v-model="shopName"
-          :isValid="form.shopName.isValid"
-          :isFirstInput="form.shopName.isFirstInput"
-          :errorText="form.shopName.errorText"
-          @validateValue="validateShopName"
-        /> -->
-
-        <!-- Phone -->
         <InputBox
           label="Phone"
           type="tel"
@@ -276,7 +245,6 @@ function handleFileChangeBack(e) {
           @validateValue="validatePhoneNumber"
         />
 
-        <!-- Bank -->
         <div class="flex flex-col space-y-1">
           <label class="text-sm font-medium text-blue-600">Bank</label>
           <select
