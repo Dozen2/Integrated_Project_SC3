@@ -10,6 +10,7 @@ import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.entity.Seller;
 import sit.int221.sc3_server.entity.User;
+import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.repository.user.UserRepository;
@@ -31,7 +32,11 @@ public class UserServices {
 
     public void checkDuplication(UserDTO userDTO){
     if(userRepository.existsUserByEmail(userDTO.getEmail())){
-        throw new RuntimeException("User already exist");
+        throw new DuplicteItemException("user already exist");
+    }
+    if(userDTO.getRole().equalsIgnoreCase("seller")
+            && sellerRepository.existsSellerByMobileNumberAndNationalId(userDTO.getMobileNumber(),userDTO.getNationalId())){
+        throw new DuplicteItemException("user already exist");
     }
     }
 
@@ -45,6 +50,7 @@ public class UserServices {
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
+        user.setIsActive(false);
 
         // ✅ เข้ารหัสรหัสผ่าน
         String hashPassword = passwordEncoder.encode(userDTO.getPasswords());
@@ -66,9 +72,9 @@ public class UserServices {
             // 🔹 สร้าง Seller
             Seller seller = new Seller();
             seller.setBankName(userDTO.getBankName());
+            seller.setMobileNumber(userDTO.getMobileNumber());
             seller.setBankAccountNumber(userDTO.getBankAccountNumber());
             seller.setNationalId(userDTO.getNationalId());
-            seller.setMobileNumber(userDTO.getMobileNumber());
             seller.setNationalIdPhotoFront(frontFileName);
             seller.setNationalIdPhotoBack(backFileName);
 
@@ -91,20 +97,13 @@ public class UserServices {
         dto.setNickName(user.getNickName());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setPasswords(user.getPasswords());
+        dto.setIsActive(user.getIsActive());
 
-        if (user.getBuyer() != null) {
-            dto.setBuyerId(user.getBuyer().getId());
+        if(user.getBuyer() != null){
+            dto.setUserType("BUYER");
         }
-
-        if (user.getSeller() != null) {
-            dto.setSellerId(user.getSeller().getId());
-            dto.setMobileNumber(user.getSeller().getMobileNumber());
-            dto.setBankAccountNumber(user.getSeller().getBankAccountNumber());
-            dto.setBankName(user.getSeller().getBankName());
-            dto.setNationalId(user.getSeller().getNationalId());
-            dto.setNationalIdPhotoFront(user.getSeller().getNationalIdPhotoFront());
-            dto.setNationalIdPhotoBack(user.getSeller().getNationalIdPhotoBack());
+        if(user.getSeller() != null){
+            dto.setUserType("SELLER");
         }
 
         return dto;

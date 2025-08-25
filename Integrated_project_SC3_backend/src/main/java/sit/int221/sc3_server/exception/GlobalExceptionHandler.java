@@ -67,5 +67,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
     }
+    @ExceptionHandler(DuplicteItemException.class)
+    public ResponseEntity<Object> handleDuplication(Exception e,HttpServletRequest httpServletRequest){
+        GeneralErrorResponse ger = new GeneralErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Duplicate item",
+                e.getMessage(),
+                httpServletRequest.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
+    }
 
 }

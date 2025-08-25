@@ -61,7 +61,7 @@ public class FileService {
             }
             Path targetDir;
             switch (folderType.toLowerCase()){
-                case "salitem" ->targetDir = Paths.get("/saleItemImages").toAbsolutePath().normalize();
+                case "saleitem" ->targetDir = Paths.get("./saleItemImages").toAbsolutePath().normalize();
                 case "nationalid" ->targetDir = Paths.get("./nationalIdPhoto").toAbsolutePath().normalize();
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
@@ -130,7 +130,6 @@ public class FileService {
     public Resource loadFileAsResource(String fileName) {
     //รับ parameter เพิ่ม 1 ตัวคือ String folderType แล้วเช็คเป็น case
         try {
-
             String file01 = saleItemImageRepository.findFileName(fileName);
             Path filePath = this.fileStorageLocation.resolve(file01).normalize();
             Resource resource = new UrlResource(filePath.toUri());
@@ -172,8 +171,8 @@ public class FileService {
         try {
             Path targetDir;
             switch (folderType.toLowerCase()){
-                case "salItemImages" -> targetDir = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
-                case "nationalId" -> targetDir = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
+                case "saleitem" -> targetDir = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
+                case "nationalid" -> targetDir = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
             Path filePath = targetDir.resolve(fileName).normalize();

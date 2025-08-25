@@ -49,5 +49,9 @@ public class User {
     private Seller seller;
 
 
+    @Column(name = "isActive")
+    private Boolean isActive;
+
+
 
 }
