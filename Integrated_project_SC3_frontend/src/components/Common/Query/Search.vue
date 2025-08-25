@@ -1,9 +1,17 @@
 <script setup>
-import { ref } from "vue"
+import { ref, watch } from "vue"
 
-const searchQuery = ref("")   // state เก็บค่าที่พิมพ์
+const props = defineProps({
+  initialValue: { type: String, default: "" }
+})
 
-const emit = defineEmits(["search"]) // event ส่งค่าออกไป
+const emit = defineEmits(["search"])
+
+const searchQuery = ref(props.initialValue)
+
+watch(() => props.initialValue, (newVal) => {
+  searchQuery.value = newVal
+})
 
 const handleSearch = () => {
   emit("search", searchQuery.value.trim())

@@ -43,7 +43,6 @@ const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
-
   SEARCH: "SaleItem-Search",
 };
 
@@ -420,7 +419,8 @@ const hasActiveFilters = (filters) => {
     filters.page > 0 ||
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
-    filters.size !== DEFAULT_VALUES.size
+    filters.size !== DEFAULT_VALUES.size ||
+    !! filters.search  
   );
 };
 
@@ -435,6 +435,8 @@ onBeforeMount(async () => {
 
   const filters = getCurrentFilters();
 
+  console.log(hasActiveFilters(filters));
+  
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
   } else {
@@ -492,7 +494,10 @@ onBeforeUnmount(() => {
         @sizeChanged="handleSizeChange"
         @sortChanged="handleSortChange" 
       />
-      <Search @search="handleSearch" />
+      <Search 
+      :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
+      :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
+      @search="handleSearch" />
     </div>
 
     <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
