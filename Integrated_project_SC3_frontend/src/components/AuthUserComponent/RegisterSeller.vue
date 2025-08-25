@@ -345,6 +345,7 @@ function handleFileChangeBack(e) {
           />
           <div v-if="nationalIdBackPreview" class="mt-2">
             <img :src="nationalIdBackPreview" alt="Back Preview" class="w-40 rounded-lg border" />
+            
           </div>
         </div>
 
