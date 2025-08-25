@@ -111,7 +111,7 @@ const validateEmail = () => {
 
 const validatePassword = () => {
   form.password.isValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
       password.value
     );
   updateIsFirstInput("password", password.value);
