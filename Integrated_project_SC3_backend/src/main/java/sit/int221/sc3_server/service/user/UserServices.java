@@ -10,6 +10,7 @@ import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.entity.Seller;
 import sit.int221.sc3_server.entity.User;
+import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.repository.user.UserRepository;
@@ -31,11 +32,11 @@ public class UserServices {
 
     public void checkDuplication(UserDTO userDTO){
     if(userRepository.existsUserByEmail(userDTO.getEmail())){
-        throw new RuntimeException("User already exist");
+        throw new DuplicteItemException("user already exist");
     }
     if(userDTO.getRole().equalsIgnoreCase("seller")
             && sellerRepository.existsSellerByMobileNumberAndNationalId(userDTO.getMobileNumber(),userDTO.getNationalId())){
-        throw new RuntimeException("User already exist");
+        throw new DuplicteItemException("user already exist");
     }
     }
 
