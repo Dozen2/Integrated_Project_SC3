@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import InputBox from "./../Common/InputBox.vue";
+import { registerUser } from "@/libs/callAPI/apiAuth";
 
 const submittedForms = ref([]); // เก็บ submission หลายชุด
 
@@ -12,7 +13,7 @@ const password = ref("");
 
 const form = reactive({
   nickname: {
-    errorText: "Nickname is required",
+    errorText: "nickname is required",
     isValid: false,
     isFirstInput: true,
   },
@@ -46,7 +47,7 @@ const isFormValid = computed(() => {
 });
 
 // =================== Validation ===================
-const validateNickname = () => {
+const validatenickname = () => {
   form.nickname.isValid = nickname.value.trim().length > 0;
   updateIsFirstInput("nickname", nickname.value);
 };
@@ -75,20 +76,29 @@ const validatePassword = () => {
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
-};const summitForm = () => {
+};
+
+const summitForm = async () => {
   if (isFormValid.value) {
-    // รวมค่าแต่ละ field เป็น object
     const formData = {
-      nickname: nickname.value,
-      fullname: fullname.value,
+      nickName: nickname.value,
+      fullName: fullname.value,
       email: email.value,
-      password: password.value,
+      passwords: password.value,
+      role: "BUYER", 
+      mobileNumber: "",
+      bankAccountNumber: "",
+      bankName: "",
+      nationalId: "",
     };
 
-    // push เข้า array เก็บ submission
-    submittedForms.value.push(formData);
+    try {
+      const res = await registerUser(formData);
+      console.log("✅ Register success:", res);
 
-    console.log("Form is valid. Submitting...", formData);
+    } catch (err) {
+      console.error("❌ Register failed:", err);
+    }
   } else {
     console.log("Form has errors. Please fix them.");
   }
@@ -109,13 +119,13 @@ const updateIsFirstInput = (field, value) => {
        <!-- Form -->
       <form class="flex flex-col space-y-2" @submit.prevent="summitForm">
         <InputBox
-          label="Nickname"
+          label="nickname"
           placeholder="Enter nickname"
           v-model="nickname"
           :isValid="form.nickname.isValid"
           :isFirstInput="form.nickname.isFirstInput"
           :errorText="form.nickname.errorText"
-          @validateValue="validateNickname"
+          @validateValue="validatenickname"
         />
 
         <InputBox
