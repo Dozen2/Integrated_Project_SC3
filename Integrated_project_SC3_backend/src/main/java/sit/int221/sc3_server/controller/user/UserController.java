@@ -31,13 +31,13 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    @GetMapping("/user/file/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile(
-            @PathVariable String filename) {
-        Resource file = fileService.loadFileAsResourceNational(filename);
-        System.out.println(MediaType.valueOf(fileService.getFileType(file)));
-        return ResponseEntity.ok()
-                .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
-    }
+//    @GetMapping("/user/file/{filename:.+}")
+//    @ResponseBody
+//    public ResponseEntity<Resource> serveFile(
+//            @PathVariable String filename) {
+//        Resource file = fileService.loadFileAsResourceNational(filename);
+//        System.out.println(MediaType.valueOf(fileService.getFileType(file)));
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
+//    }
 }

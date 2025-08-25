@@ -61,11 +61,11 @@ public class FileService {
             }
             Path targetDir;
             switch (folderType.toLowerCase()){
-                case "salitem" ->targetDir = Paths.get("/saleItemImages").toAbsolutePath().normalize();
+                case "saleitem" ->targetDir = Paths.get("./saleItemImages").toAbsolutePath().normalize();
                 case "nationalid" ->targetDir = Paths.get("./nationalIdPhoto").toAbsolutePath().normalize();
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
-            Files.createDirectories(targetDir);
+//            Files.createDirectories(targetDir);
             Path targetLocation = targetDir.resolve(newFile);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             return newFile;
@@ -172,8 +172,8 @@ public class FileService {
         try {
             Path targetDir;
             switch (folderType.toLowerCase()){
-                case "salItemImages" -> targetDir = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
-                case "nationalId" -> targetDir = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
+                case "saleitem" -> targetDir = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
+                case "nationalid" -> targetDir = Paths.get(fileStorageProperties.getUploadIdNationalPhoto()).toAbsolutePath().normalize();
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
             Path filePath = targetDir.resolve(fileName).normalize();

@@ -416,7 +416,7 @@ const incrementQuantity = () => {
   </div>
 
   <!-- Alert Message -->
-  <div
+  <!-- <div
     v-if="alertStore.message"
     :class="`itbms-message px-4 py-2 rounded mb-4 ${
       alertStore.type === 'error'
@@ -425,7 +425,7 @@ const incrementQuantity = () => {
     }`"
   >
     {{ alertStore.message }}
-  </div>
+  </div> -->
 </template>
 
 <style scoped>
