@@ -102,7 +102,7 @@ public class UserServices {
         if(user.getBuyer() != null){
             dto.setUserType("BUYER");
         }
-        if(user.getSeller() != null){
+        if(user.getBuyer() != null && user.getSeller() != null){
             dto.setUserType("SELLER");
         }
 
