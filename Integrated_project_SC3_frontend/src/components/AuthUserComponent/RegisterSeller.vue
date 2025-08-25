@@ -157,7 +157,7 @@ const summitForm = async () => {
       )
 
       console.log("✅ Registered success:", res)
-      alertStore.addToast("Your seller profile is created", "Create user successful ", "success",5000);
+      alertStore.addToast("The user account has been successfully registered.", "Create seller successful.", "success",5000);
       route.push({ name: "Products" });
     } catch (err) {
       alertStore.addToast(err.message, "Register failed", "error");

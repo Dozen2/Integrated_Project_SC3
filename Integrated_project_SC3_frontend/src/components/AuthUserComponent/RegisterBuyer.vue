@@ -96,7 +96,7 @@ const summitForm = async () => {
 
     const res = await registerUser(formData);
     console.log("✅ Register success:", res);
-    alertStore.addToast("Your buyer profile is created", "Create user successful ", "success",5000);
+    alertStore.addToast("The user account has been successfully registered.","Create buyer successful.", "success",5000);
     route.push({ name: "Products" });
   } catch (err) {
     alertStore.addToast(err.message, "Register failed", "error");
