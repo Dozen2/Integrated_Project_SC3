@@ -43,7 +43,6 @@ const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
-
   SEARCH: "SaleItem-Search",
 };
 
@@ -109,7 +108,7 @@ const getCurrentFilters = () => ({
     DEFAULT_VALUES.sortDirection
   ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
-  search: getSessionValue(SESSION_KEYS.SEARCH, ""),
+  search: getSessionValue(SESSION_KEYS.SEARCH),
 });
 
 // ======================== Data Processing Helpers ========================
@@ -434,6 +433,7 @@ onBeforeMount(async () => {
   customPriceRange.value = getSessionCustomPrice();
 
   const filters = getCurrentFilters();
+  console.log("Initial filters:", filters);
 
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
@@ -446,6 +446,7 @@ onBeforeMount(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
+  
 });
 </script>
 
