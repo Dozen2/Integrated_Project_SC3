@@ -1,5 +1,13 @@
 <script setup>
+import { ref } from 'vue';
 
+let email = ref('')
+let password = ref('')
+
+const hendelLogin = () => {
+    console.log(email.value);
+    console.log(password.value);
+}
 </script>
 <template>
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">
@@ -16,6 +24,7 @@
                     <div>
                         <label class="block text-sm font-medium text-blue-800 mb-1">Email</label>
                         <input 
+                        v-model="email"
                         type="email" 
                         placeholder="Enter your email"
                         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -25,6 +34,7 @@
                     <div>
                         <label class="block text-sm font-medium text-blue-800 mb-1">Password</label>
                         <input 
+                        v-model="password"
                         type="password" 
                         placeholder="Enter your password"
                         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -33,6 +43,7 @@
                     <!-- Buttons -->
                     <div class="flex flex-col gap-3 mt-4">
                         <button 
+                            @click="hendelLogin"
                             type="submit"
                             class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
                             Login

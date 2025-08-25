@@ -6,6 +6,8 @@ import TabPanels from "primevue/tabpanels";
 import TabPanel from "primevue/tabpanel";
 import RegisterBuyer from "@/components/AuthUserComponent/RegisterBuyer.vue";
 import RegisterSeller from "@/components/AuthUserComponent/RegisterSeller.vue";
+
+
 </script>
 <template>
   <div class="card">
