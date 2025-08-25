@@ -45,7 +45,6 @@ public class UserServices {
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
-        user.setMobileNumber(userDTO.getMobileNumber());
         user.setIsActive(false);
 
         // ✅ เข้ารหัสรหัสผ่าน
@@ -68,6 +67,7 @@ public class UserServices {
             // 🔹 สร้าง Seller
             Seller seller = new Seller();
             seller.setBankName(userDTO.getBankName());
+            seller.setMobileNumber(userDTO.getMobileNumber());
             seller.setBankAccountNumber(userDTO.getBankAccountNumber());
             seller.setNationalId(userDTO.getNationalId());
             seller.setNationalIdPhotoFront(frontFileName);
@@ -92,7 +92,6 @@ public class UserServices {
         dto.setNickName(user.getNickName());
         dto.setEmail(user.getEmail());
         dto.setFullName(user.getFullName());
-        dto.setMobileNumber(user.getMobileNumber());
         dto.setIsActive(user.getIsActive());
 
         if(user.getBuyer() != null){

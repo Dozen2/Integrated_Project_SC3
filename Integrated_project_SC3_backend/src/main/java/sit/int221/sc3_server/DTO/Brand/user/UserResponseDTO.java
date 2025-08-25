@@ -9,8 +9,6 @@ public class UserResponseDTO {
     private String email;
 //    private String passwords;
     private String fullName;
-
-    private String mobileNumber;
     private Boolean isActive;
     private String userType;
 

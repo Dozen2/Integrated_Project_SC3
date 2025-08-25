@@ -48,4 +48,9 @@ public class Seller {
     @OneToOne(mappedBy = "seller")
     private User user;
 
+    @Size(max = 10)
+    @NotNull
+    @Column(name = "mobileNumber", nullable = false, length = 10)
+    private String mobileNumber;
+
 }
