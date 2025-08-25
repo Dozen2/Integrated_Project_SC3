@@ -1,23 +1,26 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import InputBox from "./../Common/InputBox.vue";
+import { registerUser } from "@/libs/callAPI/apiAuth";
+
 
 const submittedForms = ref([]); // เก็บ object ของแต่ละ submission
 
 
-const nickname = ref("");
-const fullname = ref("");
+const nickName = ref("");
+const fullName = ref("");
 const email = ref("");
 const password = ref("");
-const shopName = ref("");
+// const shopName = ref("");
 const bankAccount = ref("");
 const nationalId = ref("");
 const phoneNumber = ref("");
-const nationalIdFront = ref([]);
-const nationalIdBack = ref([]);
-const role = ref("seller");
-
+const nationalIdFront = ref(null);
+const nationalIdBack = ref(null);
 const bank = ref("");
+
+const nationalIdFrontPreview = ref(null);
+const nationalIdBackPreview = ref(null);
 
 // รวมทุก state ไว้ใน form
 const form = reactive({
@@ -42,11 +45,11 @@ const form = reactive({
     isValid: false,
     isFirstInput: true,
   },
-  shopName: {
-    errorText: "Shop name is required",
-    isValid: false,
-    isFirstInput: true,
-  },
+  // shopName: {
+  //   errorText: "Shop name is required",
+  //   isValid: false,
+  //   isFirstInput: true,
+  // },
   bankAccount: {
     errorText: "Bank account must be at least 6 digits",
     isValid: false,
@@ -89,18 +92,18 @@ const isFormValid = computed(() => {
 
 // =================== Validation ===================
 const validateNickname = () => {
-  form.nickname.isValid = nickname.value.trim().length > 0;
+  form.nickname.isValid = nickName.value.trim().length > 0;
   // form.nickname.isFirstInput =
   //   form.nickname.isFirstInput && nickname.value === "" ? true : false;
-  updateIsFirstInput("nickname", nickname.value);
+  updateIsFirstInput("nickname", nickName.value);
 };
 
 const validateFullname = () => {
-  const len = fullname.value.trim().length;
+  const len = fullName.value.trim().length;
   form.fullname.isValid = len >= 4 && len <= 40;
   // form.fullname.isFirstInput =
   //   form.fullname.isFirstInput && fullname.value === "" ? true : false;
-  updateIsFirstInput("fullname", fullname.value);
+  updateIsFirstInput("fullname", fullName.value);
 };
 
 const validateEmail = () => {
@@ -111,16 +114,16 @@ const validateEmail = () => {
 
 const validatePassword = () => {
   form.password.isValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
       password.value
     );
   updateIsFirstInput("password", password.value);
 };
 
-const validateShopName = () => {
-  form.shopName.isValid = shopName.value.trim().length > 0;
-  updateIsFirstInput("shopName", shopName.value);
-};
+// const validateShopName = () => {
+//   form.shopName.isValid = shopName.value.trim().length > 0;
+//   updateIsFirstInput("shopName", shopName.value);
+// };
 
 const validateBankAccount = () => {
   form.bankAccount.isValid =
@@ -145,31 +148,58 @@ const updateIsFirstInput = (field, value) => {
 
 // Submit
 
-const summitForm = () => {
+const summitForm = async () => {
   if (isFormValid.value) {
-    // สร้าง object จากค่าต่าง ๆ
-    const formData = {
-      nickname: nickname.value,
-      fullname: fullname.value,
-      email: email.value,
-      password: password.value,
-      shopName: shopName.value,
-      bankAccount: bankAccount.value,
-      nationalId: nationalId.value,
-      phoneNumber: phoneNumber.value,
-      role: role.value,
-      nationalIdFront: [...nationalIdFront.value], // clone array ของไฟล์
-      nationalIdBack: [...nationalIdBack.value],   // clone array ของไฟล์
-    };
+    try {
+      const userData = {
+        nickName: nickName.value,
+        fullName: fullName.value,
+        email: email.value,
+        passwords: password.value,
+        role: "SELLER",
+        mobileNumber: phoneNumber.value,
+        bankAccountNumber: bankAccount.value,
+        bankName: bank.value,
+        nationalId: nationalId.value,
+        // nationalIdPhotoFront: nationalIdFront.value,
+        // nationalIdPhotoBack: nationalIdBack.value    
+      }
 
-    // push เข้า array
-    submittedForms.value.push(formData);
+      // const res = await registerUser(userData)
 
-    console.log("Form submitted:", formData);
+      const res = await registerUser(
+        userData, 
+        nationalIdFront.value, 
+        nationalIdBack.value
+      )
+
+      console.log("✅ Registered success:", res)
+      submittedForms.value.push(res)
+
+    } catch (err) {
+      console.error("❌ Register failed:", err)
+    }
   } else {
-    console.log("Form has errors. Please fix them.");
+    console.log("Form has errors. Please fix them.")
   }
-};
+}
+
+function handleFileChangeFront(e) {
+  const file = e.target.files[0]
+  if (file) {
+    nationalIdFront.value = file
+    form.nationalIdFront.isValid = true
+    nationalIdFrontPreview.value = URL.createObjectURL(file);
+  }
+}
+function handleFileChangeBack(e) {
+  const file = e.target.files[0]
+  if (file) {
+    nationalIdBack.value = file
+    form.nationalIdBack.isValid = true
+    nationalIdBackPreview.value = URL.createObjectURL(file);
+  }
+}
 
 </script>
 
@@ -186,7 +216,7 @@ const summitForm = () => {
         <InputBox
           label="Nickname"
           placeholder="Enter nickname"
-          v-model="nickname"
+          v-model="nickName"
           :isValid="form.nickname.isValid"
           :isFirstInput="form.nickname.isFirstInput"
           :errorText="form.nickname.errorText"
@@ -196,7 +226,7 @@ const summitForm = () => {
         <InputBox
           label="Full Name"
           placeholder="Enter full name"
-          v-model="fullname"
+          v-model="fullName"
           :isValid="form.fullname.isValid"
           :isFirstInput="form.fullname.isFirstInput"
           :errorText="form.fullname.errorText"
@@ -224,7 +254,7 @@ const summitForm = () => {
           @validateValue="validatePassword"
         />
 
-        <InputBox
+        <!-- <InputBox
           label="Shop Name"
           placeholder="Enter shop name"
           v-model="shopName"
@@ -232,7 +262,7 @@ const summitForm = () => {
           :isFirstInput="form.shopName.isFirstInput"
           :errorText="form.shopName.errorText"
           @validateValue="validateShopName"
-        />
+        /> -->
 
         <!-- Phone -->
         <InputBox
@@ -253,8 +283,8 @@ const summitForm = () => {
             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             v-model="bank"
             @change="
-              form.bank.isValid = form.bank.selected !== '';
-              updateIsFirstInput('bank', form.bank.selected);
+              form.bank.isValid = bank !== '';
+              updateIsFirstInput('bank', bank);
             "
           >
             <option value="" disabled selected hidden>Select Bank</option>
@@ -294,7 +324,13 @@ const summitForm = () => {
             type="file"
             accept="image/*"
             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            @change="handleFileChangeFront"
           />
+
+          <div v-if="nationalIdFrontPreview" class="mt-2">
+            <img :src="nationalIdFrontPreview" alt="Front Preview" class="w-40 rounded-lg border" />
+          </div>
+
         </div>
 
         <div class="flex flex-col space-y-1">
@@ -305,6 +341,7 @@ const summitForm = () => {
             type="file"
             accept="image/*"
             class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            @change="handleFileChangeBack"
           />
           <div v-if="nationalIdBackPreview" class="mt-2">
             <img :src="nationalIdBackPreview" alt="Back Preview" class="w-40 rounded-lg border" />
