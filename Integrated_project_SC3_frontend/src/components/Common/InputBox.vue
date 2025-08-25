@@ -28,6 +28,13 @@ function updateValue(e) {
 function validateValue() {
   emits("validateValue");
 }
+
+function handleBlur(e) {
+  let trimmed = e.target.value?.trim() ?? "";
+  emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
+  emits("validateValue");                // validate ต่อได้เลย
+}
+
 </script>
 
 <template>
@@ -44,6 +51,7 @@ function validateValue() {
       :placeholder="placeholder"
       :value="modelValue" 
        @input="(e) => { updateValue(e); validateValue(); }"
+       @blur="handleBlur"
       :class="[
         'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2',
         isValid || isFirstInput

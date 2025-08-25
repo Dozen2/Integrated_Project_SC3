@@ -180,176 +180,205 @@ function handleFileChangeBack(e) {
     nationalIdBackPreview.value = URL.createObjectURL(file);
   }
 }
+const frontInput = ref(null);
+const removeFrontImage = () => {
+  nationalIdFront.value = null;
+  form.nationalIdFront.isValid = false
+  nationalIdFrontPreview.value = null;
+
+  if (frontInput.value) frontInput.value.value = null;
+};
+
+const backInput = ref(null);
+const removeBackImage = () => {
+  nationalIdBack.value = null;
+  form.nationalIdBack.isValid = false
+  nationalIdBackPreview.value = null;
+
+  if (backInput.value) backInput.value.value = null;
+};
+
 
 </script>
 
-<template>
-  <div class="min-h-screen flex items-center justify-center bg-blue-50">
-    <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-lg m-10">
-      <!-- Title -->
-      <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">
-        Seller Sign Up
-      </h2>
+  <template>
+    <div class="min-h-screen flex items-center justify-center bg-blue-50">
+      <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-lg m-10">
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">
+          Seller Sign Up
+        </h2>
 
-      <!-- Form -->
-      <form class="flex flex-col space-y-2" @submit.prevent="summitForm">
-        <InputBox
-          label="Nickname"
-          placeholder="Enter nickname"
-          v-model="nickName"
-          :isValid="form.nickname.isValid"
-          :isFirstInput="form.nickname.isFirstInput"
-          :errorText="form.nickname.errorText"
-          @validateValue="validateNickname"
-        />
-
-        <InputBox
-          label="Full Name"
-          placeholder="Enter full name"
-          v-model="fullName"
-          :isValid="form.fullname.isValid"
-          :isFirstInput="form.fullname.isFirstInput"
-          :errorText="form.fullname.errorText"
-          @validateValue="validateFullname"
-        />
-        <InputBox
-          label="Email"
-          type="email"
-          placeholder="Enter email"
-          v-model="email"
-          :isValid="form.email.isValid"
-          :isFirstInput="form.email.isFirstInput"
-          :errorText="form.email.errorText"
-          @validateValue="validateEmail"
-        />
-
-        <InputBox
-          label="Password"
-          type="password"
-          placeholder="Enter password"
-          v-model="password"
-          :isValid="form.password.isValid"
-          :isFirstInput="form.password.isFirstInput"
-          :errorText="form.password.errorText"
-          @validateValue="validatePassword"
-        />
-
-        <InputBox
-          label="Phone"
-          type="tel"
-          placeholder="Enter phone number"
-          v-model="phoneNumber"
-          :isValid="form.phoneNumber.isValid"
-          :isFirstInput="form.phoneNumber.isFirstInput"
-          :errorText="form.phoneNumber.errorText"
-          @validateValue="validatePhoneNumber"
-        />
-
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-blue-600">Bank</label>
-          <select
-            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            v-model="bank"
-            @change="
-              form.bank.isValid = bank !== '';
-              updateIsFirstInput('bank', bank);
-            "
-          >
-            <option value="" disabled selected hidden>Select Bank</option>
-            <option value="kbank">Kasikorn Bank</option>
-            <option value="scb">Siam Commercial Bank</option>
-            <option value="bbl">Bangkok Bank</option>
-            <option value="ktb">Krungthai Bank</option>
-          </select>
-        </div>
-
-        <InputBox
-          label="Bank Account"
-          placeholder="Enter bank account number"
-          v-model="bankAccount"
-          :isValid="form.bankAccount.isValid"
-          :isFirstInput="form.bankAccount.isFirstInput"
-          :errorText="form.bankAccount.errorText"
-          @validateValue="validateBankAccount"
-        />
-
-        <InputBox
-          label="National ID"
-          placeholder="Enter national ID"
-          v-model="nationalId"
-          :isValid="form.nationalId.isValid"
-          :isFirstInput="form.nationalId.isFirstInput"
-          :errorText="form.nationalId.errorText"
-          @validateValue="validateNationalId"
-        />
-
-        <!-- Upload National ID card -->
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600"
-            >National ID Card - Front</label
-          >
-          <input
-            type="file"
-            accept="image/*"
-            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            @change="handleFileChangeFront"
+        <!-- Form -->
+        <form class="flex flex-col space-y-2" @submit.prevent="summitForm">
+          <InputBox
+            label="Nickname"
+            placeholder="Enter nickname"
+            v-model="nickName"
+            :isValid="form.nickname.isValid"
+            :isFirstInput="form.nickname.isFirstInput"
+            :errorText="form.nickname.errorText"
+            @validateValue="validateNickname"
           />
 
-          <div v-if="nationalIdFrontPreview" class="mt-2">
-            <img :src="nationalIdFrontPreview" alt="Front Preview" class="w-40 rounded-lg border" />
-          </div>
-
-        </div>
-
-        <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600"
-            >National ID Card - Back</label
-          >
-          <input
-            type="file"
-            accept="image/*"
-            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            @change="handleFileChangeBack"
+          <InputBox
+            label="Full Name"
+            placeholder="Enter full name"
+            v-model="fullName"
+            :isValid="form.fullname.isValid"
+            :isFirstInput="form.fullname.isFirstInput"
+            :errorText="form.fullname.errorText"
+            @validateValue="validateFullname"
           />
-          <div v-if="nationalIdBackPreview" class="mt-2">
-            <img :src="nationalIdBackPreview" alt="Back Preview" class="w-40 rounded-lg border" />
-            
+          <InputBox
+            label="Email"
+            placeholder="Enter email"
+            v-model="email"
+            :isValid="form.email.isValid"
+            :isFirstInput="form.email.isFirstInput"
+            :errorText="form.email.errorText"
+            @validateValue="validateEmail"
+          />
+
+          <InputBox
+            label="Password"
+            type="password"
+            placeholder="Enter password"
+            v-model="password"
+            :isValid="form.password.isValid"
+            :isFirstInput="form.password.isFirstInput"
+            :errorText="form.password.errorText"
+            @validateValue="validatePassword"
+          />
+
+          <InputBox
+            label="Phone"
+            type="tel"
+            placeholder="Enter phone number"
+            v-model="phoneNumber"
+            :isValid="form.phoneNumber.isValid"
+            :isFirstInput="form.phoneNumber.isFirstInput"
+            :errorText="form.phoneNumber.errorText"
+            @validateValue="validatePhoneNumber"
+          />
+
+          <div class="flex flex-col space-y-1">
+            <label class="text-sm font-medium text-blue-600">Bank</label>
+            <select
+              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              v-model="bank"
+              @change="
+                form.bank.isValid = bank !== '';
+                updateIsFirstInput('bank', bank);
+              "
+            >
+              <option value="" disabled selected hidden>Select Bank</option>
+              <option value="kbank">Kasikorn Bank</option>
+              <option value="scb">Siam Commercial Bank</option>
+              <option value="bbl">Bangkok Bank</option>
+              <option value="ktb">Krungthai Bank</option>
+            </select>
           </div>
-        </div>
 
-        <!-- Buttons -->
-        <div class="flex flex-col space-y-3 mt-4">
-          <button
-            type="submit"
-            :disabled="!isFormValid"
-            :class="[
-              'w-full py-2 rounded-lg transition',
-              isFormValid
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed',
-            ]"
-          >
-            Sign Up
-          </button>
-          <RouterLink
-            :to="{ name: 'Products' }"
-            class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
-          >
-            Cancel
-          </RouterLink>
-        </div>
+          <InputBox
+            label="Bank Account"
+            placeholder="Enter bank account number"
+            v-model="bankAccount"
+            :isValid="form.bankAccount.isValid"
+            :isFirstInput="form.bankAccount.isFirstInput"
+            :errorText="form.bankAccount.errorText"
+            @validateValue="validateBankAccount"
+          />
 
-        <!-- Already have account -->
-        <p class="text-center text-sm text-gray-600 mt-4">
-          Already have an account?
-          <RouterLink
-            :to="{ name: 'Login' }"
-            class="text-blue-600 font-medium hover:underline"
-          >
-            Login
-          </RouterLink>
-        </p>
-      </form>
+          <InputBox
+            label="National ID"
+            placeholder="Enter national ID"
+            v-model="nationalId"
+            :isValid="form.nationalId.isValid"
+            :isFirstInput="form.nationalId.isFirstInput"
+            :errorText="form.nationalId.errorText"
+            @validateValue="validateNationalId"
+          />
+
+          <!-- Upload National ID card -->
+          <div class="flex flex-col space-y-1">
+            <label class="text-sm font-medium text-gray-600">National ID Card - Front</label>
+            <input
+              type="file"
+              accept="image/*"
+              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              @change="handleFileChangeFront"
+              ref="frontInput"
+            />
+
+            <div v-if="nationalIdFrontPreview" class="mt-2 relative">
+              <img :src="nationalIdFrontPreview" alt="Front Preview" class="w-40 rounded-lg border" />
+              <button
+                type="button"
+                @click="removeFrontImage"
+                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label class="text-sm font-medium text-gray-600">National ID Card - Back</label>
+            <input
+              type="file"
+              accept="image/*"
+              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              @change="handleFileChangeBack"
+              ref="backInput"
+            />
+          
+            <div v-if="nationalIdBackPreview" class="mt-2 relative">
+              <img :src="nationalIdBackPreview" alt="Back Preview" class="w-40 rounded-lg border" />
+              <button
+                type="button"
+                @click="removeBackImage"
+                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+
+          <!-- Buttons -->
+          <div class="flex flex-col space-y-3 mt-4">
+            <button
+              type="submit"
+              :disabled="!isFormValid"
+              :class="[
+                'w-full py-2 rounded-lg transition',
+                isFormValid
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              ]"
+            >
+              Sign Up
+            </button>
+            <RouterLink
+              :to="{ name: 'Products' }"
+              class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
+            >
+              Cancel
+            </RouterLink>
+          </div>
+
+          <!-- Already have account -->
+          <p class="text-center text-sm text-gray-600 mt-4">
+            Already have an account?
+            <RouterLink
+              :to="{ name: 'Login' }"
+              class="text-blue-600 font-medium hover:underline"
+            >
+              Login
+            </RouterLink>
+          </p>
+        </form>
+      </div>
     </div>
-  </div>
-</template>
+  </template>
