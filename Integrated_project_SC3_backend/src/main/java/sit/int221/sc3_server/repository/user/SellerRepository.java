@@ -13,4 +13,6 @@ public interface SellerRepository extends JpaRepository<Seller, Integer> {
     String findFileName(
             @Param("frontName") String frontName
     );
+
+    boolean existsSellerByMobileNumberAndNationalId(String mobileNumber,String nationalId);
 }

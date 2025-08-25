@@ -19,10 +19,6 @@ public class Seller {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Size(max = 10)
-    @NotNull
-    @Column(name = "mobileNumber", nullable = false, length = 10)
-    private String mobileNumber;
 
     @Size(max = 20)
     @NotNull
@@ -51,5 +47,10 @@ public class Seller {
 
     @OneToOne(mappedBy = "seller")
     private User user;
+
+    @Size(max = 10)
+    @NotNull
+    @Column(name = "mobileNumber", nullable = false, length = 10)
+    private String mobileNumber;
 
 }
