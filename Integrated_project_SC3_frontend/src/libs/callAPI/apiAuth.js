@@ -30,7 +30,8 @@ export async function registerUser(userData, nationalIdPhotoFront, nationalIdPho
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to register user: ${res.statusText}`);
+      const errorData = await res.json();
+    throw new Error(`${errorData.message}`);
   }
 
   return res.json();

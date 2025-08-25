@@ -11,7 +11,7 @@ import RegisterSeller from "@/components/AuthUserComponent/RegisterSeller.vue";
 </script>
 <template>
   <div class="card">
-    <Tabs value="1">
+    <Tabs value="0">
       <TabList>     
         <Tab value="0">Buyer</Tab>
         <Tab value="1">Seller</Tab>

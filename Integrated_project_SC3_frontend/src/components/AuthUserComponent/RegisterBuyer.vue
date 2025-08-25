@@ -2,6 +2,11 @@
 import { computed, reactive, ref } from "vue";
 import InputBox from "./../Common/InputBox.vue";
 import { registerUser } from "@/libs/callAPI/apiAuth";
+import { useAlertStore } from "@/stores/alertStore.js";
+import { RouterLink, useRouter } from "vue-router";
+
+const route = useRouter();
+const alertStore = useAlertStore();
 
 const nickname = ref("");
 const fullname = ref("");
@@ -29,7 +34,8 @@ const form = reactive({
       "Password must be 8+ chars with uppercase, lowercase, number, special char",
     isValid: false,
     isFirstInput: true,
-  }});
+  },
+});
 
 const isFormValid = computed(() => {
   const results = Object.entries(form).map(([key, f]) => ({
@@ -69,38 +75,33 @@ const validatePassword = () => {
   updateIsFirstInput("password", password.value);
 };
 
-
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
 };
 
 const summitForm = async () => {
-  if (isFormValid.value) {
-    const formData = {
-      nickName: nickname.value,
-      fullName: fullname.value,
-      email: email.value,
-      passwords: password.value,
-      role: "BUYER", 
-      mobileNumber: "",
-      bankAccountNumber: "",
-      bankName: "",
-      nationalId: "",
-    };
+  const formData = {
+    nickName: nickname.value,
+    fullName: fullname.value,
+    email: email.value,
+    passwords: password.value,
+    role: "BUYER",
+    mobileNumber: "",
+    bankAccountNumber: "",
+    bankName: "",
+    nationalId: "",
+  };
 
-    try {
-      const res = await registerUser(formData);
-      console.log("✅ Register success:", res);
-
-    } catch (err) {
-      console.error("❌ Register failed:", err);
-    }
-  } else {
-    console.log("Form has errors. Please fix them.");
+  try {
+    const res = await registerUser(formData);
+    console.log("✅ Register success:", res);
+    alertStore.addToast("Your buyer profile is created", "Create user successful ", "success",5000);
+    route.push({ name: "Products" });
+  } catch (err) {
+    alertStore.addToast(err.message, "Register failed", "error");
   }
 };
-
 </script>
 
 <template>
@@ -113,7 +114,7 @@ const summitForm = async () => {
         Buyer Signup
       </h2>
 
-       <!-- Form -->
+      <!-- Form -->
       <form class="flex flex-col space-y-2" @submit.prevent="summitForm">
         <InputBox
           label="nickname"
@@ -156,9 +157,8 @@ const summitForm = async () => {
           @validateValue="validatePassword"
         />
 
-
         <!-- Buttons -->
-         <div class="flex flex-col space-y-3 mt-4">
+        <div class="flex flex-col space-y-3 mt-4">
           <button
             type="submit"
             :disabled="!isFormValid"
@@ -177,6 +177,12 @@ const summitForm = async () => {
           >
             Cancel
           </RouterLink>
+          <!-- <RouterLink
+            :to="{ name: 'Products' }"
+            class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            Cancel
+          </RouterLink> -->
         </div>
 
         <!-- Already have account -->

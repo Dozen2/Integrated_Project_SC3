@@ -19,7 +19,8 @@ import sit.int221.sc3_server.service.FileService;
 import java.util.UUID;
 
 @Service
-public class UserServices {
+public class
+UserServices {
     @Autowired
     private UserRepository userRepository;
     @Autowired
