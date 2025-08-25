@@ -42,16 +42,32 @@ create or replace view storageGb_view as
 select distinct p.storageGb 
 from saleItem p;
 
+create table if not exists buyer(
+	id int primary key auto_increment
+);
 
--- SELECT @@global.time_zone, @@session.time_zone;
--- SHOW VARIABLES LIKE '%time_zone%';
--- SELECT @@lc_time_names;
--- SET GLOBAL time_zone = '+00:00';
--- -- SET lc_time_names = 'en_US';
--- -- SET time_zone = 'SYSTEM';
--- SET time_zone = '+00:00';
--- -- SET GLOBAL time_zone = 'SYSTEM';
+create table if not exists seller(
+ id int primary key auto_increment,
+ mobileNumber varchar(10) not null,
+ bankAccountNumber varchar(20) not null,
+ bankName varchar(50) not null,
+ nationalId varchar(13) not null,
+ nationalIdPhotoFront varchar(70) not null,
+nationalIdPhotoBack varchar(70) not null
+);
 
+create table if not exists users(
+	id int primary key auto_increment,
+    nickName varchar(50) not null,
+    email varchar(70) not null,
+    passwords varchar(100) not null,
+    fullName varchar(50) not null,
+    buyer_id int not null,
+    seller_id int ,
+    isActive boolean,
+    foreign key (buyer_id) references buyer(id),
+    foreign key (seller_id) references seller(id)
+);
 
 INSERT INTO Brand (id, name, countryOfOrigin, webSiteUrl, isActive) VALUES
 (1, 'Samsung', 'South Korea', 'https://www.samsung.com', 1),
