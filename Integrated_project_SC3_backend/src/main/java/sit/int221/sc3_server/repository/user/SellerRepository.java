@@ -14,5 +14,7 @@ public interface SellerRepository extends JpaRepository<Seller, Integer> {
             @Param("frontName") String frontName
     );
 
-    boolean existsSellerByMobileNumberAndNationalId(String mobileNumber,String nationalId);
+    boolean existsSellerByMobileNumber(String mobileNumber);
+
+    boolean existsSellerByNationalId(String nationalId);
 }

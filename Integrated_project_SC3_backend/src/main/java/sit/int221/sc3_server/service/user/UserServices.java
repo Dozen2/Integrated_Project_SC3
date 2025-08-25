@@ -30,14 +30,18 @@ UserServices {
     @Autowired
     private FileService fileService;
     private Argon2PasswordEncoder passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
-
+    //สร้าง email กลางเอาไว้เป็นตัวที่จะส่งไปหา user ห้ามใช้ email ตัวเอง
+    //ต้องไปตั้ง password ใน manage account --> security --> 2 step email verification
     public void checkDuplication(UserDTO userDTO){
     if(userRepository.existsUserByEmail(userDTO.getEmail())){
-        throw new DuplicteItemException("user already exist");
+        throw new DuplicteItemException("This email already exist");
     }
     if(userDTO.getRole().equalsIgnoreCase("seller")
-            && sellerRepository.existsSellerByMobileNumberAndNationalId(userDTO.getMobileNumber(),userDTO.getNationalId())){
-        throw new DuplicteItemException("user already exist");
+            && sellerRepository.existsSellerByMobileNumber(userDTO.getMobileNumber())){
+        throw new DuplicteItemException("This mobile number already exist");
+    }
+    if(userDTO.getRole().equalsIgnoreCase("seller") && sellerRepository.existsSellerByNationalId(userDTO.getNationalId())){
+        throw new DuplicteItemException("This nationalID already exist");
     }
     }
 
@@ -103,7 +107,7 @@ UserServices {
         if(user.getBuyer() != null){
             dto.setUserType("BUYER");
         }
-        if(user.getSeller() != null){
+        if(user.getBuyer() != null && user.getSeller() != null){
             dto.setUserType("SELLER");
         }
 
