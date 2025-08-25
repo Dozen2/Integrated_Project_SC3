@@ -2,11 +2,11 @@
 import { computed, reactive, ref } from "vue";
 import InputBox from "./../Common/InputBox.vue";
 import { registerUser } from "@/libs/callAPI/apiAuth";
-import { useAlertStore } from "@/stores/alertStore.js";
 import { RouterLink, useRouter } from "vue-router";
+import { useAlertStore } from "@/stores/alertStore.js";
 
-const route = useRouter();
 const alertStore = useAlertStore();
+const route = useRouter();
 
 const nickname = ref("");
 const fullname = ref("");
@@ -81,6 +81,7 @@ const updateIsFirstInput = (field, value) => {
 };
 
 const summitForm = async () => {
+  try {
   const formData = {
     nickName: nickname.value,
     fullName: fullname.value,
@@ -93,7 +94,6 @@ const summitForm = async () => {
     nationalId: "",
   };
 
-  try {
     const res = await registerUser(formData);
     console.log("✅ Register success:", res);
     alertStore.addToast("Your buyer profile is created", "Create user successful ", "success",5000);

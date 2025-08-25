@@ -1,10 +1,13 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import InputBox from "./../Common/InputBox.vue";
+import { RouterLink, useRouter } from "vue-router";
 import { registerUser } from "@/libs/callAPI/apiAuth";
+import { useAlertStore } from "@/stores/alertStore.js";
 
-
-const submittedForms = ref([]); // เก็บ object ของแต่ละ submission
+const alertStore = useAlertStore();
+const route = useRouter();
+// const submittedForms = ref([]);
 
 
 const nickName = ref("");
@@ -149,7 +152,6 @@ const updateIsFirstInput = (field, value) => {
 // Submit
 
 const summitForm = async () => {
-  if (isFormValid.value) {
     try {
       const userData = {
         nickName: nickName.value,
@@ -173,14 +175,12 @@ const summitForm = async () => {
         nationalIdBack.value
       )
 
+      // submittedForms.value.push(res)
       console.log("✅ Registered success:", res)
-      submittedForms.value.push(res)
-
+      alertStore.addToast("Your seller profile is created", "Create user successful ", "success",5000);
+      route.push({ name: "Products" });
     } catch (err) {
-      console.error("❌ Register failed:", err)
-    }
-  } else {
-    console.log("Form has errors. Please fix them.")
+      alertStore.addToast(err.message, "Register failed", "error");
   }
 }
 
