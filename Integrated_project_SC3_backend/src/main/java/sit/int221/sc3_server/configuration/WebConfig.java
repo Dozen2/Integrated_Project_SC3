@@ -17,10 +17,8 @@ public class WebConfig {
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
-//                        .requestMatchers(HttpMethod.DELETE, "/itb-mshop/v2/sale-items/**").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/itb-mshop/v2/sale-items/**").permitAll()
-//                        .requestMatchers(HttpMethod.PUT, "/itb-mshop/v2/sale-items/**").permitAll()
+                        .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**"
+                                ,"/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();

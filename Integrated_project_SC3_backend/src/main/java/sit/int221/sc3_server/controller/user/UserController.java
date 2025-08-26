@@ -35,8 +35,8 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    @GetMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token){
+    @PostMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token){
         boolean verify = userServices.verifyEmail(token);
         if(verify){
             return ResponseEntity.ok("Email successfully verify");

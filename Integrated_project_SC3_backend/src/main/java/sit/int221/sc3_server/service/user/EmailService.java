@@ -17,7 +17,7 @@ public class EmailService {
     @Autowired
     private JavaMailSender sender;
 
-    @Value("${app.frontend.url.dev:http://localhost:5173.}")
+    @Value("${app.frontend.url.dev:http://localhost:5173}")
     private String devFrontUrl;
     @Value("${app.frontend.url.prod:http://intproj24.sit.kmutt.ac.th}")
     private String prodFrontendUrl;
@@ -41,9 +41,10 @@ public class EmailService {
         return isDev ? devFrontUrl : prodFrontendUrl;
     }
     // ใช้สำหรับส่ง email verification
+    //แก้ path ด้วย
     public void sendMailVerification(String to,String token) throws MessagingException, UnsupportedEncodingException {
         String hostPath = getHost();
-        String link = hostPath + "/sc3/itb-mshop/v2/user/verify-email?token=" + token;
+        String link = hostPath + "/sc3/verify-email?token=" + token;
         String body = "Click the link to verify your email:\n\n" + link;
         MimeMessage message02 = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message02, true, "UTF-8");
@@ -56,7 +57,7 @@ public class EmailService {
     // ใช้สำหรับส่ง forgot password
     public void sendForgotPassword(String to,String resetToken) throws MessagingException, UnsupportedEncodingException {
         String hostPath = getHost();
-        String link = hostPath + "/sc3/itb-mshop/v2/user/verify-email?token=" + resetToken;
+        String link = hostPath + "/sc3/verify-email?token=" + resetToken;
         String body = "Click the link to verify your email:\n\n" + link;
         MimeMessage message02 = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message02, true, "UTF-8");

@@ -108,11 +108,6 @@ UserServices {
         userRepository.save(user);
 
 
-//        VerifyToken verifyToken = new VerifyToken();
-//        verifyToken.setVerifyToken(UUID.randomUUID().toString());
-//        verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-//        verifyTokenRepository.saveAndFlush(verifyToken);
-//        user.setVerifyTokens(verifyToken);
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setVerifyToken(UUID.randomUUID().toString());
         verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
@@ -156,23 +151,23 @@ UserServices {
         return newFileName;
     }
 
-    //ตรวจสอบ token
+
+
     @Transactional
-    public boolean verifyEmail(String tokenStr){
-        VerifyToken token = userRepository.findVerifyToken(tokenStr).orElse(null);
-        if(token == null || token.getExpiredDate().isBefore(Instant.now())){
+    public boolean verifyEmail(String tokenStr) {
+        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
+
+        if (token == null || token.getExpiredDate().isBefore(Instant.now())) {
             return false;
         }
 
         User user = token.getUser();
         user.setIsActive(true);
-
-        verifyTokenRepository.delete(token);
         user.setVerifyTokens(null);
-
+        verifyTokenRepository.delete(token);// ลบ token ผ่าน orphanRemoval
         userRepository.save(user);
+
         return true;
     }
-
 //    public String
 }
