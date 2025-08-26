@@ -1,5 +1,6 @@
 package sit.int221.sc3_server.controller.user;
 
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,8 @@ import sit.int221.sc3_server.entity.User;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.user.UserServices;
 
+import java.io.UnsupportedEncodingException;
+
 @RestController
 @RequestMapping("/itb-mshop/v2/user")
 public class UserController {
@@ -24,11 +27,22 @@ public class UserController {
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDTO> createUser(@ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
-            , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back){
+            , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
+
 
         User user = userServices.createUser(userDTO,front,back);
         UserResponseDTO dto = userServices.mapToDTO(user);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String token){
+        boolean verify = userServices.verifyEmail(token);
+        if(verify){
+            return ResponseEntity.ok("Email successfully verify");
+        }else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
+        }
     }
 
 //    @GetMapping("/user/file/{filename:.+}")

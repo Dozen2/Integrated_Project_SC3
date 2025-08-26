@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import sit.int221.sc3_server.entity.Buyer;
-import sit.int221.sc3_server.entity.Seller;
 
 @Getter
 @Setter
@@ -53,5 +51,10 @@ public class User {
     private Boolean isActive;
 
 
+    @OneToOne(mappedBy = "user")
+    private Token tokens;
+
+    @OneToOne(mappedBy = "user")
+    private VerifyToken verifyTokens;
 
 }

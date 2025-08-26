@@ -21,4 +21,7 @@ public class UserDTO {
 //    private String nationalIdPhotoFront;
 //    private String nationalIdPhotoBack;
 
+    public String getEmail(){
+        return this.email = email.trim();
+    }
 }
