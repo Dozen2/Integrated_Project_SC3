@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   getSaleItemByIdV2,
-  deleteSaleItemById,
+  deleteSaleItemByIdV2,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
@@ -20,20 +20,22 @@ const pendingDeleteId = ref(null);
 
 const confirmDeleteProduct = async () => {
   try {
-    await deleteSaleItemById(pendingDeleteId.value);
-    alertStore.setMessage("The sale item has been deleted.");
+    await deleteSaleItemByIdV2(pendingDeleteId.value);
+    alertStore.addToast(
+      "The sale item has been deleted.",
+      "Delete success",
+      "success"
+    );
     sessionStorage.setItem("item-just-deleted", "true");
     router.push("/sale-items");
   } catch (error) {
-    if (error.status === 404) {
-      alertStore.setMessage("The requested sale item does not exist.", "error");
-      sessionStorage.setItem("item-just-deleted", "true");
-      router.push("/sale-items");
-    } else {
-      alertStore.setMessage("The requested sale item does not exist.", "error");
-      sessionStorage.setItem("item-just-deleted", "true");
-      router.push("/sale-items");
-    }
+    alertStore.addToast(
+      "The requested sale item does not exist.",
+      "Delete failed",
+      "error"
+    );
+    sessionStorage.setItem("item-just-deleted", "true");
+    router.push("/sale-items");
   } finally {
     showDeleteModal.value = false;
   }
@@ -58,9 +60,6 @@ onMounted(async () => {
       product.value = data;
       console.log(product.value);
       console.log(data);
-      console.log("product.value: " + product.value.price);
-      console.log("product.value: " + typeof product.value.price);
-      console.log("product.value: " + product.value.color);
     }
   } catch (error) {
     console.log("โหลดข้อมูลสินค้าไม่สำเร็จ:", error.message);
@@ -143,10 +142,10 @@ const incrementQuantity = () => {
         <div class="md:flex">
           <!-- Product Image Section -->
           <div class="md:w-1/2 p-6 md:p-8 bg-gray-50">
-              <ImageUploader
-                :fileImageOrganize="product.fileImageOrganize"
-                :param="route.params.id"
-              />
+            <ImageUploader
+              :fileImageOrganize="product.fileImageOrganize"
+              :param="route.params.id"
+            />
           </div>
 
           <!-- Product Info Section -->
@@ -417,7 +416,7 @@ const incrementQuantity = () => {
   </div>
 
   <!-- Alert Message -->
-  <div
+  <!-- <div
     v-if="alertStore.message"
     :class="`itbms-message px-4 py-2 rounded mb-4 ${
       alertStore.type === 'error'
@@ -426,7 +425,7 @@ const incrementQuantity = () => {
     }`"
   >
     {{ alertStore.message }}
-  </div>
+  </div> -->
 </template>
 
 <style scoped>

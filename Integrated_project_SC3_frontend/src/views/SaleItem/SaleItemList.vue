@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onBeforeUnmount, onBeforeMount } from "vue";
 import {
-  getAllSaleItemV1,
   getAllSaleItemV2,
+  getImageByImageName,
+  getViewStorageForSelect,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
@@ -11,6 +12,7 @@ import Filter from "@/components/Common/Query/Filter.vue";
 import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
+import Search from "@/components/Common/Query/Search.vue";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -18,17 +20,12 @@ const brand = ref([]);
 const totalPages = ref(0);
 const alertStore = useAlertStore();
 
-// ======================== Configuration ========================
-const STORAGE_OPTIONS = [
-  { id: 1, name: "32GB", value: "32" },
-  { id: 2, name: "64GB", value: "64" },
-  { id: 3, name: "128GB", value: "128" },
-  { id: 4, name: "256GB", value: "256" },
-  { id: 5, name: "512GB", value: "512" },
-  { id: 6, name: "1TB", value: "1024" },
-  { id: 7, name: "Not specified", value: "-1" },
-];
+// Custom price range state
+const customPriceRange = ref({ min: null, max: null });
 
+// ======================== Configuration ========================
+
+const STORAGE_OPTIONS = ref([]);
 const PRICE_OPTIONS = [
   { id: 1, name: "0 – 5,000 Baht", value: "0-5000" },
   { id: 2, name: "5,001-10,000 Baht", value: "5001-10000" },
@@ -46,6 +43,7 @@ const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
+  SEARCH: "SaleItem-Search",
 };
 
 const DEFAULT_VALUES = {
@@ -84,10 +82,25 @@ const setSession = (key, value) => {
   sessionStorage.setItem(key, JSON.stringify(value));
 };
 
+// Get custom price from session storage
+const getSessionCustomPrice = () => {
+  try {
+    const min = sessionStorage.getItem(SESSION_KEYS.CUSTOM_PRICE_MIN);
+    const max = sessionStorage.getItem(SESSION_KEYS.CUSTOM_PRICE_MAX);
+    return {
+      min: min && min !== "" ? parseFloat(min) : null,
+      max: max && max !== "" ? parseFloat(max) : null,
+    };
+  } catch {
+    return { min: null, max: null };
+  }
+};
+
 const getCurrentFilters = () => ({
   brands: getSessionArray(SESSION_KEYS.BRAND),
   storages: getSessionArray(SESSION_KEYS.STORAGE),
   prices: getSessionArray(SESSION_KEYS.PRICE),
+  customPrice: getSessionCustomPrice(),
   page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
   size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
   sortDirection: getSessionValue(
@@ -95,13 +108,16 @@ const getCurrentFilters = () => ({
     DEFAULT_VALUES.sortDirection
   ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
+  search: getSessionValue(SESSION_KEYS.SEARCH),
 });
 
 // ======================== Data Processing Helpers ========================
 const convertStorageValues = (storageNames) => {
   return storageNames.map((name) => {
-    const option = STORAGE_OPTIONS.find((opt) => opt.name === name);
-    return option ? option.value : name;
+    const option = STORAGE_OPTIONS.value.find((opt) => opt.name === name);
+    if (!option) return null;
+
+    return option.value === "-1" ? -1 : Number(option.value);
   });
 };
 
@@ -112,7 +128,15 @@ const convertPriceValues = (priceNames) => {
   });
 };
 
-const parsePriceRange = (priceValues) => {
+const parsePriceRange = (priceValues, customPrice = null) => {
+  // If custom price is set, prioritize it over predefined ranges
+  if (customPrice && (customPrice.min !== null || customPrice.max !== null)) {
+    return {
+      min: customPrice.min,
+      max: customPrice.max,
+    };
+  }
+
   if (!priceValues.length) return { min: null, max: null };
 
   let min = null;
@@ -120,7 +144,7 @@ const parsePriceRange = (priceValues) => {
 
   priceValues.forEach((range) => {
     // ตรวจสอบว่ามี "-" หรือไม่
-    if (range.includes('-')) {
+    if (range.includes("-")) {
       // กรณี range เช่น "1000-2000"
       const [lower, upper] = range.split("-").map(Number);
       if (!isNaN(lower)) min = min === null ? lower : Math.min(min, lower);
@@ -137,23 +161,24 @@ const parsePriceRange = (priceValues) => {
   return { min, max };
 };
 
+// ======================== API Functions ========================
 
-const sortProductsByBrand = (products, brandOrder) => {
-  return products.sort((a, b) => {
-    const brandA = a.brandName?.trim() || a.brand?.name?.trim() || "";
-    const brandB = b.brandName?.trim() || b.brand?.name?.trim() || "";
+const loadImageUrl = async () => {
+  imageUrl.value = [];
+  for (const item of product.value.content) {
+    if (item.mainImageFileName) {
+      const image = await getImageByImageName(item.mainImageFileName);
+      imageUrl.value.push(image);
+    } else {
+      imageUrl.value.push(
+        "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg"
+      );
+    }
+  }
 
-    const indexA = brandOrder.indexOf(brandA);
-    const indexB = brandOrder.indexOf(brandB);
-
-    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return brandA.localeCompare(brandB);
-  });
+  console.log("Image URLs loaded:", imageUrl.value);
 };
 
-// ======================== API Functions ========================
 const loadBrands = async () => {
   try {
     const data = await getAllBrand();
@@ -168,6 +193,7 @@ const loadProductsDefault = async () => {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
     totalPages.value = data.totalPages;
+    loadImageUrl();
   } catch (error) {
     console.error("Error loading products:", error);
   }
@@ -178,9 +204,23 @@ const loadProductsWithFilters = async (filters) => {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
     const priceValues = convertPriceValues(filters.prices);
-    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(
+      priceValues,
+      filters.customPrice
+    );
 
-    // Fetch data
+    console.log("Loading products with filters:", {
+      brands: filters.brands,
+      sortField: filters.sortField,
+      sortDirection: filters.sortDirection,
+      size: filters.size,
+      page: filters.page,
+      storageValues,
+      minPrice,
+      maxPrice,
+      customPrice: filters.customPrice,
+    });
+
     const data = await getAllSaleItemV2(
       filters.brands,
       filters.sortField,
@@ -189,18 +229,44 @@ const loadProductsWithFilters = async (filters) => {
       filters.page,
       storageValues,
       minPrice,
-      maxPrice
+      maxPrice,
+      filters.search
     );
-
-    // Sort by brand order if brands are filtered
-    if (data?.content && filters.brands.length > 0) {
-      data.content = sortProductsByBrand(data.content, filters.brands);
-    }
-
     product.value = data;
     totalPages.value = data.totalPages;
+    loadImageUrl();
   } catch (error) {
     console.error("Error loading filtered products:", error);
+  }
+};
+
+const loadStroage = async () => {
+  try {
+    const data = await getViewStorageForSelect();
+
+    // ถ้าเจอ error จาก API ให้ default เป็น array ว่าง
+    if (data.error) {
+      STORAGE_OPTIONS.value = [];
+      return;
+    }
+
+    STORAGE_OPTIONS.value = data.map((item) => {
+      if (item == null) {
+        return { name: "Not specified", value: "-1" };
+      }
+      return {
+        name: `${item.storageGb} GB`,
+        value: String(item.storageGb),
+      };
+    });
+
+    STORAGE_OPTIONS.value.sort((a, b) => {
+      if (a.value === "-1") return 1;
+      if (b.value === "-1") return -1;
+      return Number(a.value) - Number(b.value);
+    });
+  } catch (error) {
+    console.error("Failed to load storage:", error);
   }
 };
 
@@ -223,6 +289,22 @@ const handleStorageFilter = async (newStorages) => {
 
 const handlePriceFilter = async (newPrices) => {
   setSession(SESSION_KEYS.PRICE, newPrices);
+  setSession(SESSION_KEYS.PAGE, 0);
+
+  // Clear custom price when predefined price ranges are selected
+  if (newPrices.length > 0) {
+    sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
+    sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
+    customPriceRange.value = { min: null, max: null };
+  }
+
+  const filters = getCurrentFilters();
+  await loadProductsWithFilters(filters);
+};
+
+const handleSearch = async (keyword) => {
+  console.log(keyword);
+  setSession(SESSION_KEYS.SEARCH, keyword);
   setSession(SESSION_KEYS.PAGE, 0);
 
   const filters = getCurrentFilters();
@@ -264,8 +346,58 @@ const handlePageChange = async (pageData) => {
 };
 
 const handleClear = async () => {
+  // Clear custom price as well
+  customPriceRange.value = { min: null, max: null };
+  sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MIN, "");
+  sessionStorage.setItem(SESSION_KEYS.CUSTOM_PRICE_MAX, "");
+
   const filters = getCurrentFilters();
   await loadProductsWithFilters(filters);
+};
+
+let priceOption = ref([...PRICE_OPTIONS]);
+let min_price = ref(null);
+let max_price = ref(null);
+
+const applyCustomPrice = () => {
+  const min = min_price.value ?? "";
+  const max = max_price.value ?? "";
+
+  let customPriceRange = "";
+  let customName = "";
+
+  if (min !== "" && max !== "") {
+    customPriceRange = `${min}-${max}`;
+    customName = `${min} – ${max} Baht`;
+  } else if (min !== "") {
+    customPriceRange = `${min}-${min}`;
+    customName = `${min} Baht`;
+  } else if (max !== "") {
+    customPriceRange = `${max}-${max}`;
+    customName = `${max} Baht`;
+  } else {
+    setSession(SESSION_KEYS.PRICE, []);
+    loadProductsWithFilters(getCurrentFilters());
+    return;
+  }
+
+  const maxId =
+    priceOption.value.length > 0
+      ? Math.max(...priceOption.value.map((opt) => Number(opt.id)))
+      : 0;
+
+  const customOption = {
+    id: maxId + 1,
+    name: customName,
+    value: customPriceRange,
+  };
+
+  priceOption.value.push(customOption);
+  const prevSelected = getSessionArray(SESSION_KEYS.PRICE) || [];
+  const updatedSelected = [...prevSelected, customOption.value];
+
+  setSession(SESSION_KEYS.PRICE, updatedSelected);
+  loadProductsWithFilters(getCurrentFilters());
 };
 
 // ======================== Storage Event Handler ========================
@@ -282,19 +414,30 @@ const hasActiveFilters = (filters) => {
     filters.brands.length > 0 ||
     filters.storages.length > 0 ||
     filters.prices.length > 0 ||
+    (filters.customPrice &&
+      (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
     filters.page > 0 ||
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
-    filters.size !== DEFAULT_VALUES.size
+    filters.size !== DEFAULT_VALUES.size ||
+    !! filters.search  
   );
 };
 
 // ======================== Lifecycle ========================
+const imageUrl = ref([]);
 onBeforeMount(async () => {
   await loadBrands();
+  await loadStroage();
+
+  // Load custom price from session storage
+  customPriceRange.value = getSessionCustomPrice();
 
   const filters = getCurrentFilters();
+  console.log("Initial filters:", filters);
 
+  console.log(hasActiveFilters(filters));
+  
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
   } else {
@@ -306,11 +449,12 @@ onBeforeMount(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
+  
 });
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 mx-[225px] mt-[50px]">
+  <div class="flex flex-col gap-6 m-10">
     <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
@@ -326,117 +470,159 @@ onBeforeUnmount(() => {
 
     <!-- Action Buttons -->
     <div class="flex items-center justify-between gap-4">
+      <!-- New Product -->
       <RouterLink
         :to="{ name: 'ProuctCreate' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
         <span class="itbms-sale-item-add tracking-wide">New Product</span>
       </RouterLink>
 
+      <!-- Manage Items -->
       <RouterLink
         :to="{ name: 'ProductManage' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
         <span class="itbms-manage-brand tracking-wide">Manage Sale Items</span>
       </RouterLink>
     </div>
 
-    <!-- Filters -->
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
-      :options="brand"
-      label="Filter by brands"
-      placeholder="Select brands"
-      :sessionKey="SESSION_KEYS.BRAND"
-      valueField="name"
-      displayField="name"
-      @filterChanged="handleBrandFilter"
-    />
-
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
-      :options="STORAGE_OPTIONS"
-      label="Filter by Storages"
-      placeholder="Select StoragesGB"
-      :sessionKey="SESSION_KEYS.STORAGE"
-      valueField="name"
-      displayField="name"
-      @filterChanged="handleStorageFilter"
-    />
-
-    <Filter
-      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
-      :options="PRICE_OPTIONS"
-      label="Filter by Price"
-      placeholder="Select Price Range"
-      :sessionKey="SESSION_KEYS.PRICE"
-      valueField="value"
-      displayField="name"
-      @filterChanged="handlePriceFilter"
-      ><template #InputPrice></template> ></Filter
-    >
-
-    <!-- Clear Button -->
-    <div class="flex justify-end mb-4">
-      <ClearButton
-        :sessionKeys="[
-          SESSION_KEYS.BRAND,
-          SESSION_KEYS.STORAGE,
-          SESSION_KEYS.PRICE,
-          SESSION_KEYS.PAGE,
-        ]"
-        @cleared="handleClear"
+    <!-- 🔹 Search + SizeAndSort แนวนอน -->
+    <div class="flex justify-between items-center gap-4">
+      <SizeAndSort
+        :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
+        :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+        :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
+        @sizeChanged="handleSizeChange"
+        @sortChanged="handleSortChange" 
       />
+      <Search 
+      :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
+      :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
+      @search="handleSearch" />
     </div>
 
-    <!-- Size and Sort -->
-    <SizeAndSort
-      :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
-      :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
-      :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
-      @sizeChanged="handleSizeChange"
-      @sortChanged="handleSortChange"
-    />
+    <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
+    <div class="flex gap-6">
+      <!-- Filters -->
+      <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
+        <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
+          Filter by:
+        </div>
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
+          :options="brand"
+          label="Brands"
+          placeholder="Select brands"
+          :sessionKey="SESSION_KEYS.BRAND"
+          valueField="name"
+          displayField="name"
+          mode="brand"
+          @filterChanged="handleBrandFilter"
+        />
 
-    <!-- Product Gallery -->
-    <SelectAllSaleItemGallery
-      v-if="product?.content"
-      :product="product.content"
-    />
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
+          :options="STORAGE_OPTIONS"
+          label="Storages"
+          placeholder="Select StoragesGB"
+          :sessionKey="SESSION_KEYS.STORAGE"
+          valueField="name"
+          displayField="name"
+          mode="Storages"
+          @filterChanged="handleStorageFilter"
+        />
 
-    <!-- Pagination -->
-    <Pagination
-      :initialTotalPages="totalPages"
-      :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
-      @pageChanged="handlePageChange"
-    />
+        <!-- Price Filter -->
+        <Filter
+          :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+          :options="priceOption"
+          label="Price"
+          placeholder="Select Price Range"
+          :sessionKey="SESSION_KEYS.PRICE"
+          valueField="value"
+          displayField="name"
+          :enableCustomPriceInput="true"
+          mode="price"
+          @filterChanged="handlePriceFilter"
+        >
+          <template #InputPrice>
+            <div class="items-center px-4 py-3 border-t border-gray-100 gap-2">
+              <div class="mb-[7px] text-gray-800 font-semibold">
+                Custom Price
+              </div>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Min</span>
+                <input
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
+                  placeholder="Min"
+                  v-model.number="min_price"
+                />
+              </div>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Max</span>
+                <input
+                  :disabled="min_price === null"
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
+                  placeholder="Max"
+                  v-model.number="max_price"
+                />
+              </div>
+              <div v-if="min_price > max_price && max_price != 0">
+                <p class="text-red-500 text-sm">
+                  * Min price must be least than max price
+                </p>
+              </div>
+              <div class="flex justify-end">
+                <button
+                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
+                  @click="applyCustomPrice"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </template>
+        </Filter>
+
+        <!-- Clear Button -->
+        <div class="flex justify-end mr-[25px]">
+          <ClearButton
+            :sessionKeys="[
+              SESSION_KEYS.BRAND,
+              SESSION_KEYS.STORAGE,
+              SESSION_KEYS.PRICE,
+              SESSION_KEYS.CUSTOM_PRICE_MIN,
+              SESSION_KEYS.CUSTOM_PRICE_MAX,
+              SESSION_KEYS.PAGE,
+              SESSION_KEYS.SEARCH,
+            ]"
+            @cleared="handleClear"
+          />
+        </div>
+      </div>
+
+      <!-- Product Gallery -->
+      <div class="flex-1">
+        <SelectAllSaleItemGallery
+          v-if="product?.content"
+          :product="product.content"
+          :imageUrl="imageUrl"
+        />
+      </div>
+    </div>
+
+    <!-- 🔹 Pagination ด้านล่าง -->
+    <div class="mt-4">
+      <Pagination
+        :initialTotalPages="totalPages"
+        :initialPage="
+          getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1
+        "
+        @pageChanged="handlePageChange"
+      />
+    </div>
   </div>
 </template>

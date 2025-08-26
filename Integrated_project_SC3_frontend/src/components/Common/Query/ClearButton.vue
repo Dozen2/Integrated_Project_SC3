@@ -21,9 +21,9 @@ function clearFilters() {
 <template>
   <button
     @click="clearFilters"
-    class="px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 whitespace-nowrap"
+    class="px-3 py-2 text-white bg-red-500 hover:bg-red-600 cursor-pointer rounded-lg transition-colors duration-200 whitespace-nowrap"
     title="Clear all filters"
   >
-    Clear All
+    Clear all fiter
   </button>
 </template>

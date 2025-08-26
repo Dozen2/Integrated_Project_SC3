@@ -31,6 +31,23 @@ async function getImageByImageName(imgName) {
 }
 
 
+async function getViewStorageForSelect() {
+  try {
+    const res = await fetch(`${urlV2}/storages`);
+    if (!res.ok) {
+      if (res.status === 404) {
+        return { error: "not_found" };
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const SaleItem = await res.json();
+    return SaleItem;
+  } catch (error) {
+    throw new Error(`Fetch failed: ${error.message}`);
+  }
+}
+
+
 async function getAllSaleItemV1() {
   try {
     const res = await fetch(urlV1);
@@ -47,40 +64,6 @@ async function getAllSaleItemV1() {
   }
 }
 
-// const getAllSaleItemV2 = async (
-//   filterBrand,
-//   sortField,
-//   sortDirection,
-//   size,
-//   page
-// ) => {
-//   filterBrand = filterBrand || [];
-
-//   const params = new URLSearchParams();
-//   filterBrand.forEach((brand) => {
-//     params.append("filterBrands", brand || "");
-//   });
-//   params.append("sortField", sortField || "createdOn");
-//   params.append("sortDirection", sortDirection || "desc");
-//   params.append("size", size || 10);
-//   params.append("page", page || 0);
-//   const pathInput = params.toString();
-
-//   try {
-//     const res = await fetch(`${urlV2}?${pathInput}`);
-//     if (!res.ok) {
-//       if (res.status === 404) {
-//         return { error: "not_found" };
-//       }
-//       throw new Error(`HTTP error! status: ${res.status}`);
-//     }
-//     const SaleItem = await res.json();
-//     return SaleItem;
-//   } catch (error) {
-//     throw new Error(`Fetch failed: ${error.message}`);
-//   }
-// };
-
 const getAllSaleItemV2 = async (
   filterBrand,
   sortField,
@@ -89,7 +72,8 @@ const getAllSaleItemV2 = async (
   page,
   filterStorages = [],
   filterPriceLower = null,
-  filterPriceUpper = null
+  filterPriceUpper = null,
+  search = ""
 ) => {
   filterBrand = filterBrand || [];
   filterStorages = filterStorages || [];
@@ -112,6 +96,11 @@ const getAllSaleItemV2 = async (
   }
   if (filterPriceUpper !== null && filterPriceUpper !== "") {
     params.append("filterPriceUpper", filterPriceUpper);
+  }
+
+  // เพิ่ม search keyword
+  if (search && search.trim() !== "") {
+    params.append("searchParam", search.trim());
   }
   
   // Sorting and pagination
@@ -199,6 +188,23 @@ async function addSaleItemV2(newSaleItem) {
   }
 }
 
+//updateSaleItemV2 function to update sale item by id
+async function updateSaleItemV2(id, updatedSaleItem) {
+  try {
+    const res = await fetch(`${urlV2}/${id}`, {
+     method: "PUT",
+      body: updatedSaleItem,
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update SaleItem");
+    }
+    const updatedResponse = await res.json();
+    return updatedResponse;
+  } catch (error) {
+    throw new Error("Cannot update your SaleItem");
+  }
+}
+
 async function updateSaleItem(id, updatedSaleItem) {
   try {
     const res = await fetch(`${urlV1}/${id}`, {
@@ -232,95 +238,19 @@ const deleteSaleItemById = async (id) => {
 
   return res.status === 204;
 };
+const deleteSaleItemByIdV2 = async (id) => {
+  const res = await fetch(`${urlV2}/${id}`, {
+    method: "DELETE",
+  });
 
-// ดึงข้อมูลแบบมี pagination/filter/sort ผ่าน query
-// const getAllSaleItemPage = async ({
-//   filterBrands = [],
-//   page = 0,
-//   size = 10,
-//   sortField = null,
-//   sortDirection = "desc",
-// } = {}) => {
-//   const params = new URLSearchParams();
-
-//   if (filterBrands.length > 0) {
-//     filterBrands.forEach((brand) => params.append("filterBrands", brand));
-//   }
-//   params.append("page", page);
-//   params.append("size", size);
-//   if (sortField) {
-//     params.append("sortField", sortField);
-//     params.append("sortDirection", sortDirection);
-//   }
-
-//   const fullUrl = `${urlV1}?${params.toString()}`;
-//   console.log(fullUrl);
-
-//   try {
-//     const res = await fetch(fullUrl);
-//     if (!res.ok) {
-//       throw new Error(`HTTP error! status: ${res.status}`);
-//     }
-//     const SaleItem = await res.json();
-//     return SaleItem;
-//   } catch (error) {
-//     throw new Error(`Fetch failed: ${error.message}`);
-//   }
-// };
-
-const getAllSaleItemPage = async ({
-  filterBrands = [],
-  filterStorages = [],
-  filterPriceLower = null,
-  filterPriceUpper = null,
-  page = 0,
-  size = 10,
-  sortField = null,
-  sortDirection = "desc",
-} = {}) => {
-  const params = new URLSearchParams();
-
-  // Filter brands
-  if (filterBrands.length > 0) {
-    filterBrands.forEach((brand) => params.append("filterBrands", brand));
+  if (!res.ok) {
+    const error = new Error("Request failed");
+    error.status = res.status;
+    error.json = () => res.json();
+    throw error;
   }
 
-  // Filter storages
-  if (filterStorages.length > 0) {
-    filterStorages.forEach((storage) => params.append("filterStorages", storage));
-  }
-
-  // Price range filters
-  if (filterPriceLower !== null) {
-    params.append("filterPriceLower", filterPriceLower);
-  }
-  if (filterPriceUpper !== null) {
-    params.append("filterPriceUpper", filterPriceUpper);
-  }
-
-  // Pagination
-  params.append("page", page);
-  params.append("size", size);
-
-  // Sorting
-  if (sortField) {
-    params.append("sortField", sortField);
-    params.append("sortDirection", sortDirection);
-  }
-
-  const fullUrl = `${urlV1}?${params.toString()}`;
-  console.log(fullUrl);
-
-  try {
-    const res = await fetch(fullUrl);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    const SaleItem = await res.json();
-    return SaleItem;
-  } catch (error) {
-    throw new Error(`Fetch failed: ${error.message}`);
-  }
+  return res.status === 204;
 };
 
 export {
@@ -330,8 +260,10 @@ export {
   addSaleItem,
   updateSaleItem,
   deleteSaleItemById,
-  // getAllSaleItemPage,
+  deleteSaleItemByIdV2,
   getSaleItemByIdV2,
   getImageByImageName,
-  addSaleItemV2
+  addSaleItemV2,
+  getViewStorageForSelect,
+  updateSaleItemV2
 };

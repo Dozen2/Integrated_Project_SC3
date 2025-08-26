@@ -7,8 +7,6 @@ import { onBeforeMount, ref } from "vue";
 import {
   ChevronLeft,
   ChevronRight,
-  CircleChevronLeft,
-  CircleChevronRight,
 } from "lucide-vue-next";
 
 //-------------------------------------------Mock-----------------------------------------------
@@ -131,7 +129,7 @@ const nextImage = () => {
     </div>
     <div
       class="grid grid-cols-4 gap-4 mt-3"
-      v-if="fileImageOrganize.length > 1"
+      v-if="fileImageOrganize.length > 0"
     >
       <div
         v-for="(image, index) in fileImageOrganize"

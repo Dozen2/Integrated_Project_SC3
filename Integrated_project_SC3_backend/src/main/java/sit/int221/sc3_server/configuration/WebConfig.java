@@ -15,6 +15,7 @@ public class WebConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
 //                        .requestMatchers(HttpMethod.DELETE, "/itb-mshop/v2/sale-items/**").permitAll()

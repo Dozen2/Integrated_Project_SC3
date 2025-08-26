@@ -23,7 +23,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Service
-public class UserServices {
+public class
+UserServices {
     @Autowired
     private UserRepository userRepository;
     @Autowired

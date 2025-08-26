@@ -24,14 +24,14 @@ const boxTextTailwindError =
   "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
 
 const brandError = ref(false);
-const boxTextTailwindModel = ref(boxTextTailwind);
-const boxTextTailwindPrice = ref(boxTextTailwind);
-const boxTextTailwindQuantity = ref(boxTextTailwind);
-const boxTextTailwindDesc = ref(boxTextTailwind);
-const boxTextTailwindRamGB = ref(boxTextTailwind);
-const boxTextTailwindStorageGB = ref(boxTextTailwind);
-const boxTextTailwindColor = ref(boxTextTailwind);
-const boxTextTailwindScreenSizeInch = ref(boxTextTailwind);
+const boxTextTailwindModel = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindPrice = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindQuantity = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindDesc = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindRamGB = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindStorageGB = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindColor = ref(`${baseInputClass} ${borderBlue}`);
+const boxTextTailwindScreenSizeInch = ref(`${baseInputClass} ${borderBlue}`);
 
 const reloadData = ref(0);
 const isSaving = ref(true);
@@ -183,6 +183,90 @@ const checkDecimal = (num) => {
   return !(Math.floor(num * 100) === num * 100);
 };
 
+// const validationProductForm = () => {
+//     let isValid = true;
+//     if (!product.model || (product.model?.length ?? 0) > maxLength.model) {
+//         boxTextTailwindModel.value = `${baseInputClass} ${borderRed}`;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindModel.value = `${baseInputClass} ${borderBlue}`;
+//     }
+
+//     // Price
+//     if (product.price < 0) {
+//         boxTextTailwindPrice.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindPrice.value = boxTextTailwind;
+//     }
+
+//     // RAM
+//     if (typeof product.ramGb === "number" && product.ramGb <= 0) {
+//         boxTextTailwindRamGB.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindRamGB.value = boxTextTailwind;
+//     }
+
+//     // Storage
+//     if (typeof product.storageGb === "number" && product.storageGb <= 0) {
+//         boxTextTailwindStorageGB.value = boxTextTailwindError;
+//         console.log(typeof product.storageGb);
+//         isValid = false;
+//     } else {
+//         boxTextTailwindStorageGB.value = boxTextTailwind;
+//     }
+
+//     // Description
+//     if (
+//         !product.description ||
+//         product.description.length > maxLength.description
+//     ) {
+//         boxTextTailwindDesc.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindDesc.value = boxTextTailwind;
+//     }
+
+//     // Quantity
+//     if (product.quantity === null || product.quantity < 0) {
+//         boxTextTailwindQuantity.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindQuantity.value = boxTextTailwind;
+//     }
+
+//     // Color
+//     if ((product.color?.length ?? 0) > maxLength.color) {
+//         boxTextTailwindColor.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindColor.value = boxTextTailwind;
+//     }
+
+//     // Screen Size
+//     if (
+//         (typeof product.screenSizeInch === "number" &&
+//             product.screenSizeInch <= 0) ||
+//         checkDecimal(product.screenSizeInch)
+//     ) {
+//         boxTextTailwindScreenSizeInch.value = boxTextTailwindError;
+//         isValid = false;
+//     } else {
+//         boxTextTailwindScreenSizeInch.value = boxTextTailwind;
+//     }
+
+//     // Brand
+//     if (!product.brand.id || !product.brand.name) {
+//         brandError.value = true;
+//         isValid = false;
+//     } else {
+//         brandError.value = false;
+//     }
+
+//     isSaving.value = isValid;
+// };
+
 const validationProductForm = () => {
   let isValid = true;
   if (!product.model || (product.model?.length ?? 0) > maxLength.model) {
@@ -267,6 +351,63 @@ const validationProductForm = () => {
   isSaving.value = isValid;
 };
 
+const modelError = computed(() =>
+    !product.model || (product.model?.length ?? 0) > maxLength.model
+);
+
+const priceError = computed(() =>
+    product.price === null || product.price < 0
+);
+
+const ramError = computed(() =>
+    typeof product.ramGb === "number" && product.ramGb <= 0
+);
+
+const storageError = computed(() =>
+    typeof product.storageGb === "number" && product.storageGb <= 0
+);
+
+const descriptionError = computed(() =>
+    !product.description || product.description.length > maxLength.description
+);
+
+const quantityError = computed(() =>
+    product.quantity === null || product.quantity < 0
+);
+
+const colorError = computed(() =>
+    (product.color?.length ?? 0) > maxLength.color
+);
+
+const screenSizeError = computed(() =>
+    (typeof product.screenSizeInch === "number" && product.screenSizeInch <= 0) ||
+    checkDecimal(product.screenSizeInch)
+);
+
+// แก้ไข error message สำหรับ price
+const priceErrorMessage = computed(() => {
+    if (product.price === null || product.price === undefined) {
+        return "Price is required.";
+    }
+    if (product.price < 0) {
+        return "Price must be a non-negative number.";
+    }
+    return "";
+});
+
+// แก้ไข error message สำหรับ quantity
+const quantityErrorMessage = computed(() => {
+    if (product.quantity === null || product.quantity === undefined) {
+        return "Quantity is required.";
+    }
+    if (product.quantity < 0) {
+        return "Quantity must be a non-negative integer.";
+    }
+    return "";
+});
+
+
+
 const isFormValid = computed(() => {
   return (
     product.brand.id !== null &&
@@ -316,19 +457,18 @@ const saveProduct = async () => {
   try {
     if (product.id) {
       await updateSaleItem(product.id, product);
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else if (prop.mode === "Edit") {
-      await updateSaleItem(product.id, product);
-
-      alertStore.setMessage("The sale item has been updated.");
-      router.go(-1);
-    } else {
-      await addSaleItem(product);
-      setSessionStorage();
-      alertStore.setMessage("The sale item has been successfully added.");
-      router.go(-1);
-    }
+alertStore.addToast("The sale item has been updated.", "Update success", "success");
+router.go(-1);
+} else if (prop.mode === "Edit") {
+await updateSaleItem(product.id, product);
+alertStore.addToast("The sale item has been updated.", "Update success", "success");
+router.go(-1);
+} else {
+await addSaleItem(product);
+setSessionStorage();
+alertStore.addToast("The sale item has been successfully added.", "Add success", "success");
+router.go(-1);
+}
   } catch (err) {
     console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
     alert(err.message);

@@ -6,13 +6,14 @@ CREATE TABLE IF NOT EXISTS Brand (
     webSiteUrl VARCHAR(40),
     isActive BOOLEAN NOT NULL,
     countryOfOrigin VARCHAR(80),
-    createdOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    createdOn datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedOn datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  --   updatedOn datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ,
     CHECK (websiteUrl IS NULL OR TRIM(websiteUrl) <> ''),
     CHECK (countryOfOrigin IS NULL OR TRIM(countryOfOrigin) <> '')
 );
 
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE IF NOT EXISTS saleItem (
     id INT PRIMARY KEY AUTO_INCREMENT,
     brand_id INT NOT NULL,
     model VARCHAR(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL CHECK (TRIM(model) <> ''),
@@ -23,9 +24,49 @@ CREATE TABLE IF NOT EXISTS products (
     ramGb INT,
     storageGb INT,
     color VARCHAR(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-    createdOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    createdOn datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedOn datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (brand_id) REFERENCES Brand(id)
+);
+
+CREATE TABLE IF NOT EXISTS saleItemImage (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    fileName VARCHAR(70) NOT NULL UNIQUE CHECK (TRIM(fileName) <> ''),
+    imageViewOrder INT ,
+    originalFileName VARCHAR(50),
+    saleItem_id int not null,
+	FOREIGN KEY (saleItem_id) REFERENCES saleItem(id)
+);
+
+create or replace view storageGb_view as 
+select distinct p.storageGb 
+from saleItem p;
+
+create table if not exists buyer(
+	id int primary key auto_increment
+);
+
+create table if not exists seller(
+ id int primary key auto_increment,
+ mobileNumber varchar(10) not null,
+ bankAccountNumber varchar(20) not null,
+ bankName varchar(50) not null,
+ nationalId varchar(13) not null,
+ nationalIdPhotoFront varchar(70) not null,
+nationalIdPhotoBack varchar(70) not null
+);
+
+create table if not exists users(
+	id int primary key auto_increment,
+    nickName varchar(50) not null,
+    email varchar(70) not null,
+    passwords varchar(100) not null,
+    fullName varchar(50) not null,
+    buyer_id int not null,
+    seller_id int ,
+    isActive boolean,
+    foreign key (buyer_id) references buyer(id),
+    foreign key (seller_id) references seller(id)
 );
 
 INSERT INTO Brand (id, name, countryOfOrigin, webSiteUrl, isActive) VALUES
@@ -50,7 +91,8 @@ INSERT INTO Brand (id, name, countryOfOrigin, webSiteUrl, isActive) VALUES
 (19, 'Honor', 'China', 'https://www.hihonor.com', 1),
 (20, 'Nothing', 'United Kingdom', 'https://nothing.tech', 1);
 
-INSERT INTO products(id, brand_id, model, description, quantity, price, screenSizeInch, ramGb, storageGb, color) VALUES
+
+INSERT INTO saleItem(id, brand_id, model, description, quantity, price, screenSizeInch, ramGb, storageGb, color) VALUES
 (1, 2, 'iPhone 14 Pro Max', 'ไอโฟนเรือธงรุ่นล่าสุด มาพร้อม Dynamic Island จอใหญ่สุดในตระกูล กล้องระดับโปร', 5, 42900, 6.7, 6, 512, 'Space Black'),
 (2, 2, 'iPhone 14', 'มือถือรุ่นทั่วไปทันสมัย รองรับ 5G ประมวลผล ถ่ายภาพได้สวยคมชัด', 8, 29700, 6.1, 6, 256, 'Midnight'),
 (3, 2, 'iPhone 13 Pro', 'มือถือรุ่นโปร ขน ProMotion 120Hz หน้าจอคมชัดมีประโยชน์', 3, 33000, 6.1, 6, 256, 'Sierra Blue'),
@@ -111,3 +153,4 @@ INSERT INTO products(id, brand_id, model, description, quantity, price, screenSi
 (83, 10, 'Find X5 Lite', 'Previous gen lite', 8, 14850, 6.43, 8, 128, 'Starry Black'),
 (84, 10, 'A77', 'Budget friendly', 20, 8250, 6.56, 6, 128, 'Ocean Blue'),
 (85, 10, 'Reno6 Pro', 'Classic premium', 7, 16500, 6.55, 12, 256, 'Arctic Blue');
+
