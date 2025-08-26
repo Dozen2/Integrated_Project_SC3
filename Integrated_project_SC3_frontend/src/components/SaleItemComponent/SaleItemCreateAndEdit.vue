@@ -494,10 +494,12 @@ const removeFile = (index) => {
   });
 
   // อัปเดต 
-  saleItem.saleItemImage.forEach((img, idx) => {
-    img.imageViewOrder = idx + 1; // เริ่มนับจาก 1
+  saleItem.saleItemImage.forEach((img) => {
+    img.imageViewOrder = img.imageViewOrder - 1; // เริ่มนับจาก 1
   });
   
+  console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
+  console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
   // ปรับ currentIndex ถ้าจำเป็น
   if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
     currentIndex.value = fileImageOrganize.value.length - 1;
