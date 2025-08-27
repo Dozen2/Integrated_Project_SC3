@@ -11,6 +11,8 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
+import VerifyEmail from '@/views/AuthUser/verifyEmail.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -72,6 +74,11 @@ const router = createRouter({
       path: '/sale-items/login',
       name: 'Login',
       component: Login
+    },
+    {
+      path: '/verify-email',
+      name: 'VerifyeMail',
+      component: VerifyEmail
     },
   ],
 })
