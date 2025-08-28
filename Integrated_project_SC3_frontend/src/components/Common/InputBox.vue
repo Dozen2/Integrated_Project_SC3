@@ -1,4 +1,5 @@
 <script setup>
+import { Eye, EyeClosed, EyeOff } from "lucide-vue-next";
 import { onMounted, ref } from "vue";
 const props = defineProps({
   label: String,
@@ -21,6 +22,10 @@ const props = defineProps({
 
 const emits = defineEmits(["update:modelValue", "validateValue"]);
 
+const showPassword = ref(false);
+
+// เก็บ type จริงที่ input ใช้
+const inputType = ref(props.type);
 
 function updateValue(e) {
   emits("update:modelValue", e.target.value);
@@ -35,6 +40,10 @@ function handleBlur(e) {
   emits("validateValue");                // validate ต่อได้เลย
 }
 
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value;
+  inputType.value = showPassword.value ? "text" : "password";
+}
 </script>
 
 <template>
@@ -45,9 +54,9 @@ function handleBlur(e) {
         >* {{ errorText }}</span
       ></label
     >
-
+<div class="relative">
     <input
-      :type="type"
+      :type="inputType"
       :placeholder="placeholder"
       :value="modelValue" 
        @input="(e) => { updateValue(e); validateValue(); }"
@@ -59,5 +68,15 @@ function handleBlur(e) {
           : 'border border-red-500 focus:ring-red-400',
       ]"
     />
+    <button
+        v-if="type === 'password'"
+        type="button"
+        class="absolute inset-y-0 right-3 flex items-center text-gray-500"
+        @click="togglePasswordVisibility"
+      >
+        <span v-if="showPassword"><Eye /></span>
+        <span v-else><EyeOff /></span>
+      </button>
+  </div>
   </div>
 </template>

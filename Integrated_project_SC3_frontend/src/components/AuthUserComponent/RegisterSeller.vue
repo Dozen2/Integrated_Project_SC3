@@ -135,6 +135,9 @@ const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
 };
 
+
+const loading = ref(false);
+
 // Submit
 const summitForm = async () => {
     try {
@@ -150,11 +153,13 @@ const summitForm = async () => {
         nationalId: nationalId.value,
       }
 
+      loading.value = true
       const res = await registerUser(
         userData, 
         nationalIdFront.value, 
         nationalIdBack.value
       )
+      loading.value = false
 
       console.log("✅ Registered success:", res)
       alertStore.addToast("The user account has been successfully registered.", "Create seller successful.", "success",5000);
@@ -349,17 +354,17 @@ const removeBackImage = () => {
           <!-- Buttons -->
           <div class="flex flex-col space-y-3 mt-4">
             <button
-              type="submit"
-              :disabled="!isFormValid"
-              :class="[
-                'w-full py-2 rounded-lg transition',
-                isFormValid
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed',
-              ]"
-            >
-              Sign Up
-            </button>
+            type="submit"
+            :disabled="loading || !isFormValid"
+            :class="[
+              'w-full py-2 rounded-lg transition',
+              loading || !isFormValid
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700',
+            ]"
+          >
+            {{ loading ? "Loading..." : "Sign Up" }}
+          </button>
             <RouterLink
               :to="{ name: 'Products' }"
               class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
