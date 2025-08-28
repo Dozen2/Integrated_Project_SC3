@@ -13,17 +13,13 @@ onMounted(async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get("token");
   if (token) {
-    const status = await verifyEmail(token); // รับแค่ status code
-    console.log("Verification status:", status);
+    const status = await verifyEmail(token); 
     if (status === 200) {
       header.value = "Successfully";
       message.value = "Email verified successfully. You can now log in.";
-    } else if (status === 400) {
-      header.value = "Invalid token";
-      message.value = "The verification link is invalid.";
     } else {
-      header.value = "Somethig wrong";
-      message.value = `Unexpected status: ${status}`;
+      header.value = "Invalid token";
+      message.value = `The verification link is invalid or somethig wrong status: ${status}`;
     }
     isLoading.value = false;
   } else {
@@ -33,7 +29,6 @@ onMounted(async () => {
   }
 });
 </script>
-
 <template>
   <div>
     <h2>Email Verification</h2>
