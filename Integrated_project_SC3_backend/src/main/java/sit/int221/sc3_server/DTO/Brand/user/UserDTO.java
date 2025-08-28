@@ -1,9 +1,6 @@
 package sit.int221.sc3_server.DTO.Brand.user;
 
 import lombok.Data;
-import sit.int221.sc3_server.entity.Buyer;
-import sit.int221.sc3_server.entity.Seller;
-import sit.int221.sc3_server.entity.User;
 
 @Data
 public class UserDTO {

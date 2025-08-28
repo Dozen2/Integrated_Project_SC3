@@ -24,8 +24,8 @@ public class VerifyToken {
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private Buyer buyer;
 
     @NotNull
     @Column(name = "expiredDate", nullable = false)

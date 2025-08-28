@@ -2,7 +2,6 @@ package sit.int221.sc3_server.controller.user;
 
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.Brand.user.UserDTO;
 import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
-import sit.int221.sc3_server.entity.User;
+import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.user.UserServices;
 
@@ -30,8 +29,8 @@ public class UserController {
             , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
 
 
-        User user = userServices.createUser(userDTO,front,back);
-        UserResponseDTO dto = userServices.mapToDTO(user);
+        Buyer buyer = userServices.createUser(userDTO,front,back);
+        UserResponseDTO dto = userServices.mapToDTO(buyer);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import sit.int221.sc3_server.entity.User;
+import sit.int221.sc3_server.entity.Buyer;
 
 import java.time.LocalTime;
 
@@ -27,16 +27,13 @@ public class Token {
     @Column(name = "refresh_token", length = 100)
     private String refreshToken;
 
-
-    @NotNull
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
     @Column(name = "accessToken_expireDate")
     private LocalTime accesstokenExpiredate;
 
     @Column(name = "refreshToken_expireDate")
     private LocalTime refreshtokenExpiredate;
 
+    @OneToOne
+    @JoinColumn(name = "buyer_id", nullable = false, unique = true) // 🔹 unique เพื่อให้ buyer มี token เดียว
+    private Buyer buyer;
 }

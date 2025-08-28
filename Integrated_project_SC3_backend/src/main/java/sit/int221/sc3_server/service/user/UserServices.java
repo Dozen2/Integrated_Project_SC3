@@ -3,7 +3,6 @@ package sit.int221.sc3_server.service.user;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +12,6 @@ import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
-import sit.int221.sc3_server.repository.user.UserRepository;
 import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
 import sit.int221.sc3_server.service.FileService;
 
@@ -26,8 +24,6 @@ import java.util.UUID;
 public class
 UserServices {
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private BuyerRepository buyerRepository;
     @Autowired
     private SellerRepository sellerRepository;
@@ -39,11 +35,12 @@ UserServices {
     private VerifyTokenRepository verifyTokenRepository;
 
 
+
     private Argon2PasswordEncoder passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     //สร้าง email กลางเอาไว้เป็นตัวที่จะส่งไปหา user ห้ามใช้ email ตัวเอง
     //ต้องไปตั้ง password ใน manage account --> security --> 2 step email verification
     public void checkDuplication(UserDTO userDTO){
-    if(userRepository.existsUserByEmail(userDTO.getEmail())){
+    if(buyerRepository.existsBuyerByEmail(userDTO.getEmail())){
         throw new DuplicteItemException("This email already exist");
     }
     if(userDTO.getRole().equalsIgnoreCase("seller")
@@ -56,12 +53,12 @@ UserServices {
     }
 
     @Transactional
-    public User createUser(UserDTO userDTO, MultipartFile front,MultipartFile back) throws MessagingException, UnsupportedEncodingException {
+    public Buyer createUser(UserDTO userDTO, MultipartFile front,MultipartFile back) throws MessagingException, UnsupportedEncodingException {
         // ✅ ตรวจสอบข้อมูลซ้ำ (อีเมล, ชื่อเล่น ฯลฯ)
         checkDuplication(userDTO);
 
         // ✅ สร้าง User ใหม่
-        User user = new User();
+        Buyer user = new Buyer();
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
@@ -100,28 +97,26 @@ UserServices {
         }
 
         // ✅ ทุก user เป็น buyer โดย default
-        Buyer buyer = new Buyer();
-        buyerRepository.saveAndFlush(buyer);
-        user.setBuyer(buyer);
+
 
         // ✅ บันทึก User
-        userRepository.save(user);
+        buyerRepository.save(user);
 
 
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setVerifyToken(UUID.randomUUID().toString());
         verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-        verifyToken.setUser(user);          // 🔥 สำคัญ ต้อง set User ให้ VerifyToken
+        verifyToken.setBuyer(user);          // 🔥 สำคัญ ต้อง set User ให้ VerifyToken
         verifyTokenRepository.save(verifyToken);
-        user.setVerifyTokens(verifyToken);
+        user.setVerifyToken(verifyToken);
 
 
-        userRepository.save(user);
+        buyerRepository.save(user);
 
         emailService.sendMailVerification(user.getEmail(),verifyToken.getVerifyToken());
          return user;
     }
-    public UserResponseDTO mapToDTO(User user) {
+    public UserResponseDTO mapToDTO(Buyer user) {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setId(user.getId());
         dto.setNickName(user.getNickName());
@@ -129,10 +124,7 @@ UserServices {
         dto.setFullName(user.getFullName());
         dto.setIsActive(user.getIsActive());
 
-        if(user.getBuyer() != null){
-            dto.setUserType("BUYER");
-        }
-        if(user.getBuyer() != null && user.getSeller() != null){
+        if(user.getSeller() != null){
             dto.setUserType("SELLER");
         }
 
@@ -161,11 +153,11 @@ UserServices {
             return false;
         }
 
-        User user = token.getUser();
+        Buyer user = token.getBuyer();
         user.setIsActive(true);
-        user.setVerifyTokens(null);
+        user.setVerifyToken(null);
         verifyTokenRepository.delete(token);// ลบ token ผ่าน orphanRemoval
-        userRepository.save(user);
+        buyerRepository.save(user);
 
         return true;
     }

@@ -6,9 +6,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 @Getter
 @Setter
 @Entity
@@ -19,6 +16,10 @@ public class Seller {
     @Column(name = "id", nullable = false)
     private Integer id;
 
+    @Size(max = 10)
+    @NotNull
+    @Column(name = "mobileNumber", nullable = false, length = 10)
+    private String mobileNumber;
 
     @Size(max = 20)
     @NotNull
@@ -45,12 +46,6 @@ public class Seller {
     @Column(name = "nationalIdPhotoBack", nullable = false, length = 70)
     private String nationalIdPhotoBack;
 
-    @OneToOne(mappedBy = "seller")
-    private User user;
-
-    @Size(max = 10)
-    @NotNull
-    @Column(name = "mobileNumber", nullable = false, length = 10)
-    private String mobileNumber;
-
+    @OneToOne(mappedBy = "seller", fetch = FetchType.LAZY)
+    private Buyer buyer; // 🔹 OneToOne ฝั่งกลับ
 }

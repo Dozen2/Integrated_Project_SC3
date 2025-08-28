@@ -8,6 +8,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -42,6 +43,7 @@ public class EmailService {
     }
     // ใช้สำหรับส่ง email verification
     //แก้ path ด้วย
+    @Async
     public void sendMailVerification(String to,String token) throws MessagingException, UnsupportedEncodingException {
         String hostPath = getHost();
         String link = hostPath + "/sc3/verify-email?token=" + token;
