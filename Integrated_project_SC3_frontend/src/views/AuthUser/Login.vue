@@ -1,6 +1,6 @@
 <script setup>
 import InputBox from "@/components/Common/InputBox.vue";
-import { ref,reactive , computed} from "vue";
+import { ref, reactive, computed } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 
@@ -11,7 +11,6 @@ const email = ref("");
 const password = ref("");
 
 const form = reactive({
-  
   email: {
     errorText: "Invalid email format",
     isValid: false,
@@ -57,16 +56,25 @@ const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
 };
 
+const loading = ref(false);
+
 const summitForm = async () => {
   try {
-  const formData = {
-    email: email.value,
-    passwords: password.value,
-  };
+    const formData = {
+      email: email.value,
+      passwords: password.value,
+    };
 
+    loading.value = true;
     // const res = await registerUser(formData);
+    loading.value = false;
     console.log("✅ Register success:", res);
-    alertStore.addToast("The user account has been successfully registered.","Create buyer successful.", "success",5000);
+    alertStore.addToast(
+      "The user account has been successfully registered.",
+      "Create buyer successful.",
+      "success",
+      5000
+    );
     route.push({ name: "Products" });
   } catch (err) {
     alertStore.addToast(err.message, "Register failed", "error");
@@ -114,17 +122,17 @@ const summitForm = async () => {
           <!-- Buttons -->
           <div class="flex flex-col gap-3 mt-4">
             <button
-            type="submit"
-            :disabled="!isFormValid"
-            :class="[
-              'w-full py-2 rounded-lg transition',
-              isFormValid
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed',
-            ]"
-          >
-            Login
-          </button>
+              type="submit"
+              :disabled="loading || !isFormValid"
+              :class="[
+                'w-full py-2 rounded-lg transition',
+                loading || !isFormValid
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700',
+              ]"
+            >
+              {{ loading ? "Loading..." : "Login" }}
+            </button>
 
             <RouterLink
               :to="{ name: 'Products' }"
