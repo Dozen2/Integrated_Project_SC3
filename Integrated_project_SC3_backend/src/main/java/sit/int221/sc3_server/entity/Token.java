@@ -11,7 +11,7 @@ import sit.int221.sc3_server.entity.User;
 @Setter
 @Entity
 @Table(name = "tokens")
-public class Token {
+public class    Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

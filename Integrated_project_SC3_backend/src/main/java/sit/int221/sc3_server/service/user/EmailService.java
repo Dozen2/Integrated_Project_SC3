@@ -49,11 +49,12 @@ public class EmailService {
         MimeMessage message02 = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message02, true, "UTF-8");
         helper.setTo(to);
-        helper.setSubject("Verify your ITBMS account");
-        helper.setFrom("jillterkorn@gmail.com", "ITBMS Team");
         sendEmail(to,"Verify your email",body);
-
     }
+
+
+
+    
     // ใช้สำหรับส่ง forgot password
     public void sendForgotPassword(String to,String resetToken) throws MessagingException, UnsupportedEncodingException {
         String hostPath = getHost();
