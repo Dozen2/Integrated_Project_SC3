@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import sit.int221.sc3_server.entity.User;
 
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @Entity
@@ -30,5 +32,11 @@ public class Token {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "accessToken_expireDate")
+    private LocalTime accesstokenExpiredate;
+
+    @Column(name = "refreshToken_expireDate")
+    private LocalTime refreshtokenExpiredate;
 
 }
