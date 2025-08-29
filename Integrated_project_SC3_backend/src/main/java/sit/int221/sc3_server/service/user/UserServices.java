@@ -107,7 +107,6 @@ UserServices {
         // ✅ บันทึก User
         userRepository.save(user);
 
-
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setVerifyToken(UUID.randomUUID().toString());
         verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
@@ -157,10 +156,11 @@ UserServices {
     public boolean verifyEmail(String tokenStr) {
         VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
 
-        if (token == null || token.getExpiredDate().isBefore(Instant.now())) {
+        System.out.println("Before check expried");
+        if (token.getExpiredDate().isBefore(Instant.now())) {
             return false;
         }
-
+        System.out.println("After check expried");
         User user = token.getUser();
         user.setIsActive(true);
         user.setVerifyTokens(null);
@@ -169,5 +169,18 @@ UserServices {
 
         return true;
     }
-//    public String
+
+    public void emailExpired(String tokenStr) throws MessagingException, UnsupportedEncodingException {
+        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
+        if (token == null) {
+            throw new IllegalArgumentException("Token not found: " + tokenStr);
+        }
+
+//        token.setVerifyToken(UUID.randomUUID().toString());
+        token.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
+        System.out.println(token.getVerifyToken());
+        System.out.println(token);
+        verifyTokenRepository.save(token);
+        emailService.sendMailVerification(token.getUser().getEmail(),token.getVerifyToken());
+    }
 }
