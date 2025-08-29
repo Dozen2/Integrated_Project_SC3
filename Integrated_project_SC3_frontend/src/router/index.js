@@ -11,7 +11,7 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
-import VerifyEmail from '@/views/AuthUser/verifyEmail.vue'
+import VerifyEmail from '@/views/AuthUser/VerifyEmail.vue'
 
 
 const router = createRouter({

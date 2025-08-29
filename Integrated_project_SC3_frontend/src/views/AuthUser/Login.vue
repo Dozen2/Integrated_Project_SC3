@@ -77,6 +77,7 @@ const summitForm = async () => {
     );
     route.push({ name: "Products" });
   } catch (err) {
+    loading.value = false;
     alertStore.addToast(err.message, "Register failed", "error");
   }
 };
