@@ -18,4 +18,11 @@ public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
     Optional<VerifyToken> findVerifyToken(
             @Param("token") String token
     );
+
+    @Query("""
+    select p from Buyer p
+    where (p.fullName=:usernameOrEmail or p.email = :usernameOrEmail)
+""")
+Optional<Buyer> findByUserNameOrEmail(
+        @Param("usernameOrEmail") String usernameOrEmail);
 }

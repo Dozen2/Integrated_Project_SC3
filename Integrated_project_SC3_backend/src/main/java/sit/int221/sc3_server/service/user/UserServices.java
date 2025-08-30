@@ -3,9 +3,13 @@ package sit.int221.sc3_server.service.user;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
 import sit.int221.sc3_server.DTO.Brand.user.UserDTO;
 import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.*;
@@ -13,11 +17,15 @@ import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
+import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
+import sit.int221.sc3_server.utils.JwtUtils;
+import sit.int221.sc3_server.utils.TokenType;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -33,6 +41,12 @@ UserServices {
     private EmailService emailService;
     @Autowired
     private VerifyTokenRepository verifyTokenRepository;
+    @Autowired
+    private JwtUtils jwtUtils;
+    @Autowired
+    private JwtUserDetailService jwtUserDetailService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
 
 
@@ -161,5 +175,23 @@ UserServices {
 
         return true;
     }
+
+    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
+        UsernamePasswordAuthenticationToken uToken =
+                new UsernamePasswordAuthenticationToken(jwtAuthUser.getFullName(),jwtAuthUser.getPasswords());
+        authenticationManager.authenticate(uToken);
+        UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getFullName());
+        long refreshTokenAgeInMinute = 24 * 60 * 60 * 1000;
+        return Map.of(
+                "access_token",jwtUtils.generateToken(userDetails),
+                "refresh_token",jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute, TokenType.refresh_token)
+
+        );
+
+    }
+
+//    public Map<String, Object> refreshToken(String refreshToken){
+//
+//    }
 //    public String
 }

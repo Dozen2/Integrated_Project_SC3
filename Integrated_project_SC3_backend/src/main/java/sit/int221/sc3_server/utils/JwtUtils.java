@@ -1,21 +1,25 @@
 package sit.int221.sc3_server.utils;
 
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.entity.Token;
 
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
 
 
 @Component
@@ -63,5 +67,40 @@ public class JwtUtils {
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    public void verifyToken(String token){
+        try{
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
+            boolean pass = signedJWT.verify(verifier);
+            System.out.println("Token verified!!!" + pass);
+            if(!pass){
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Verified Error, Invalid JWT");
+            }
+        }catch (JOSEException | ParseException p){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verified Error, Invalid JWT", p);
+        }
+    }
+
+
+    public Map<String, Object> getJWTClaimSet(String token){
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            return signedJWT.getJWTClaimsSet().getClaims();
+        }catch (ParseException e){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid JWT (Can't parsed)",e);
+        }
+    }
+
+    public boolean isExpired(Map<String,Object> jwtClaims){
+        Date expDate = (Date)jwtClaims.get("exp");
+        return expDate.before(new Date());
+    }
+
+    public boolean isValidClaims(Map<String,Object> jwtClaims){
+        System.out.println(jwtClaims);
+        return jwtClaims.containsKey("iat") && "http://localhost:8080".equals(jwtClaims.get("iss"))
+                && jwtClaims.containsKey("uid") && (Long) jwtClaims.get("uid")>0;
     }
 }
