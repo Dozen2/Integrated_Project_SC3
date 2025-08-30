@@ -8,6 +8,7 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,9 +29,9 @@ public class JwtUtils {
     @Value("#{30*1000*60}")
     private long MAX_TOKEN_INTERVAL;
 
-    @Value("${app.security.jwt.key}")
+    @Value("${app.security.jwt.key-id}")
     private String KEY_ID;
-
+    @Getter
     private RSAKey rsaPrivateJWK;
 
     private RSAKey rsaPublicJWK;

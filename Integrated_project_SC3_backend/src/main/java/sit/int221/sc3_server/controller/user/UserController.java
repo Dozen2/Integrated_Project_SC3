@@ -1,15 +1,22 @@
 package sit.int221.sc3_server.controller.user;
 
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
 import sit.int221.sc3_server.DTO.Brand.user.UserDTO;
 import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.Buyer;
+import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.user.UserServices;
 
@@ -24,7 +31,7 @@ public class UserController {
     private FileService fileService;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponseDTO> createUser(@ModelAttribute UserDTO userDTO
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
             , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
 
@@ -50,6 +57,26 @@ public class UserController {
         return ResponseEntity.ok("Email successfully refresh");
     }
 
+
+    @PostMapping("/login")
+    public ResponseEntity<Object> login(@Valid @RequestBody JwtAuthUser jwtAuthUser){
+                try {
+                    boolean check = userServices.checkPassword(jwtAuthUser.getPasswords(), jwtAuthUser.getUsername());
+                    if(!check){
+                        throw new UnAuthorizeException("Invalid email or password");
+                    }
+                    return ResponseEntity.ok(userServices.authenticateUser(jwtAuthUser));
+                }catch (BadCredentialsException e){
+                    return ResponseEntity.status(400).build();
+                }
+
+
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Object> refreshTheToken(@RequestHeader("x-refresh-token") String token){
+        return ResponseEntity.ok(userServices.refreshToken(token));
+    }
 //    @GetMapping("/user/file/{filename:.+}")
 //    @ResponseBody
 //    public ResponseEntity<Resource> serveFile(

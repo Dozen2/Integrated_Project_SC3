@@ -2,12 +2,14 @@ package sit.int221.sc3_server.service.Authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
@@ -24,6 +26,9 @@ public class JwtUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Buyer buyer= buyerRepository.findByUserNameOrEmail(username)
                 .orElseThrow(()-> new UsernameNotFoundException(username));
+        if(!buyer.getIsActive()){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"User is not verify");
+        }
         String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         return new AuthUserDetail(buyer.getId(),buyer.getFullName()
                 ,buyer.getPasswords(),List.of(new SimpleGrantedAuthority("ROLE_" + role)));

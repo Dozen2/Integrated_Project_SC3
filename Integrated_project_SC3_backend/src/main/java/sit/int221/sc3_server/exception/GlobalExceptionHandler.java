@@ -27,12 +27,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CreateFailedException.class)
     public ResponseEntity<Object> handleInternalException(Exception e,HttpServletRequest httpServletRequest){
         GeneralErrorResponse ger = new GeneralErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 "Sale item create failed",
                 e.getMessage(),
                 httpServletRequest.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ger);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
     }
 
     @ExceptionHandler(UpdateFailedException.class)
@@ -78,4 +78,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ger);
     }
 
+    @ExceptionHandler(UnAuthorizeException.class)
+    public ResponseEntity<Object> handleUnAuthorizeRequest(Exception e,HttpServletRequest httpServletRequest){
+        GeneralErrorResponse generalErrorResponse = new GeneralErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "UnAuthorize request",
+                e.getMessage(),
+                httpServletRequest.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generalErrorResponse);
+    }
 }
