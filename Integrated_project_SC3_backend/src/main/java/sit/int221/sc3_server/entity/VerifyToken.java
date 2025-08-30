@@ -31,4 +31,13 @@ public class VerifyToken {
     @Column(name = "expiredDate", nullable = false)
     private Instant expiredDate;
 
+    @Override
+    public String toString() {
+        return "VerifyToken{" +
+                "id=" + id +
+                ", verifyToken='" + verifyToken + '\'' +
+                ", userId=" + (buyer != null ? buyer.getId() : "null") +
+                ", expiredDate=" + expiredDate +
+                '}';
+    }
 }

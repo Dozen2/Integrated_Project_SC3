@@ -1,24 +1,20 @@
 <script setup>
-import navbar  from "./components/Common/Navbar.vue";
-// import { useToast } from "primevue/usetoast";
-// import Toast from 'primevue/toast';
-import Toast from './components/Common/Toast.vue';
-import { useAlertStore } from "@/stores/alertStore.js";
-const alertStore = useAlertStore();
+import { useRoute } from 'vue-router'
 
-const click = () => {
-alertStore.addToast("The sale item has been updated.", "Success", "error");
-};
+import navbar  from "./components/Common/Navbar.vue";
+import Toast from './components/Common/Toast.vue';
+
+// import { useAlertStore } from "@/stores/alertStore.js";
+// const alertStore = useAlertStore();
+// alertStore.addToast("The sale item has been updated.", "Success", "error");
+const route = useRoute()
+
+const hideNavbarOn = ['/login', '/verify-email']
+
+
 </script>
 <template>
-  <navbar />
-    <!-- <div class="card flex justify-center">
-        <Toast />
-        <Button label="Show" @click="show()" />
-        <p></p>
-    </div> -->
-    <!-- <button @click="click">Click</button> -->
+    <navbar v-if="!hideNavbarOn.includes(route.path)" />
     <Toast />
-
   <RouterView />
 </template>

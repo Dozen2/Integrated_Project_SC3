@@ -35,13 +35,19 @@ public class UserController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token){
+    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
         boolean verify = userServices.verifyEmail(token);
         if(verify){
             return ResponseEntity.ok("Email successfully verify");
         }else{
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
+            return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("ExpiredToken");
         }
+    }
+
+    @PostMapping("/refresh-email-token")
+    public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
+        userServices.emailExpired(token);
+        return ResponseEntity.ok("Email successfully refresh");
     }
 
 //    @GetMapping("/user/file/{filename:.+}")

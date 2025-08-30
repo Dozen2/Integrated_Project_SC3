@@ -116,7 +116,6 @@ UserServices {
         // ✅ บันทึก User
         buyerRepository.save(user);
 
-
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setVerifyToken(UUID.randomUUID().toString());
         verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
@@ -163,11 +162,16 @@ UserServices {
     public boolean verifyEmail(String tokenStr) {
         VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
 
-        if (token == null || token.getExpiredDate().isBefore(Instant.now())) {
+        System.out.println("Before check expried");
+        if (token.getExpiredDate().isBefore(Instant.now())) {
             return false;
         }
 
+
         Buyer user = token.getBuyer();
+
+        System.out.println("After check expried");
+
         user.setIsActive(true);
         user.setVerifyToken(null);
         verifyTokenRepository.delete(token);// ลบ token ผ่าน orphanRemoval
@@ -194,4 +198,19 @@ UserServices {
 //
 //    }
 //    public String
+
+    public void emailExpired(String tokenStr) throws MessagingException, UnsupportedEncodingException {
+        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
+        if (token == null) {
+            throw new IllegalArgumentException("Token not found: " + tokenStr);
+        }
+
+//        token.setVerifyToken(UUID.randomUUID().toString());
+        token.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
+        System.out.println(token.getVerifyToken());
+        System.out.println(token);
+        verifyTokenRepository.save(token);
+        emailService.sendMailVerification(token.getBuyer().getEmail(),token.getVerifyToken());
+    }
+
 }

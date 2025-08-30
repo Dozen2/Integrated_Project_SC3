@@ -2,7 +2,11 @@ const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
 
 // ฟังก์ชัน register user
-async function registerUser(userData, nationalIdPhotoFront, nationalIdPhotoBack) {
+async function registerUser(
+  userData,
+  nationalIdPhotoFront,
+  nationalIdPhotoBack
+) {
   const formData = new FormData();
 
   // field ที่ตรงกับ UserDTO
@@ -37,7 +41,6 @@ async function registerUser(userData, nationalIdPhotoFront, nationalIdPhotoBack)
   return res.json();
 }
 
-
 async function verifyEmail(token) {
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/verify-email?token=${token}`;
   console.log("fetching:", url);
@@ -47,7 +50,15 @@ async function verifyEmail(token) {
   return response.status; // ส่งข้อความกลับไปให้ caller
 }
 
-export {
-  registerUser,
-  verifyEmail
+async function refreshEmail(token) {
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh-email-token?token=${token}`;
+  console.log("refrech fetching:", url);
+  try {
+    const response = await fetch(url, { method: "POST" });
+    return response.status; // ส่งข้อความกลับไปให้ caller
+  } catch (error) {
+    console.log(error);
+  }
 }
+
+export { registerUser, verifyEmail, refreshEmail };
