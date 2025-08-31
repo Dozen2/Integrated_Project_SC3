@@ -24,11 +24,20 @@ public class VerifyToken {
 
     @NotNull
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "buyer_id", nullable = false)
+    private Buyer buyer;
 
     @NotNull
     @Column(name = "expiredDate", nullable = false)
     private Instant expiredDate;
 
+    @Override
+    public String toString() {
+        return "VerifyToken{" +
+                "id=" + id +
+                ", verifyToken='" + verifyToken + '\'' +
+                ", userId=" + (buyer != null ? buyer.getId() : "null") +
+                ", expiredDate=" + expiredDate +
+                '}';
+    }
 }

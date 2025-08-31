@@ -1,4 +1,5 @@
 <script setup>
+import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowUpAZ, ArrowUpNarrowWide, ArrowUpWideNarrow, ListFilter } from "lucide-vue-next";
 import {
   defineEmits,
   defineProps,
@@ -173,7 +174,7 @@ onMounted(() => {
         ]"
         title="Sort Ascending"
       >
-        ↑ A-Z
+        <ArrowDownWideNarrow />
       </button>
       <button
         @click="sortDesc"
@@ -185,7 +186,7 @@ onMounted(() => {
         ]"
         title="Sort Descending"
       >
-        ↓ Z-A
+        <ArrowUpWideNarrow />
       </button>
       <button
         @click="resetSort"
@@ -197,7 +198,7 @@ onMounted(() => {
         ]"
         title="Reset Sort"
       >
-        ═
+        <ListFilter />
       </button>
     </div>
   </div>

@@ -1,49 +1,179 @@
 <script setup>
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import InputBox from "@/components/Common/InputBox.vue";
+import { ref, reactive, computed } from "vue";
+import { RouterLink, useRouter } from "vue-router";
+import { useAlertStore } from "@/stores/alertStore.js";
 
-const router = useRouter()
-const route = useRoute()
-const auth = useAuthStore()
+const alertStore = useAlertStore();
+const route = useRouter();
 
-function loginAsBuyer() {
-  auth.loginAsBuyer()
-  redirectAfterLogin()
-}
+const email = ref("");
+const password = ref("");
 
-function loginAsSeller() {
-  auth.loginAsSeller()
-  redirectAfterLogin()
-}
+const form = reactive({
+  email: {
+    errorText: "Invalid email format",
+    isValid: false,
+    isFirstInput: true,
+  },
+  password: {
+    errorText:
+      "Password must be 8+ chars with uppercase, lowercase, number, special char",
+    isValid: false,
+    isFirstInput: true,
+  },
+});
 
-function redirectAfterLogin() {
-  const redirect = route.query.redirect
-  if (redirect) {
-    router.replace(redirect)
-  } else {
-    if (auth.role === 'seller') {
-      router.replace({ name: 'ProductManage' })
-    } else {
-      router.replace({ name: 'Home' })
-    }
+const isFormValid = computed(() => {
+  const results = Object.entries(form).map(([key, f]) => ({
+    field: key,
+    isValid: f.isValid ?? null, // ถ้าไม่มี isValid จะได้ null
+    isFirstInput: f.isFirstInput ?? null,
+  }));
+
+  console.table(results); // log สวยๆ ดูได้ว่าฟิลด์ไหนผ่านไม่ผ่าน
+
+  return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
+});
+
+// =================== Validation ===================
+const validateEmail = () => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  form.email.isValid = regex.test(email.value);
+  updateIsFirstInput("email", email.value);
+};
+
+const validatePassword = () => {
+  form.password.isValid =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
+      password.value
+    );
+  updateIsFirstInput("password", password.value);
+};
+
+// Update isFirstInput
+const updateIsFirstInput = (field, value) => {
+  form[field].isFirstInput = form[field].isFirstInput && value === "";
+};
+
+const loading = ref(false);
+
+const summitForm = async () => {
+  try {
+    const formData = {
+      email: email.value,
+      passwords: password.value,
+    };
+
+    loading.value = true;
+    // const res = await registerUser(formData);
+    loading.value = false;
+    console.log("✅ Register success:", res);
+    alertStore.addToast(
+      "The user account has been successfully registered.",
+      "Create buyer successful.",
+      "success",
+      5000
+    );
+    route.push({ name: "Products" });
+  } catch (err) {
+    loading.value = false;
+    alertStore.addToast(err.message, "Register failed", "error");
   }
-}
+};
 </script>
 
 <template>
-  <div>
-    <h1>Login (Mock)</h1>
-    <button 
-    @click="loginAsBuyer"
-    class="bg-red-700"
+  <div
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"
+  >
+    <!-- กล่องหลัก -->
+    <div
+      class="bg-white shadow-xl rounded-2xl w-full max-w-4xl flex overflow-hidden"
     >
-        Login as Buyer
-    </button>
-    <button 
-    @click="loginAsSeller"
-    class="bg-blue-700"
-    >
-        Login as Seller
-    </button>
+      <!-- ฝั่งซ้าย: Login Form -->
+      <div class="w-1/2 p-10 flex flex-col justify-center">
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-blue-700 mb-6">
+          Login to Your Account
+        </h2>
+
+        <!-- Form -->
+        <form class="flex flex-col gap-4" @submit.prevent="summitForm">
+          <InputBox
+            label="Email"
+            placeholder="Enter email"
+            v-model="email"
+            :isValid="form.email.isValid"
+            :isFirstInput="form.email.isFirstInput"
+            :errorText="form.email.errorText"
+            @validateValue="validateEmail"
+          />
+
+          <InputBox
+            label="Password"
+            type="password"
+            placeholder="Enter password"
+            v-model="password"
+            :isValid="form.password.isValid"
+            :isFirstInput="form.password.isFirstInput"
+            :errorText="form.password.errorText"
+            @validateValue="validatePassword"
+          />
+
+          <!-- Buttons -->
+          <div class="flex flex-col gap-3 mt-4">
+            <button
+              type="submit"
+              :disabled="loading || !isFormValid"
+              :class="[
+                'w-full py-2 rounded-lg transition',
+                loading || !isFormValid
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700',
+              ]"
+            >
+              {{ loading ? "Loading..." : "Login" }}
+            </button>
+
+            <RouterLink
+              :to="{ name: 'Products' }"
+              class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
+            >
+              Cancel
+            </RouterLink>
+
+            <RouterLink
+              :to="{ name: 'Register' }"
+              class="w-full text-center text-blue-700 py-2 rounded-lg hover:bg-blue-200 transition"
+            >
+              Create Account
+            </RouterLink>
+          </div>
+        </form>
+      </div>
+
+      <!-- ฝั่งขวา: Logo -->
+      <div class="w-1/2 bg-blue-50 flex items-center justify-center p-10">
+        <div class="flex flex-col items-center">
+          <!-- ใช้ svg/รูปแทน logo -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-28 w-28 text-blue-600 mb-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+          <h1 class="text-2xl font-bold text-blue-700">ITBMS_SHOP</h1>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

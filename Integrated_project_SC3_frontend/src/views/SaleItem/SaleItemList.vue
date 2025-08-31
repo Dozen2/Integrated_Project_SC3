@@ -13,6 +13,7 @@ import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
 import Search from "@/components/Common/Query/Search.vue";
+import { Funnel } from "lucide-vue-next";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -507,7 +508,7 @@ onBeforeUnmount(() => {
       <!-- Filters -->
       <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
         <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
-          Filter by:
+          <span class="flex"><Funnel /> &nbsp; Filter by:</span>
         </div>
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"

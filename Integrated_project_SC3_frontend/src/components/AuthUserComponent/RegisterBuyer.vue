@@ -80,25 +80,35 @@ const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
 };
 
+const loading = ref(false);
+
 const summitForm = async () => {
   try {
-  const formData = {
-    nickName: nickname.value,
-    fullName: fullname.value,
-    email: email.value,
-    passwords: password.value,
-    role: "BUYER",
-    mobileNumber: "",
-    bankAccountNumber: "",
-    bankName: "",
-    nationalId: "",
-  };
+    const formData = {
+      nickName: nickname.value,
+      fullName: fullname.value,
+      email: email.value,
+      passwords: password.value,
+      role: "BUYER",
+      mobileNumber: "",
+      bankAccountNumber: "",
+      bankName: "",
+      nationalId: "",
+    };
 
+    loading.value = true;
     const res = await registerUser(formData);
+    loading.value = false;
     console.log("✅ Register success:", res);
-    alertStore.addToast("The user account has been successfully registered.","Create buyer successful.", "success",5000);
+    alertStore.addToast(
+      "The user account has been successfully registered.",
+      "Create buyer successful.",
+      "success",
+      5000
+    );
     route.push({ name: "Products" });
   } catch (err) {
+        loading.value = false;
     alertStore.addToast(err.message, "Register failed", "error");
   }
 };
@@ -160,28 +170,23 @@ const summitForm = async () => {
         <div class="flex flex-col space-y-3 mt-4">
           <button
             type="submit"
-            :disabled="!isFormValid"
+            :disabled="loading || !isFormValid"
             :class="[
               'w-full py-2 rounded-lg transition',
-              isFormValid
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+              loading || !isFormValid
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700',
             ]"
           >
-            Sign Up
+            {{ loading ? "Loading..." : "Sign Up" }}
           </button>
+
           <RouterLink
             :to="{ name: 'Products' }"
             class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
           >
             Cancel
           </RouterLink>
-          <!-- <RouterLink
-            :to="{ name: 'Products' }"
-            class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
-          >
-            Cancel
-          </RouterLink> -->
         </div>
 
         <!-- Already have account -->
