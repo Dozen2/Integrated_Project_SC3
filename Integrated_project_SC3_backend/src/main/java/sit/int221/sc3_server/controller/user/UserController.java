@@ -60,10 +60,13 @@ public class UserController {
 
     @PostMapping("/authentications")
     public ResponseEntity<Object> login(@Valid @RequestBody JwtAuthUser jwtAuthUser){
+        if (jwtAuthUser.getUsername().isBlank()){
+            throw new UnAuthorizeException("Email or Password is incorrect");
+        }
                 try {
                     boolean check = userServices.checkPassword(jwtAuthUser.getPasswords(), jwtAuthUser.getUsername());
                     if(!check){
-                        throw new UnAuthorizeException("Invalid email or password");
+                        throw new UnAuthorizeException("Email or Password is incorrect");
                     }
                     return ResponseEntity.ok(userServices.authenticateUser(jwtAuthUser));
                 }catch (BadCredentialsException e){

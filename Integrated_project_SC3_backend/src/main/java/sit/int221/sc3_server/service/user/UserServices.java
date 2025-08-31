@@ -228,7 +228,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
 
     public boolean checkPassword(String password,String email){
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
-                ()->new ItemNotFoundException("This email does not exist."));
+                ()->new UnAuthorizeException("Email or Password is Incorrect"));
         if(!user.getIsActive()){
             throw new UnAuthorizeException("your account is not active,Please verify your account");
         }
