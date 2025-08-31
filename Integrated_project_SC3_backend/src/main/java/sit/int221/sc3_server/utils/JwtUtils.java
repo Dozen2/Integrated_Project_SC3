@@ -42,10 +42,12 @@ public class JwtUtils {
             rsaPrivateJWK = new RSAKeyGenerator(2048).keyID(KEY_ID).generate();
             rsaPublicJWK = rsaPrivateJWK.toPublicJWK();
             System.out.println(rsaPublicJWK.toJSONString());
+            System.out.println(rsaPrivateJWK.toJSONString());
         }catch (Exception e){
             throw new RuntimeException(e);
         }
     }
+
     public String generateToken(UserDetails userDetails){
         return generateToken(userDetails,MAX_TOKEN_INTERVAL, TokenType.ACCESS_TOKEN);
     }

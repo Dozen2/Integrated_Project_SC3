@@ -52,8 +52,6 @@ UserServices {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-
-
     private Argon2PasswordEncoder passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     //สร้าง email กลางเอาไว้เป็นตัวที่จะส่งไปหา user ห้ามใช้ email ตัวเอง
     //ต้องไปตั้ง password ใน manage account --> security --> 2 step email verification
@@ -208,9 +206,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
     return Map.of(
             "access_token",jwtUtils.generateToken(userDetails),
             "refresh_token",jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute, TokenType.refresh_token)
-
     );
-
 }
 
     public Map<String, Object> refreshToken(String refreshToken){

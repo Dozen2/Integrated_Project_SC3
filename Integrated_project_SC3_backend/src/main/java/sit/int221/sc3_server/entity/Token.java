@@ -13,7 +13,7 @@ import java.time.LocalTime;
 @Setter
 @Entity
 @Table(name = "tokens")
-public class    Token {
+public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
