@@ -24,12 +24,12 @@ const router = createRouter({
     { path: '/sale-items/:id', name: 'Detail', component: ProductDetail },
 
     // Seller
-    { path: '/sale-items/:id/edit', name: 'Edit', component: ProuctEdit, meta: { requiresAuth: true, roles: ['seller'] } },
-    { path: '/sale-items/create', name: 'ProuctCreate', component: ProuctCreate, meta: { requiresAuth: true, roles: ['seller'] } },
-    { path: '/sale-items/list', name: 'ProductManage', component: ProductManage, meta: { requiresAuth: true, roles: ['seller'] } },
-    { path: '/brands/add', name: 'BrandCreate', component: BrandCreate, meta: { requiresAuth: true, roles: ['seller'] } },
-    { path: '/brands', name: 'BrandManage', component: BrandManage, meta: { requiresAuth: true, roles: ['seller'] } },
-    { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['seller'] } },
+    { path: '/sale-items/:id/edit', name: 'Edit', component: ProuctEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/sale-items/create', name: 'ProuctCreate', component: ProuctCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/sale-items/list', name: 'ProductManage', component: ProductManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands/add', name: 'BrandCreate', component: BrandCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands', name: 'BrandManage', component: BrandManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
 
     // Auth
     { path: '/sale-items/register', name: 'Register', component: Register },
@@ -41,7 +41,9 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
 
+  // ถ้าต้อง auth
   if (to.meta.requiresAuth) {
+    // ไม่มี accessToken -> ลอง refresh
     if (!auth.accessToken) {
       const refreshed = await auth.refreshToken();
       if (!refreshed) {
@@ -49,13 +51,16 @@ router.beforeEach(async (to) => {
       }
     }
 
-    const allowedRoles = to.meta.roles;
-    if (allowedRoles && !allowedRoles.includes(auth.role)) {
+    // ตรวจสอบ role
+    const allowedRoles = to.meta.roles || [];
+    if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
+      // ไม่ตรง role -> redirect ไปหน้า Home
       return { name: 'Home' };
     }
   }
 
   return true;
 });
+
 
 export default router

@@ -1,34 +1,64 @@
+// stores/auth.js
 import { defineStore } from "pinia";
-import Cookies from "js-cookie";
 import { loginUser, refreshToken as apiRefreshToken } from "@/libs/callAPI/apiAuth";
+
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    accessToken: null,
-    role: null,
+    accessToken: localStorage.getItem("accessToken") || null,
+    role: localStorage.getItem("role") || null,
+    isLoggedIn: !!localStorage.getItem("accessToken"),
   }),
-  actions: {
+
+  actions: {  
+    // ฟังก์ชัน login
     async login(username, password) {
-      const { accessToken, role } = await loginUser(username, password);
-      this.accessToken = accessToken;
-      this.role = role;
+      try {
+        const { accessToken, refreshToken, role } = await loginUser(username, password);
+
+        this.accessToken = accessToken;
+        this.role = role;
+        this.isLoggedIn = true;
+
+        // เก็บลง localStorage
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("role", role);
+
+        return true;
+      } catch (err) {
+        this.logout();
+        throw err;
+      }
     },
+
+    // ฟังก์ชัน refresh token
     async refreshToken() {
       try {
         const { accessToken, role } = await apiRefreshToken();
+
         this.accessToken = accessToken;
         this.role = role;
+        this.isLoggedIn = true;
+
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("role", role);
+
         return true;
-      } catch {
+      } catch (err) {
         this.logout();
         return false;
       }
     },
+
+    // ฟังก์ชัน logout
     logout() {
       this.accessToken = null;
       this.role = null;
-      Cookies.remove("refreshToken");
-    },
-  },
-});
+      this.isLoggedIn = false;
 
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("role");
+      // optional: clear refresh token cookie
+    }
+  }
+});

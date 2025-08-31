@@ -46,10 +46,11 @@ const validateEmail = () => {
 };
 
 const validatePassword = () => {
-  form.password.isValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
-      password.value
-    );
+  // form.password.isValid =
+  //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
+  //     password.value
+  //   );
+  form.password.isValid =/^.+$/.test(password.value);
   updateIsFirstInput("password", password.value);
 };
 
@@ -75,15 +76,17 @@ const summitForm = async () => {
       "success",
       5000
     );
+    console.log(authStore.role);
+    
     // redirect ตาม role
-    if (authStore.role === "buyer") {
-      route.push("/sale-items");
-    } else if (authStore.role === "seller") {
+    if (authStore.role === "ROLE_BUYER") {
+      route.push("/");
+    } else if (authStore.role === "ROLE_SELLER") {
       route.push("/sale-items");
     }
   } catch (err) {
     loading.value = false;
-    alertStore.addToast(err.message, "Register failed", "error");
+    alertStore.addToast("Email or Password incorrect.", err.message, "error");
   }
 };
 </script>
