@@ -5,7 +5,6 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
-import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.Getter;
@@ -15,12 +14,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
-import sit.int221.sc3_server.entity.Token;
 
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 
 
 @Component
@@ -53,23 +50,56 @@ public class JwtUtils {
     }
 
     public String generateToken(UserDetails user,Long ageInMinute,TokenType tokenType){
-        try{
+        try {
             JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
+
+            AuthUserDetail authUser = (AuthUserDetail) user;
+
+            Date now = new Date();
+            Date expiryDate = new Date(now.getTime() + ageInMinute * 60 * 1000);
+
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(user.getUsername()).issuer("http://localhost:8080")
-                    .expirationTime(new Date(new Date().getTime() + ageInMinute))
-                    .issueTime(new Date(new Date().getTime()))
+                    .issuer("https://intproj24.sit.kmutt.ac.th/sc3/")
+                    .subject(user.getUsername())
+                    .issueTime(now)
+                    .expirationTime(expiryDate)
+                    .claim("nickname", authUser.getNickName())   // หรือ getNickName() ถ้ามี
+                    .claim("id", authUser.getId())
+                    .claim("email", authUser.getUsername())
                     .claim("authorities",user.getAuthorities())
-                    .claim("uid",((AuthUserDetail)user).getId())
-                    .claim("typ",tokenType.toString())
+                    .claim("typ", tokenType.toString())
                     .build();
-            SignedJWT signedJWT =new SignedJWT(new JWSHeader
-                    .Builder(JWSAlgorithm.RS256).keyID(rsaPrivateJWK.getKeyID()).build(),claimsSet);
+
+            SignedJWT signedJWT = new SignedJWT(
+                    new JWSHeader.Builder(JWSAlgorithm.RS256)
+                            .keyID(rsaPrivateJWK.getKeyID())
+                            .build(),
+                    claimsSet
+            );
+
             signedJWT.sign(signer);
             return signedJWT.serialize();
-        }catch (Exception e){
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+//        try{
+//            JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
+//            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+//                    .subject(user.getUsername()).issuer("http://localhost:8080")
+//                    .expirationTime(new Date(new Date().getTime() + ageInMinute))
+//                    .issueTime(new Date(new Date().getTime()))
+//                    .claim("authorities",user.getAuthorities())
+//                    .claim("uid",((AuthUserDetail)user).getId())
+//                    .claim("typ",tokenType.toString())
+//                    .build();
+//            SignedJWT signedJWT =new SignedJWT(new JWSHeader
+//                    .Builder(JWSAlgorithm.RS256).keyID(rsaPrivateJWK.getKeyID()).build(),claimsSet);
+//            signedJWT.sign(signer);
+//            return signedJWT.serialize();
+//        }catch (Exception e){
+//            throw new RuntimeException(e);
+//        }
     }
 
     public void verifyToken(String token){

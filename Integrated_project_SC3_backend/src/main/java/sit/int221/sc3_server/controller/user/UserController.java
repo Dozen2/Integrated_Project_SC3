@@ -73,6 +73,11 @@ public class UserController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Object> refreshTheToken(@RequestHeader("x-refresh-token") String token){
+        if (token == null || token.isEmpty()) {
+            // ถ้าไม่มี header → return 400 Bad Request
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Missing x-refresh-token header");
+        }
         return ResponseEntity.ok(userServices.refreshToken(token));
     }
 //    @GetMapping("/user/file/{filename:.+}")
