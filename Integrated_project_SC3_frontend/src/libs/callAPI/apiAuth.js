@@ -1,5 +1,11 @@
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
+
+
+
 
 // ฟังก์ชัน register user
 async function registerUser(
@@ -61,4 +67,39 @@ async function refreshEmail(token) {
   }
 }
 
-export { registerUser, verifyEmail, refreshEmail };
+async function loginUser(username, password) {
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`,{
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, passwords: password }),
+  })
+
+  if (!res.ok) {
+    throw new Error('login failed')
+  }
+  const data = await res.json();
+
+  Cookies.set("refreshToken", data.refreshToken, { expires: 7, secure: true });
+  const decoded = jwtDecode(data.accessToken);
+  return { accessToken: data.accessToken, role: decoded.role }
+}
+
+// refresh access token
+async function refreshToken() {
+  const refreshToken = Cookies.get("refreshToken");
+  if (!refreshToken) throw new Error("No refresh token");
+
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh`, {
+    method: "POST",
+    headers: { "x-refresh-token": refreshToken },
+  });
+
+  if (!res.ok) throw new Error("Refresh failed");
+  const data = await res.json();
+  const decoded = jwtDecode(data.accessToken);
+  return { accessToken: data.accessToken, role: decoded.role };
+}
+
+
+
+export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken };

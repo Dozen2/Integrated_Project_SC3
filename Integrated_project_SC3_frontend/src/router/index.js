@@ -12,6 +12,8 @@ import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
 import VerifyEmail from '@/views/AuthUser/VerifyEmail.vue'
+import { useAuthStore } from '@/stores/auth'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,21 +38,24 @@ const router = createRouter({
   ],
 })
 
-export default router
-
-router.beforeEach((to) => {
-  const auth = useAuthStore()
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
 
   if (to.meta.requiresAuth) {
-    if (!auth.isLoggedIn) {
-      return { name: 'Login', query: { redirect: to.fullPath } }
+    if (!auth.accessToken) {
+      const refreshed = await auth.refreshToken();
+      if (!refreshed) {
+        return { name: 'Login', query: { redirect: to.fullPath } };
+      }
     }
 
-    const allowedRoles = to.meta.roles
+    const allowedRoles = to.meta.roles;
     if (allowedRoles && !allowedRoles.includes(auth.role)) {
-      return { name: 'Home' }
+      return { name: 'Home' };
     }
   }
 
-  return true
-})
+  return true;
+});
+
+export default router

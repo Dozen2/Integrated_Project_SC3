@@ -1,26 +1,34 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
+import Cookies from "js-cookie";
+import { loginUser, refreshToken as apiRefreshToken } from "@/libs/callAPI/apiAuth";
 
-export const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore("auth", {
   state: () => ({
-    isLoggedIn: false,
-    role: null, // 'buyer' | 'seller'
-    token: null,
+    accessToken: null,
+    role: null,
   }),
   actions: {
-    loginAsBuyer() {
-      this.isLoggedIn = true
-      this.role = 'buyer'
-      this.token = 'FAKE_BUYER_TOKEN'
+    async login(username, password) {
+      const { accessToken, role } = await loginUser(username, password);
+      this.accessToken = accessToken;
+      this.role = role;
     },
-    loginAsSeller() {
-      this.isLoggedIn = true
-      this.role = 'seller'
-      this.token = 'FAKE_SELLER_TOKEN'
+    async refreshToken() {
+      try {
+        const { accessToken, role } = await apiRefreshToken();
+        this.accessToken = accessToken;
+        this.role = role;
+        return true;
+      } catch {
+        this.logout();
+        return false;
+      }
     },
     logout() {
-      this.isLoggedIn = false
-      this.role = null
-      this.token = null
-    }
-  }
-})
+      this.accessToken = null;
+      this.role = null;
+      Cookies.remove("refreshToken");
+    },
+  },
+});
+

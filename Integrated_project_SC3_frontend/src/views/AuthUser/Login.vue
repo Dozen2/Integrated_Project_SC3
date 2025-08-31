@@ -3,6 +3,8 @@ import InputBox from "@/components/Common/InputBox.vue";
 import { ref, reactive, computed } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
+import { useAuthStore } from "../../stores/auth";
+
 
 const alertStore = useAlertStore();
 const route = useRouter();
@@ -57,25 +59,28 @@ const updateIsFirstInput = (field, value) => {
 };
 
 const loading = ref(false);
+const authStore = useAuthStore();
 
 const summitForm = async () => {
   try {
-    const formData = {
-      email: email.value,
-      passwords: password.value,
-    };
-
     loading.value = true;
     // const res = await registerUser(formData);
+    await authStore.login(email.value, password.value);
     loading.value = false;
-    console.log("✅ Register success:", res);
+    // console.log("✅ Register success:", res);
+    console.log("✅ Register success:");
     alertStore.addToast(
       "The user account has been successfully registered.",
       "Create buyer successful.",
       "success",
       5000
     );
-    route.push({ name: "Products" });
+    // redirect ตาม role
+    if (authStore.role === "buyer") {
+      route.push("/sale-items");
+    } else if (authStore.role === "seller") {
+      route.push("/sale-items");
+    }
   } catch (err) {
     loading.value = false;
     alertStore.addToast(err.message, "Register failed", "error");
