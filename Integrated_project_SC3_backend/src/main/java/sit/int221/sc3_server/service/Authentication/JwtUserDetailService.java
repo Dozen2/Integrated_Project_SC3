@@ -12,9 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.entity.Buyer;
+import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
+import sit.int221.sc3_server.utils.Role;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class JwtUserDetailService implements UserDetailsService {
@@ -27,22 +31,34 @@ public class JwtUserDetailService implements UserDetailsService {
         Buyer buyer= buyerRepository.findByUserNameOrEmail(username)
                 .orElseThrow(()-> new UsernameNotFoundException(username));
         if(!buyer.getIsActive()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"User is not verify");
+            throw new UnAuthorizeException("User is not verify");
         }
-        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
+//        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         return new AuthUserDetail(buyer.getId(),buyer.getFullName()
-                ,buyer.getPasswords(),List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                ,buyer.getPasswords(),getAuthorities(buyer.getRoles()));
     }
 
     public UserDetails loadUserById(Integer id){
     Buyer buyer = buyerRepository.findById(id).orElseThrow(
             ()->new ResourceNotFoundException("User id "+ id + " does not exist"));
-        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
+//        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         return new AuthUserDetail(buyer.getId(),buyer.getFullName()
-                ,buyer.getPasswords(),List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                ,buyer.getPasswords(),getAuthorities(buyer.getRoles()));
+    }
+    private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .toList();
     }
 
-    private static GrantedAuthority getAuthority(String role){
-        return new SimpleGrantedAuthority(role);
-    }
+//    private static List<GrantedAuthority> getAuthorities(Set<Role> roles) {
+//        return roles.stream()
+//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+//                .collect(Collectors.toList());
+//    }
+
+
+//    private static GrantedAuthority getAuthority(String role){
+//        return new SimpleGrantedAuthority(role);
+//    }
 }

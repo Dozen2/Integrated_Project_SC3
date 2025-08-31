@@ -24,6 +24,7 @@ import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.utils.JwtUtils;
+import sit.int221.sc3_server.utils.Role;
 import sit.int221.sc3_server.utils.TokenType;
 
 import java.io.UnsupportedEncodingException;
@@ -112,12 +113,14 @@ UserServices {
             // 🔹 บันทึก Seller และเชื่อมกับ User
             sellerRepository.saveAndFlush(seller);
             user.setSeller(seller);
+            user.getRoles().add(Role.SELLER);
         }
 
         // ✅ ทุก user เป็น buyer โดย default
 
 
         // ✅ บันทึก User
+        user.getRoles().add(Role.BUYER);
         buyerRepository.save(user);
 
         VerifyToken verifyToken = new VerifyToken();
@@ -228,7 +231,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
 
     public boolean checkPassword(String password,String email){
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
-                ()->new ItemNotFoundException("This email does not exist."));
+                ()->new UnAuthorizeException("Email or Password is Incorrect"));
         if(!user.getIsActive()){
             throw new UnAuthorizeException("your account is not active,Please verify your account");
         }
