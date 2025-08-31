@@ -115,8 +115,6 @@ UserServices {
         }
 
         // ✅ ทุก user เป็น buyer โดย default
-
-
         // ✅ บันทึก User
         user.getRoles().add(Role.BUYER);
         buyerRepository.save(user);
@@ -128,12 +126,12 @@ UserServices {
         verifyTokenRepository.save(verifyToken);
         user.setVerifyToken(verifyToken);
 
-
         buyerRepository.save(user);
 
         emailService.sendMailVerification(user.getEmail(),verifyToken.getVerifyToken());
          return user;
     }
+
     public UserResponseDTO mapToDTO(Buyer user) {
         UserResponseDTO dto = new UserResponseDTO();
         dto.setId(user.getId());
@@ -147,9 +145,9 @@ UserServices {
         }else {
             dto.setUserType("BUYER");
         }
-
         return dto;
     }
+
     private String saveNationalIdFile(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
         String extension = "";
@@ -157,13 +155,10 @@ UserServices {
         if (originalFileName != null && originalFileName.contains(".")) {
             extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         }
-
         String newFileName = UUID.randomUUID().toString() + extension;
         fileService.store(file, newFileName, "nationalid");
         return newFileName;
     }
-
-
 
     @Transactional
     public boolean verifyEmail(String tokenStr) {
@@ -196,10 +191,9 @@ UserServices {
 //        return Map.of(
 //                "access_token",jwtUtils.generateToken(userDetails),
 //                "refresh_token",jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute, TokenType.refresh_token)
-//
 //        );
-//
 //    }
+
 public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
     UsernamePasswordAuthenticationToken uToken =
             new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPasswords());

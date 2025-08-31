@@ -38,7 +38,7 @@ public class UserController {
         UserResponseDTO dto = userServices.mapToDTO(buyer);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
-
+    
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
         boolean verify = userServices.verifyEmail(token);
