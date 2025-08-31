@@ -15,6 +15,7 @@ import VerifyEmail from '@/views/AuthUser/VerifyEmail.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
