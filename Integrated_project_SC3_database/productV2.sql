@@ -1,3 +1,4 @@
+-- drop database proj_sc3;
 create database if not exists proj_sc3;
 use proj_sc3;
 CREATE TABLE IF NOT EXISTS Brand (
@@ -42,10 +43,6 @@ create or replace view storageGb_view as
 select distinct p.storageGb 
 from saleItem p;
 
-create table if not exists buyer(
-	id int primary key auto_increment
-);
-
 create table if not exists seller(
  id int primary key auto_increment,
  mobileNumber varchar(10) not null,
@@ -56,17 +53,24 @@ create table if not exists seller(
 nationalIdPhotoBack varchar(70) not null
 );
 
-create table if not exists users(
+create table if not exists buyer(
 	id int primary key auto_increment,
     nickName varchar(50) not null,
     email varchar(70) not null,
     passwords varchar(100) not null,
     fullName varchar(50) not null,
-    buyer_id int not null,
     seller_id int ,
     isActive boolean,
-    foreign key (buyer_id) references buyer(id),
     foreign key (seller_id) references seller(id)
+);
+
+
+create table if not exists verifyToken(
+id int primary key auto_increment,
+verify_token varchar(100),
+user_id int not null,
+expiredDate datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+foreign key (user_id) references buyer(id)
 );
 
 INSERT INTO Brand (id, name, countryOfOrigin, webSiteUrl, isActive) VALUES
@@ -154,3 +158,17 @@ INSERT INTO saleItem(id, brand_id, model, description, quantity, price, screenSi
 (84, 10, 'A77', 'Budget friendly', 20, 8250, 6.56, 6, 128, 'Ocean Blue'),
 (85, 10, 'Reno6 Pro', 'Classic premium', 7, 16500, 6.55, 12, 256, 'Arctic Blue');
 
+select * from saleItem;
+select * from brand;
+select * from saleItemImage;
+select * from storageGb_view;
+select * from users;
+select * from seller;
+select * from verifyToken;
+
+-- INSERT INTO buyer (id) values (1);
+-- INSERT INTO users (nickName, email, passwords, fullName, buyer_id, seller_id) VALUES ('Ter', '-- nutchanon180748@gmail.com', 'Terter123@@@', 'tttttttt', 1, NULL);
+
+-- INSERT INTO verifyToken (id,verify_token, user_id, expiredDate) VALUES (1,'b3a4d95c6b7e8a9d0f1e2c3b4a5d6e7f8a9b0c1d', 1, '2567-08-30 18:47:19');
+-- UPDATE users SET isActive = 0 WHERE id = 1;
+-- UPDATE verifyToken SET expiredDate = DATE_SUB(expiredDate, INTERVAL 1 YEAR) WHERE id = 1;
