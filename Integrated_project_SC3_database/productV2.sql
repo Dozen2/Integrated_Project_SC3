@@ -158,13 +158,6 @@ INSERT INTO saleItem(id, brand_id, model, description, quantity, price, screenSi
 (84, 10, 'A77', 'Budget friendly', 20, 8250, 6.56, 6, 128, 'Ocean Blue'),
 (85, 10, 'Reno6 Pro', 'Classic premium', 7, 16500, 6.55, 12, 256, 'Arctic Blue');
 
-select * from saleItem;
-select * from brand;
-select * from saleItemImage;
-select * from storageGb_view;
-select * from users;
-select * from seller;
-select * from verifyToken;
 
 -- INSERT INTO buyer (id) values (1);
 -- INSERT INTO users (nickName, email, passwords, fullName, buyer_id, seller_id) VALUES ('Ter', '-- nutchanon180748@gmail.com', 'Terter123@@@', 'tttttttt', 1, NULL);
