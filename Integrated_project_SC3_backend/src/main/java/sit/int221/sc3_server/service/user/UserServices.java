@@ -233,7 +233,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
                 ()->new UnAuthorizeException("Email or Password is Incorrect"));
         if(!user.getIsActive()){
-            throw new UnAuthorizeException("your account is not active,Please verify your account");
+            throw new RuntimeException("You need to activate your account before signing in");
         }
         return passwordEncoder.matches(password, user.getPasswords());
     }
