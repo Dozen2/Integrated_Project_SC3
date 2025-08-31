@@ -58,7 +58,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/login")
+    @PostMapping("/authentications")
     public ResponseEntity<Object> login(@Valid @RequestBody JwtAuthUser jwtAuthUser){
                 try {
                     boolean check = userServices.checkPassword(jwtAuthUser.getPasswords(), jwtAuthUser.getUsername());

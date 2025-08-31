@@ -16,6 +16,8 @@ import sit.int221.sc3_server.DTO.Brand.user.UserDTO;
 import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
+import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
@@ -226,9 +228,9 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
 
     public boolean checkPassword(String password,String email){
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
-                ()->new RuntimeException("this email does not exist"));
+                ()->new ItemNotFoundException("This email does not exist."));
         if(!user.getIsActive()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Please verify your account first");
+            throw new UnAuthorizeException("your account is not active,Please verify your account");
         }
         return passwordEncoder.matches(password, user.getPasswords());
     }
