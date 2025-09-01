@@ -1,5 +1,6 @@
 <script setup>
 import { Eye, EyeClosed, EyeOff } from "lucide-vue-next";
+import { Password } from "primevue";
 import { onMounted, ref } from "vue";
 const props = defineProps({
   label: String,
@@ -35,9 +36,11 @@ function validateValue() {
 }
 
 function handleBlur(e) {
-  let trimmed = e.target.value?.trim() ?? "";
-  emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
-  emits("validateValue");                // validate ต่อได้เลย
+  if(inputType.value != "password"){  
+    let trimmed = e.target.value?.trim() ?? "";
+    emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
+    emits("validateValue");                // validate ต่อได้เลย
+  }
 }
 
 function togglePasswordVisibility() {

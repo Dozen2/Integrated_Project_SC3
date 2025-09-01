@@ -1,5 +1,11 @@
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
+
+
+
 
 // ฟังก์ชัน register user
 async function registerUser(
@@ -61,4 +67,87 @@ async function refreshEmail(token) {
   }
 }
 
-export { registerUser, verifyEmail, refreshEmail };
+// async function loginUser(username, password) {
+//   console.log(username);
+//   console.log(password);
+
+//   const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`,{
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({ username, passwords: password }),
+//   })
+
+//   if (!res.ok) {
+//     throw new Error('login failed')
+//   }
+//   const data = await res.json();
+
+//   Cookies.set("refreshToken", data.refreshToken, { expires: 7, secure: true });
+//   const decoded = jwtDecode(data.accessToken);
+//   return { accessToken: data.accessToken, role: decoded.role }
+// }
+
+async function loginUser(username, password) {
+  try {
+    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: username, passwords: password }),
+    });
+
+    if (!res.ok) throw new Error("Login failed");
+
+    const data = await res.json();
+    console.log("Login response:", data);
+    const accessToken = data.access_token;   // token ที่ BE ส่งกลับมา
+    const refreshToken = data.refresh_token;
+
+
+    Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true, sameSite: "Strict" });
+    
+
+    const decoded = jwtDecode(accessToken);
+    console.log(decoded);
+
+    const authorities = decoded.authorities || [];
+
+    let role = "UNKNOWN";
+
+    if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
+      role = "ROLE_SELLER";
+    } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
+      role = "ROLE_BUYER";
+    }
+    console.log(role);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("role", role);
+
+    return { accessToken, refreshToken, role };
+  } catch (err) {
+    console.error(err);
+    throw new Error(err.message || "Login failed");
+  }
+}
+
+
+// refresh access token
+async function refreshToken() {
+  const refreshToken = Cookies.get("refreshToken");
+  if (!refreshToken) throw new Error("No refresh token");
+
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh`, {
+    method: "POST",
+    headers: {
+      "x-refresh-token": Cookies.get("refreshToken")  // ดึงจาก cookie
+    }
+  });
+
+  if (!res.ok) throw new Error("Refresh failed");
+  const data = await res.json();
+  const decoded = jwtDecode(data.accessToken);
+  return { accessToken: data.accessToken, role: decoded.role };
+}
+
+
+
+export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken };
