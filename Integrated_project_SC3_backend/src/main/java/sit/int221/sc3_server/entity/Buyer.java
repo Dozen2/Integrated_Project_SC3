@@ -54,10 +54,10 @@ public class Buyer {
 
     @ElementCollection(fetch = FetchType.EAGER)   // บังคับโหลด roles มาพร้อม Buyer
     @Enumerated(EnumType.STRING)                 // เก็บค่า enum เป็น String (อ่านง่าย)
-    @CollectionTable(
-            name = "buyer_roles",                    // ตั้งชื่อตาราง (optional)
-            joinColumns = @JoinColumn(name = "buyer_id")
-    )
+//    @CollectionTable(
+//            name = "buyer_roles",                    // ตั้งชื่อตาราง (optional)
+//            joinColumns = @JoinColumn(name = "buyer_id")
+//    )
     @Column(name = "role")                       // ตั้งชื่อ column (optional)
     private Set<Role> roles = new HashSet<>();
 }
