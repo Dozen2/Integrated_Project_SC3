@@ -11,7 +11,7 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
-import VerifyEmail from '@/views/AuthUser/VerifyEmail.vue'
+import VerifyEmail from '@/views/AuthUser/verifyEmail.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -38,29 +38,29 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach(async (to) => {
-  const auth = useAuthStore();
+// router.beforeEach(async (to) => {
+//   const auth = useAuthStore();
 
-  // ถ้าต้อง auth
-  if (to.meta.requiresAuth) {
-    // ไม่มี accessToken -> ลอง refresh
-    if (!auth.accessToken) {
-      const refreshed = await auth.refreshToken();
-      if (!refreshed) {
-        return { name: 'Login', query: { redirect: to.fullPath } };
-      }
-    }
+//   // ถ้าต้อง auth
+//   if (to.meta.requiresAuth) {
+//     // ไม่มี accessToken -> ลอง refresh
+//     if (!auth.accessToken) {
+//       const refreshed = await auth.refreshToken();
+//       if (!refreshed) {
+//         return { name: 'Login', query: { redirect: to.fullPath } };
+//       }
+//     }
 
-    // ตรวจสอบ role
-    const allowedRoles = to.meta.roles || [];
-    if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
-      // ไม่ตรง role -> redirect ไปหน้า Home
-      return { name: 'Home' };
-    }
-  }
+//     // ตรวจสอบ role
+//     const allowedRoles = to.meta.roles || [];
+//     if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
+//       // ไม่ตรง role -> redirect ไปหน้า Home
+//       return { name: 'Home' };
+//     }
+//   }
 
-  return true;
-});
+//   return true;
+// });
 
 
 export default router

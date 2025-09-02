@@ -4,9 +4,6 @@ import { jwtDecode } from "jwt-decode";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
 
-
-
-
 // ฟังก์ชัน register user
 async function registerUser(
   userData,
