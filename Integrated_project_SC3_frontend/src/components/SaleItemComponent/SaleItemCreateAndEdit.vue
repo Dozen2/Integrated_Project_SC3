@@ -476,6 +476,7 @@ const removeFile = (index) => {
       (item) => item.fileName === fileImageOrganize.value[index].fileName
     );
     console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+    
     if (findIndexSaleItemImage !== -1) {
       saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
     }
