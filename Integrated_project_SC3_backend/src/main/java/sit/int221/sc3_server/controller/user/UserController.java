@@ -34,11 +34,18 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
             , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
-
-
         Buyer buyer = userServices.createUser(userDTO,front,back);
         UserResponseDTO dto = userServices.mapToDTO(buyer);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @PostMapping(value = "/register-JWT", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDTO> createUserJWT(@Valid @ModelAttribute UserDTO userDTO
+            , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
+            , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
+        Buyer buyer = userServices.createUser(userDTO,front,back);
+        UserResponseDTO dto = userServices.mapToDTO(buyer);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PostMapping("/verify-email")
@@ -57,7 +64,6 @@ public class UserController {
         return ResponseEntity.ok("Email successfully refresh");
     }
 
-
     @PostMapping("/authentications")
     public ResponseEntity<Object> login(@Valid @RequestBody JwtAuthUser jwtAuthUser){
         if (jwtAuthUser.getUsername().isBlank()){
@@ -72,8 +78,6 @@ public class UserController {
                 }catch (BadCredentialsException e){
                     return ResponseEntity.status(400).build();
                 }
-
-
     }
 
     @PostMapping("/refresh")

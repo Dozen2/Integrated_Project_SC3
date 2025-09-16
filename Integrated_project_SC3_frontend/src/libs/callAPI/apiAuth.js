@@ -4,9 +4,6 @@ import { jwtDecode } from "jwt-decode";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
 
-
-
-
 // ฟังก์ชัน register user
 async function registerUser(
   userData,
@@ -67,25 +64,6 @@ async function refreshEmail(token) {
   }
 }
 
-// async function loginUser(username, password) {
-//   console.log(username);
-//   console.log(password);
-
-//   const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`,{
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({ username, passwords: password }),
-//   })
-
-//   if (!res.ok) {
-//     throw new Error('login failed')
-//   }
-//   const data = await res.json();
-
-//   Cookies.set("refreshToken", data.refreshToken, { expires: 7, secure: true });
-//   const decoded = jwtDecode(data.accessToken);
-//   return { accessToken: data.accessToken, role: decoded.role }
-// }
 
 async function loginUser(username, password) {
   try {
@@ -129,8 +107,6 @@ async function loginUser(username, password) {
   }
 }
 
-
-// refresh access token
 async function refreshToken() {
   const refreshToken = Cookies.get("refreshToken");
   if (!refreshToken) throw new Error("No refresh token");
@@ -147,7 +123,5 @@ async function refreshToken() {
   const decoded = jwtDecode(data.accessToken);
   return { accessToken: data.accessToken, role: decoded.role };
 }
-
-
 
 export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken };

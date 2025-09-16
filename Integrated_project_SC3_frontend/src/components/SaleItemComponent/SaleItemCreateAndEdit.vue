@@ -100,7 +100,7 @@ onBeforeMount(async () => {
         await getBrandIdByName(data.brandName);
       }
       
-      // ✅ แก้ไข: ย้ายการ push รูปมาไว้หลัง fetch ข้อมูล
+      // ย้ายการ push รูปมาไว้หลัง fetch ข้อมูล
       if (data.saleItemImage && Array.isArray(data.saleItemImage)) {
         saleItem.saleItemImage = [...data.saleItemImage];
         fileImageFirstResponse.length = 0; // clear array ก่อน
@@ -304,13 +304,11 @@ const setSessionStorage = () => {
 
 //----------------------------------------------File Management-------------------------------------------------------------------------------------
 const fileImageOrganize = ref([]);
-// File size limits ตาม backend spec
 const FILE_SIZE_LIMITS = {
   MAX_FILE_SIZE: 2 * 1024 * 1024, // 2MB
   MAX_REQUEST_SIZE: 5 * 1024 * 1024, // 5MB
 };
 
-// ฟังก์ชันแปลงขนาดไฟล์เป็น string ที่อ่านง่าย
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -319,8 +317,6 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// เมื่อเลือกไฟล์ - รีโลจิกใหม่เพื่อใช้กับ fileImageOrganize.value (แบบเรียบง่าย)
-// ✅ แก้ไข: เพิ่ม debug ใน handleFileChange
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
   const MAX_IMAGES = 4;
@@ -351,7 +347,6 @@ const handleFileChange = (event) => {
     const remainingSlots = MAX_IMAGES - currentImageCount;
     
     if (remainingSlots <= 0) {
-      // alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
        alertStore.addToast(`You've reached the upload limit of ${MAX_IMAGES} images.`, "Image upload limit exceeded.", "warning", 8000);
       
       event.target.value = "";
@@ -365,14 +360,7 @@ const handleFileChange = (event) => {
   // ตรวจสอบขนาดไฟล์
   const validation = validateFileSize(filesToProcess);
   
-  // if (!validation.isValid) {
-  //   alert(validation.errors.join('\n'));
-  //   event.target.value = "";
-  //   return;
-  // }
-
   if (!validation.isValid) {
-  // alert(validation.errors.join("\n"));
       alertStore.addToast(validation.errors.join("\n"), "Image upload limit exceeded.", "warning", 8000);
 
 }
@@ -380,13 +368,11 @@ const handleFileChange = (event) => {
 filesToProcess = validation.validFiles;
   
   if (warningMessage) {
-    // alert(warningMessage);
     alertStore.addToast(warningMessage, "Image upload limit exceeded.", "warning", 8000);
   }
 
   console.log("filesToProcess: ",filesToProcess)
   
-  // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize และ files array
   const filesProcessed = [];
   filesToProcess.forEach((file, index) => {
     const reader = new FileReader();
@@ -479,6 +465,17 @@ const removeFile = (index) => {
     let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
       (item) => item.fileName === fileImageOrganize.value[index].fileName
     );
+    console.log("Hello123456");
+    console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+    if (findIndexSaleItemImage !== -1) {
+      saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
+    }
+  } else {
+    // ถ้าเป็นไฟล์ใหม่ที่ยังไม่มี fileName ให้ลบจาก saleItem.saleItemImage โดยใช้ orgFileName แทน
+    let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
+      (item) => item.orgFileName === fileImageOrganize.value[index].orgFileName
+    );
+    console.log("HelloNewFile");
     console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
     
     if (findIndexSaleItemImage !== -1) {
@@ -486,13 +483,13 @@ const removeFile = (index) => {
     }
   }
 
+  console.log("fileImageOrganize.value[index].fileName: " +fileImageOrganize.value[index].fileName);
+  console.log("index: " +index);
+
   console.log("deletedImage:", deletedImage.value);
-  // ลบจาก fileImageOrganize
   fileImageOrganize.value.splice(index, 1);
-  
-  // ลบจาก files array
   files.value.splice(index, 1);
-  
+
   // อัปเดต imageViewOrder ใหม่
   fileImageOrganize.value.forEach((item, idx) => {
     item.imageViewOrder = idx;
@@ -505,15 +502,14 @@ const removeFile = (index) => {
   
   console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
   console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
+  console.log("After removal, files array:", files.value);
+
   // ปรับ currentIndex ถ้าจำเป็น
-  if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
-    currentIndex.value = fileImageOrganize.value.length - 1;
-  } else if (fileImageOrganize.value.length === 0) {
-    currentIndex.value = 0;
-  }
-
-  
-
+  // if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
+  //   currentIndex.value = fileImageOrganize.value.length - 1;
+  // } else if (fileImageOrganize.value.length === 0) {
+  //   currentIndex.value = 0;
+  // }
 };
 
 const deletedImage = ref([]);
