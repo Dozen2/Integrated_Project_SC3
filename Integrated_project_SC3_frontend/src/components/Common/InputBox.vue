@@ -2,14 +2,16 @@
 import { Eye, EyeClosed, EyeOff } from "lucide-vue-next";
 import { Password } from "primevue";
 import { onMounted, ref } from "vue";
+
 const props = defineProps({
   label: String,
   placeholder: String,
+  modelValue: String,
+  errorText: String,
   type: {
     type: String,
     default: "text",
   },
-  modelValue: String,
   isValid: {
     type: Boolean,
     default: true,
@@ -18,8 +20,12 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  errorText: String,
+  inputClass: {
+    type: String,
+    default: "",
+  }
 });
+
 
 const emits = defineEmits(["update:modelValue", "validateValue"]);
 
@@ -66,6 +72,7 @@ function togglePasswordVisibility() {
        @blur="handleBlur"
       :class="[
         'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2',
+        inputClass,
         isValid || isFirstInput
           ? 'border focus:ring-blue-400'
           : 'border border-red-500 focus:ring-red-400',

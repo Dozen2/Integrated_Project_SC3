@@ -20,12 +20,16 @@ import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
 import { ChevronLeft, ChevronRight, Upload, X } from 'lucide-vue-next'; 
 import {ChevronDown, ChevronUp} from 'lucide-vue-next';
+import InputBox from "../Common/InputBox.vue";
 
 
 const boxTextTailwind =
   "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
 const boxTextTailwindError =
   "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+const boxTextTailwindUseInConponent =
+  "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+
 
 const brandError = ref(false);
 const boxTextTailwindModel = ref(boxTextTailwind);
@@ -778,6 +782,7 @@ else {
     </div>
 
     <div class=" m-5 ml-[120px] flex flex-row justify-center ">
+
       <!-- Image Preview Section - ใช้ saleItem.saleItemImage แทน saleItemImage -->
       <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative ">
         
@@ -868,6 +873,7 @@ else {
       <!-- ====================================================End of Image Uploader==================================================== -->
 
       <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
+        
         <!-- Brand Selection -->
         <div class="w-full max-w-[500px] mb-6">
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -900,15 +906,18 @@ else {
             Model
             <span class="text-red-500 ml-1">*</span>
           </label>
-          
-          <div class="flex-1">
-            <input type="text" v-model="saleItem.model" @blur="trimField('model')"
-              :class="`itbms-model ${boxTextTailwindModel} w-full`" placeholder="e.g. iPhone 13 Pro" />
+
+          <InputBox
+            v-model="saleItem.model"
+            placeholder="e.g. iPhone 13 Pro"
+            :inputClass="boxTextTailwindModel"
+          />
             <p v-show="saleItem.model.length > maxLength.model" class="itbms-message mt-1 text-sm text-red-500">
               Model must be 1-60 characters long.
             </p>
-          </div>
+          
         </div>
+
 
         <!-- Price -->
         <div class="flex items-center mb-6 max-w-[600px]">
@@ -921,16 +930,17 @@ else {
             Price (Baht)
             <span class="text-red-500 ml-1">*</span>
           </label>
-          <div class="flex-1 relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span class="text-gray-500">฿</span>
-            </div>
-            <input type="number" v-model.number="saleItem.price"
-              :class="`itbms-price pl-8 ${boxTextTailwindPrice} w-full`" placeholder="e.g. 29900" />
+
+          <InputBox 
+            v-model="saleItem.price"
+            placeholder="e.g. 29900"
+            :inputClass="boxTextTailwindModel"  
+          />
+          <div class="flex-1">
+            <p v-show="saleItem.price < 0" class="itbms-message mt-1 text-sm text-red-500 ml-24">
+              Price must be non-negative integer.
+            </p>
           </div>
-          <p v-show="saleItem.price < 0" class="itbms-message mt-1 text-sm text-red-500 ml-24">
-            Price must be non-negative integer.
-          </p>
         </div>
 
         <!-- RAM -->
@@ -943,9 +953,12 @@ else {
             </svg>
             RAM (GB)
           </label>
+          <InputBox
+            v-model="saleItem.ramGb"
+            placeholder="e.g. 8"
+            :inputClass="boxTextTailwindUseInConponent"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.ramGb" :class="`itbms-ramGb ${boxTextTailwindRamGB} w-full`"
-              placeholder="e.g. 8" />
             <p v-show="boxTextTailwindRamGB === boxTextTailwindError" class="itbms-message mt-1 text-sm text-red-500">
               RAM size must be positive integer or not specified.
             </p>
@@ -963,9 +976,12 @@ else {
             </svg>
             Storage (GB)
           </label>
+          <InputBox
+            v-model="saleItem.storageGb"
+            placeholder="e.g. 128"
+            :inputClass="boxTextTailwindUseInConponent"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.storageGb"
-              :class="`itbms-storageGb ${boxTextTailwindStorageGB} w-full`" placeholder="e.g. 128" />
             <p v-show="boxTextTailwindStorageGB === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Storage size must be positive integer or not specified.
@@ -984,9 +1000,12 @@ else {
             </svg>
             Screen Size (Inches)
           </label>
+          <InputBox
+            v-model="saleItem.screenSizeInch"
+            placeholder="e.g. 6.1"
+            :inputClass="boxTextTailwindUseInConponent"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.screenSizeInch" step="0.1"
-              :class="`itbms-screenSizeInch ${boxTextTailwindScreenSizeInch} w-full`" placeholder="e.g. 6.1" />
             <p v-show="boxTextTailwindScreenSizeInch === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Screen size must be positive number with at most 2 decimal
@@ -1007,9 +1026,12 @@ else {
             </svg>
             Color
           </label>
+          <InputBox
+            v-model="saleItem.color"
+            placeholder="e.g. Midnight Blue"
+            :inputClass="boxTextTailwindUseInConponent"
+          />
           <div class="flex-1">
-            <input type="text" v-model="saleItem.color" @blur="trimField('color')"
-              :class="`itbms-color ${boxTextTailwindColor} w-full`" placeholder="e.g. Midnight Blue" />
             <p v-show="(saleItem.color?.length ?? 0) > maxLength.color" class="itbms-message mt-1 text-sm text-red-500">
               Color must be 1-40 characters long or not specified.
             </p>
@@ -1028,9 +1050,12 @@ else {
             Quantity
             <span class="text-red-500 ml-1">*</span>
           </label>
+          <InputBox
+            v-model="saleItem.quantity"
+            placeholder="e.g. 10"
+            :inputClass="boxTextTailwindUseInConponent"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.quantity" @focus="saleItem.quantity = null"
-              :class="`itbms-quantity ${boxTextTailwindQuantity} w-full`" placeholder="e.g. 10" />
             <p v-show="boxTextTailwindQuantity === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Quantity must be non-negative integer.
@@ -1062,6 +1087,7 @@ else {
           </p>
         </div>
 
+
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row sm:justify-end gap-4 max-w-[500px]">
           <button type="button"
@@ -1087,6 +1113,8 @@ else {
             Save
           </button>
         </div>
+
+
         <br>
         <br>
       </div>

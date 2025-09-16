@@ -91,23 +91,16 @@ const incrementQuantity = () => {
 <template>
   <!-- Loading Spinner -->
   <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
-    <div
-      class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"
-    ></div>
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
   </div>
 
   <!-- 404 Error Page -->
-  <div
-    v-else-if="product == '404_not_found'"
-    class="flex flex-col items-center justify-center text-center py-20 space-y-8 min-h-[60vh] bg-gray-50"
-  >
+  <div v-else-if="product == '404_not_found'"
+    class="flex flex-col items-center justify-center text-center py-20 space-y-8 min-h-[60vh] bg-gray-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
       <!-- 404 Icon -->
-      <img
-        src="https://static.thenounproject.com/png/4019366-200.png"
-        alt="404 Icon"
-        class="w-24 h-24 mx-auto opacity-80"
-      />
+      <img src="https://static.thenounproject.com/png/4019366-200.png" alt="404 Icon"
+        class="w-24 h-24 mx-auto opacity-80" />
 
       <!-- Error Message -->
       <!-- <h1 class="itbms-message text-2xl font-bold text-gray-800 mt-6">ไม่พบสินค้าที่ค้นหา</h1> -->
@@ -123,15 +116,9 @@ const incrementQuantity = () => {
     <div class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div class="flex items-center space-x-2 text-sm text-gray-600">
-          <RouterLink
-            to="/sale-items"
-            class="itbms-home-button hover:text-blue-600 transition"
-            >Home</RouterLink
-          >
+          <RouterLink to="/sale-items" class="itbms-home-button hover:text-blue-600 transition">Home</RouterLink>
           <span class="text-gray-400">/</span>
-          <span class="text-gray-900 font-medium"
-            >{{ product.brandName }} {{ product.model }}</span
-          >
+          <span class="text-gray-900 font-medium">{{ product.brandName }} {{ product.model }}</span>
         </div>
       </div>
     </div>
@@ -142,10 +129,7 @@ const incrementQuantity = () => {
         <div class="md:flex">
           <!-- Product Image Section -->
           <div class="md:w-1/2 p-6 md:p-8 bg-gray-50">
-            <ImageUploader
-              :fileImageOrganize="product.fileImageOrganize"
-              :param="route.params.id"
-            />
+            <ImageUploader :fileImageOrganize="product.fileImageOrganize" :param="route.params.id" />
           </div>
 
           <!-- Product Info Section -->
@@ -167,9 +151,7 @@ const incrementQuantity = () => {
                 <span class="itbms-price text-3xl font-bold text-blue-600">{{
                   unitPrice(product.price)
                 }}</span>
-                <span class="itbms-price-unit ml-1 text-lg text-gray-500"
-                  >Baht</span
-                >
+                <span class="itbms-price-unit ml-1 text-lg text-gray-500">Baht</span>
               </div>
 
               <div class="mt-2 flex items-center space-x-2">
@@ -192,12 +174,8 @@ const incrementQuantity = () => {
                 }}</span>
               </h3>
               <div class="mt-2 flex items-center space-x-2">
-                <div
-                  class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-blue-600"
-                  :style="`background-color: ${
-                    product.color?.toLowerCase() || 'gray'
-                  }`"
-                ></div>
+                <div class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-blue-600" :style="`background-color: ${product.color?.toLowerCase() || 'gray'
+                  }`"></div>
               </div>
             </div>
 
@@ -205,63 +183,33 @@ const incrementQuantity = () => {
             <div class="py-4 border-b">
               <h3 class="text-sm font-medium text-gray-700">จำนวน</h3>
               <div class="mt-2 flex items-center space-x-2">
-                <button
-                  @click="decrementQuantity"
+                <button @click="decrementQuantity"
                   class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
-                  :disabled="quantity <= 1"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M20 12H4"
-                    ></path>
+                  :disabled="quantity <= 1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                   </svg>
                 </button>
                 <span class="w-12 text-center font-medium">{{ quantity }}</span>
-                <button
-                  @click="incrementQuantity"
+                <button @click="incrementQuantity"
                   class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
-                  :disabled="quantity >= product.quantity"
-                >
-                  <svg
-                    class="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 4v16m8-8H4"
-                    ></path>
+                  :disabled="quantity >= product.quantity">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                   </svg>
                 </button>
               </div>
             </div>
 
             <!-- Action Buttons -->
-            <div
-              class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"
-            >
-              <RouterLink
-                :to="{ name: 'Edit', params: { id: product.id } }"
-                class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center"
-              >
+            <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <RouterLink :to="{ name: 'Edit', params: { id: product.id } }"
+                class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center">
                 Edit
               </RouterLink>
 
-              <button
-                @click="deleteProduct(product.id)"
-                class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center"
-              >
+              <button @click="deleteProduct(product.id)"
+                class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center">
                 Delete
               </button>
             </div>
@@ -270,116 +218,15 @@ const incrementQuantity = () => {
       </div>
 
       <!------------------------------------------------------------------------------------------------------------------------ -->
-      <!-- Product Details Tabs -->
-      <div class="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
-        <!-- Tabs -->
-        <div class="border-b">
-          <div class="flex">
-            <button
-              class="py-4 px-6 font-medium text-sm transition focus:outline-none"
-            >
-              รายละเอียด
-            </button>
-          </div>
-        </div>
 
-        <!-- Tab Content -->
-        <div class="p-6">
-          <!-- Specifications Tab -->
-          <div class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Left Column -->
-              <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <h3 class="font-medium text-gray-700 mb-2">หน่วยความจำ</h3>
-                  <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-1 text-sm text-gray-500">RAM:</div>
-                    <div class="col-span-2 text-sm font-medium itbms-ramGb">
-                      {{ nullCatching(product.ramGb) }}
-                    </div>
-                    <span class="itbms-ramGb-unit ml-1 text-lg text-gray-500"
-                      >GB</span
-                    >
-
-                    <div class="col-span-1 text-sm text-gray-500">Storage:</div>
-                    <div class="col-span-2 text-sm font-medium itbms-storageGb">
-                      {{ nullCatching(product.storageGb) }} GB
-                    </div>
-                    <span
-                      class="itbms-storageGb-unit ml-1 text-lg text-gray-500"
-                      >GB</span
-                    >
-                  </div>
-                </div>
-
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <h3 class="font-medium text-gray-700 mb-2">จอแสดงผล</h3>
-                  <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-1 text-sm text-gray-500">ขนาดจอ:</div>
-                    <div
-                      class="col-span-2 text-sm font-medium itbms-screenSizeInch"
-                    >
-                      {{ nullCatching(product.screenSizeInch) }}
-                    </div>
-                    <span
-                      class="itbms-screenSizeInch-unit ml-1 text-lg text-gray-500"
-                      >Inches</span
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <!-- Right Column -->
-              <div class="space-y-4">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <h3 class="font-medium text-gray-700 mb-2">ข้อมูลทั่วไป</h3>
-                  <div class="grid grid-cols-3 gap-2">
-                    <div class="col-span-1 text-sm text-gray-500">แบรนด์:</div>
-                    <div class="col-span-2 text-sm font-medium">
-                      {{ product.brandName }}
-                    </div>
-
-                    <div class="col-span-1 text-sm text-gray-500">รุ่น:</div>
-                    <div class="col-span-2 text-sm font-medium">
-                      {{ product.model }}
-                    </div>
-
-                    <div class="col-span-1 text-sm text-gray-500">สี:</div>
-                    <div class="col-span-2 text-sm font-medium">
-                      {{ nullCatching(product.color) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="prose max-w-none">
-                <p class="itbms-description text-gray-700">
-                  {{ product.description || "ไม่มีข้อมูลรายละเอียดสินค้า" }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Back Button -->
       <div class="mt-8 flex justify-between items-center">
         <RouterLink to="/sale-items">
-          <button
-            class="flex items-center text-blue-600 hover:text-blue-800 transition font-medium"
-          >
-            <svg
-              class="w-5 h-5 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              ></path>
+          <button class="flex items-center text-blue-600 hover:text-blue-800 transition font-medium">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
             </svg>
             กลับไปหน้ารายการสินค้า
           </button>
@@ -389,26 +236,19 @@ const incrementQuantity = () => {
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div
-    v-if="showDeleteModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-  >
+  <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
       <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ</h2>
       <p class="itbms-message text-gray-600 mb-6">
         Do you want to delete this sale item?
       </p>
       <div class="flex justify-end space-x-2">
-        <button
-          @click="showDeleteModal = false"
-          class="itbms-cancel-button px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-        >
+        <button @click="showDeleteModal = false"
+          class="itbms-cancel-button px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
           ยกเลิก
         </button>
-        <button
-          @click="confirmDeleteProduct"
-          class="itbms-confirm-button px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-        >
+        <button @click="confirmDeleteProduct"
+          class="itbms-confirm-button px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
           ยืนยัน
         </button>
       </div>
