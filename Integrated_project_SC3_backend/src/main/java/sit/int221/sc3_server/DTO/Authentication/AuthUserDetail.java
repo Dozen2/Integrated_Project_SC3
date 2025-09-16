@@ -16,22 +16,23 @@ public class AuthUserDetail extends org.springframework.security.core.userdetail
 //        super(username, password, authorities);
 //        this.id = id;
 //    }
-private Integer id;
+    private Integer id;
     private String nickName;
     private String email;
-
+    private String tokenType;
     // constructor แบบง่าย (authorities ว่าง)
-    public AuthUserDetail(Integer id, String username, String password, String nickName, String email) {
-        this(id, username, password, nickName, email, new ArrayList<GrantedAuthority>());
+    public AuthUserDetail(Integer id, String username, String password, String nickName, String email, Collection<? extends GrantedAuthority> authorities) {
+        this(id, username, password, nickName, email,null, new ArrayList<GrantedAuthority>());
     }
 
     // constructor เต็ม
     public AuthUserDetail(Integer id, String username, String password,
-                          String nickName, String email,
+                          String nickName, String email,String tokenType,
                           Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.id = id;
         this.nickName = nickName;
         this.email = email;
+        this.tokenType=tokenType;
     }
 }

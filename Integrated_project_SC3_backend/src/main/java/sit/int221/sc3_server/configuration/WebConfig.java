@@ -15,6 +15,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sit.int221.sc3_server.exception.AuthenticationEntryPoint.JwtAuthenticationEntryPoint;
+import sit.int221.sc3_server.filter.JwtAuthFilter;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 
 @Configuration
@@ -22,6 +25,10 @@ import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 public class WebConfig {
     @Autowired
     private JwtUserDetailService jwtUserDetailService;
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
@@ -35,12 +42,40 @@ public class WebConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
+//                        .requestMatchers("/itb-mshop/v2/user/register","itb-mshop/v2/user/verify-email").permitAll()
+//                                .requestMatchers("itb-mshop/v2/user/login").hasAnyAuthority("BUYER","SELLER")
+//                                .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
+                .authenticationProvider(authenticationProvider(jwtUserDetailService))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http.headers(httpSecurityHeadersConfigurer ->
+//                httpSecurityHeadersConfigurer.frameOptions(frameOptionsConfig ->
+//                        frameOptionsConfig.disable()));
+//        http.csrf(crsf -> crsf.disable())
+//                .authorizeHttpRequests((requests) -> requests
+//                        .requestMatchers("/authentications/**", "/h2/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/users/groups").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyAuthority("MANAGER", "STAFF")
+//                        .requestMatchers("/api/resources/**").not().hasAuthority("GUEST")
+//                        .anyRequest().authenticated()
+//
+//                )
+//                .authenticationProvider(authenticationProvider(jwtUserDetailsService))
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//        return http.build();
+//    }
     @Bean
     public AuthenticationProvider authenticationProvider(JwtUserDetailService jwtUserDetailsService) {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();

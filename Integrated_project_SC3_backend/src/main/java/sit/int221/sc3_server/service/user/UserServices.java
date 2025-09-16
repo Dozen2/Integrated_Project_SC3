@@ -12,12 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
-import sit.int221.sc3_server.DTO.Brand.user.UserDTO;
-import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
+import sit.int221.sc3_server.DTO.user.UserDTO;
+import sit.int221.sc3_server.DTO.user.UserResponseDTO;
+import sit.int221.sc3_server.DTO.user.profile.BuyerProfileDTO;
+import sit.int221.sc3_server.DTO.user.profile.SellerProfileDTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
+import sit.int221.sc3_server.exception.UnAuthenticateException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
-import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
@@ -69,6 +71,13 @@ UserServices {
     if(userDTO.getRole().equalsIgnoreCase("seller") && sellerRepository.existsSellerByNationalId(userDTO.getNationalId())){
         throw new DuplicteItemException("This nationalID already exist");
     }
+    }
+    public Buyer findById(int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->  new UnAuthorizeException("User not found"));
+        if(!buyer.getIsActive()){
+            throw new UnAuthenticateException("User is not active");
+        }
+        return buyer;
     }
 
     @Transactional
@@ -204,13 +213,16 @@ UserServices {
 //    }
 public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
     UsernamePasswordAuthenticationToken uToken =
-            new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPasswords());
+            new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
     authenticationManager.authenticate(uToken);
     UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-    long refreshTokenAgeInMinute = 24 * 60 * 60 * 1000;
+    long refreshTokenAgeInMinute = 24 * 60;
+
+    String accessToken = jwtUtils.generateToken(userDetails);
+    String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
     return Map.of(
-            "access_token",jwtUtils.generateToken(userDetails),
-            "refresh_token",jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute, TokenType.refresh_token)
+            "access_token",accessToken,
+            "refresh_token",refreshToken
 
     );
 
@@ -225,7 +237,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
                 , "Invalid refresh token");
     }
 //        System.out.println(claims.get("uid").toString());
-        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("uid").toString()));
+        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
     return Map.of("access_token",jwtUtils.generateToken(userDetails));
     }
 
@@ -250,6 +262,32 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
         System.out.println(token);
         verifyTokenRepository.save(token);
         emailService.sendMailVerification(token.getBuyer().getEmail(),token.getVerifyToken());
+    }
+
+    public BuyerProfileDTO getBuyerById(int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        BuyerProfileDTO dto = new BuyerProfileDTO();
+        dto.setId(buyer.getId());
+        dto.setFullName(buyer.getFullName());
+        dto.setNickName(buyer.getNickName());
+        dto.setEmail(buyer.getEmail());
+        dto.setUserType(Role.BUYER.name());
+        return dto;
+    }
+
+    public SellerProfileDTO getSeller(int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        SellerProfileDTO dto = new SellerProfileDTO();
+        dto.setId(buyer.getId());
+        dto.setEmail(buyer.getEmail());
+        dto.setFullName(buyer.getFullName());
+        dto.setUserType(Role.SELLER.name());
+        dto.setPhoneNumber(buyer.getSeller().getMobileNumber());
+        dto.setBankName(buyer.getSeller().getBankName());
+        dto.setBankAccount(buyer.getSeller().getBankAccountNumber());
+        dto.setNickName(buyer.getNickName());
+        return dto;
+
     }
 
 }

@@ -38,7 +38,9 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getEmail(),          // username (ใช้ email)
                 buyer.getPasswords(),      // password
                 buyer.getNickName(),       // nickName
-                buyer.getEmail(),getAuthorities(buyer.getRoles()));
+                buyer.getEmail(),
+                null,
+                getAuthorities(buyer.getRoles()));
     }
 
     public UserDetails loadUserById(Integer id){
@@ -49,7 +51,9 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getEmail(),          // username (ใช้ email)
                 buyer.getPasswords(),      // password
                 buyer.getNickName(),       // nickName
-                buyer.getEmail(),getAuthorities(buyer.getRoles()));
+                buyer.getEmail(),
+                null,
+                getAuthorities(buyer.getRoles()));
     }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {
         return roles.stream()

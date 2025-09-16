@@ -1,4 +1,4 @@
-package sit.int221.sc3_server.DTO.Brand.user;
+package sit.int221.sc3_server.DTO.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;

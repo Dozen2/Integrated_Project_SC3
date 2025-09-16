@@ -88,4 +88,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generalErrorResponse);
     }
+
+    @ExceptionHandler(UnAuthenticateException.class)
+    public ResponseEntity<Object> handleUnAuthenticateRequest(Exception e,HttpServletRequest httpServletRequest){
+        GeneralErrorResponse ger = new GeneralErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                "UnAuthentication request",
+                e.getMessage(),
+                httpServletRequest.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ger);
+    }
 }
