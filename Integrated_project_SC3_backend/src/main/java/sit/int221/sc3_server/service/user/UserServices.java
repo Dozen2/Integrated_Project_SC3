@@ -17,6 +17,7 @@ import sit.int221.sc3_server.DTO.Brand.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.UserAlreadyExistsException;
 import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
@@ -107,7 +108,7 @@ UserServices {
         user.getRoles().add(Role.BUYER);
         buyerRepository.save(user);
 
-        //=======================Verify Email UUID=======================
+        //-----------------------------Verify Email UUID-----------------------------
         VerifyToken verifyToken = new VerifyToken();
         verifyToken.setVerifyToken(UUID.randomUUID().toString());
         verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
@@ -117,8 +118,7 @@ UserServices {
         buyerRepository.save(user);
 
         emailService.sendMailVerification(user.getEmail(), verifyToken.getVerifyToken());
-        //================================================================
-
+        //-----------------------------------------------------------------------------
         return user;
     }
 
@@ -165,17 +165,64 @@ UserServices {
         return true;
     }
 
-//    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
-//        UsernamePasswordAuthenticationToken uToken =
-//                new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPasswords());
-//        authenticationManager.authenticate(uToken);
-//        UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-//        long refreshTokenAgeInMinute = 24 * 60 * 60 * 1000;
-//        return Map.of(
-//                "access_token",jwtUtils.generateToken(userDetails),
-//                "refresh_token",jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute, TokenType.refresh_token)
-//        );
-//    }
+
+    public void emailExpired(String tokenStr) throws MessagingException, UnsupportedEncodingException {
+        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
+        if (token == null) {
+            throw new IllegalArgumentException("Token not found: " + tokenStr);
+        }
+        token.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
+        System.out.println(token.getVerifyToken());
+        System.out.println(token);
+        verifyTokenRepository.save(token);
+        emailService.sendMailVerification(token.getBuyer().getEmail(), token.getVerifyToken());
+    }
+
+    //===============================================Register-JWT-USER (Processing)======================================
+    @Transactional
+    public Map<String, Object> createUserJWT(UserDTO userDTO, MultipartFile front, MultipartFile back) throws MessagingException, UnsupportedEncodingException {
+        checkDuplication(userDTO);
+
+        Buyer user = new Buyer();
+        user.setNickName(userDTO.getNickName());
+        user.setEmail(userDTO.getEmail());
+        user.setFullName(userDTO.getFullName());
+        user.setIsActive(false);
+
+        String hashPassword = passwordEncoder.encode(userDTO.getPasswords());
+        user.setPasswords(hashPassword);
+
+        if ("seller".equalsIgnoreCase(userDTO.getRole())) {
+            if (userDTO.getBankName() == null || userDTO.getBankAccountNumber() == null || userDTO.getNationalId() == null) {
+                throw new IllegalArgumentException("Seller details must not be null for seller role");
+            }
+
+            String frontFileName = saveNationalIdFile(front);
+            String backFileName = saveNationalIdFile(back);
+
+            Seller seller = new Seller();
+            seller.setBankName(userDTO.getBankName());
+            seller.setMobileNumber(userDTO.getMobileNumber());
+            seller.setBankAccountNumber(userDTO.getBankAccountNumber());
+            seller.setNationalId(userDTO.getNationalId());
+            seller.setNationalIdPhotoFront(frontFileName);
+            seller.setNationalIdPhotoBack(backFileName);
+
+            sellerRepository.saveAndFlush(seller);
+            user.setSeller(seller);
+            user.getRoles().add(Role.SELLER);
+        }
+        user.getRoles().add(Role.BUYER);
+        buyerRepository.save(user);
+
+        //-------------------------------Verify Email JWT-------------------------------
+        UserDetails userDetails = (UserDetails) userDTO;
+        long refreshTokenAgeInMinute = 24 * 60 * 60 * 1000;
+        return Map.of(
+                "access_token", jwtUtils.generateToken(userDetails),
+                "refresh_token", jwtUtils.generateToken(userDetails, refreshTokenAgeInMinute, TokenType.refresh_token)
+        );
+    }
 
     //===============================================JWT-USER===============================================
 
@@ -212,17 +259,4 @@ UserServices {
         }
         return passwordEncoder.matches(password, user.getPasswords());
     }
-
-    public void emailExpired(String tokenStr) throws MessagingException, UnsupportedEncodingException {
-        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
-        if (token == null) {
-            throw new IllegalArgumentException("Token not found: " + tokenStr);
-        }
-        token.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-        System.out.println(token.getVerifyToken());
-        System.out.println(token);
-        verifyTokenRepository.save(token);
-        emailService.sendMailVerification(token.getBuyer().getEmail(), token.getVerifyToken());
-    }
-
 }

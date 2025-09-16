@@ -116,7 +116,6 @@ public class JwtUtils {
         }
     }
 
-
     public Map<String, Object> getJWTClaimSet(String token){
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);

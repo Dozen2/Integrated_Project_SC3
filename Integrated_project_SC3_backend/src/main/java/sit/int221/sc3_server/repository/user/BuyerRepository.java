@@ -25,4 +25,5 @@ public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
 """)
 Optional<Buyer> findByUserNameOrEmail(
         @Param("usernameOrEmail") String usernameOrEmail);
+
 }

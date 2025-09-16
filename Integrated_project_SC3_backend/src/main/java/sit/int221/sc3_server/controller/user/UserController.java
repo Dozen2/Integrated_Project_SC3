@@ -27,8 +27,6 @@ import java.io.UnsupportedEncodingException;
 public class UserController {
     @Autowired
     private UserServices userServices;
-    @Autowired
-    private FileService fileService;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
@@ -37,15 +35,6 @@ public class UserController {
         Buyer buyer = userServices.createUser(userDTO,front,back);
         UserResponseDTO dto = userServices.mapToDTO(buyer);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
-    }
-
-    @PostMapping(value = "/register-JWT", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponseDTO> createUserJWT(@Valid @ModelAttribute UserDTO userDTO
-            , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
-            , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
-        Buyer buyer = userServices.createUser(userDTO,front,back);
-        UserResponseDTO dto = userServices.mapToDTO(buyer);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
     @PostMapping("/verify-email")
@@ -63,6 +52,8 @@ public class UserController {
         userServices.emailExpired(token);
         return ResponseEntity.ok("Email successfully refresh");
     }
+
+    //======================================JWT Login=================================================
 
     @PostMapping("/authentications")
     public ResponseEntity<Object> login(@Valid @RequestBody JwtAuthUser jwtAuthUser){

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.*;
+import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
@@ -53,6 +54,21 @@ public class SaleItemControllerV2 {
         return ResponseEntity.ok(pageDTO);
     }
 
+    //==================================================Mocking Access_token==================================================
+
+    @PostMapping("/decodeAccessToken")
+    public ResponseEntity<Integer> getAccessToken(@RequestHeader("Authorization") String authorizationHeader) {
+        // ตรวจสอบว่า header ต้องขึ้นต้นด้วย Bearer
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().build(); // หรือจะโยน exception ก็ได้
+        }
+        // ตัด "Bearer " ออก เหลือแค่ตัว token
+        String token = authorizationHeader.substring(7);
+        Integer userId = saleItemServiceV2.decodeAccessToken(token);
+        return ResponseEntity.ok(userId);
+    }
+
+    //========================================================================================================================
     @PostMapping("")
     public ResponseEntity<SaleItemDetailFileDto> createSaleItem(
             @ModelAttribute SaleItemCreateDTO saleItemCreateDTO ,
@@ -102,6 +118,5 @@ public class SaleItemControllerV2 {
              saleItemServiceV2.deleteSaleItem(id);
             return ResponseEntity.noContent().build() ;
         }
-
 
 }

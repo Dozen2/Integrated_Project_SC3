@@ -1,14 +1,19 @@
 package sit.int221.sc3_server.service.saleItem;
 
+import com.nimbusds.jwt.SignedJWT;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemImageRequest;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
@@ -27,6 +32,7 @@ import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
 import sit.int221.sc3_server.repository.saleItem.StorageGbViewRepository;
 import sit.int221.sc3_server.service.FileService;
 
+import java.text.ParseException;
 import java.util.*;
 
 @Service
@@ -43,6 +49,8 @@ public class SaleItemServiceV2 {
     private FileService fileService;
     @Autowired
     private StorageGbViewRepository storageGbViewRepository;
+//    @Value("${app.security.jwt.key-id}")
+//    private String KEY_ID;
 
     public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper,String searchValue, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
@@ -61,14 +69,9 @@ public class SaleItemServiceV2 {
         if(filterPriceUpper != null && filterPriceLower == null){
             return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,keyword,pageable);
         }
-
-
         if (filterStorages != null && filterStorages.contains(-1)) {
             return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
-
         }
-
-
         return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
     }
 
@@ -125,8 +128,6 @@ public class SaleItemServiceV2 {
     return saleitemRepository.saveAndFlush(saleItem);
     }
 
-
-
     public SaleItem getProductById(int id) {
         SaleItem saleitem = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("SaleItem not found for this id :: " + id));
@@ -138,7 +139,6 @@ public class SaleItemServiceV2 {
         System.out.println(saleitem);
         return saleitem;
     }
-
 
     @Transactional
     public SaleItem updateSaleItem(int id, SaleItemWithImageInfo newProduct) {
@@ -221,10 +221,10 @@ public class SaleItemServiceV2 {
                 }
             }
 
-// -------- STEP 3: Normalize order ----------
+            // -------- STEP 3: Normalize order ----------
             List<SaleItemImage> images = saleItemImageRepository.findBySaleItem(existing);
 
-// sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
+            // sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
             images.sort(Comparator.comparing(
                     img -> Optional.ofNullable(img.getImageViewOrder()).orElse(Integer.MAX_VALUE)
             ));
@@ -241,9 +241,6 @@ public class SaleItemServiceV2 {
             throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
         }
     }
-
-
-
 
     public SaleItem deleteSaleItem(int id) {
         SaleItem saleitem = saleitemRepository.findById(id)
@@ -262,5 +259,55 @@ public class SaleItemServiceV2 {
         // ลบ product
         saleitemRepository.deleteById(id);
         return saleitem;
+    }
+
+//============================================= Read Token ===========================================
+
+    public Integer decodeAccessToken(String accessToken) {
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            throw new IllegalArgumentException("Access token is required");
+        }
+
+        try {
+            // ใช้ nimbusds decode JWT
+            SignedJWT signedJWT = SignedJWT.parse(accessToken);
+
+            // อ่าน payload (claims)
+            Map<String, Object> claims = signedJWT.getJWTClaimsSet().getClaims();
+            System.out.println("Claims from token: " + claims);
+
+            // ดึงค่าที่เราต้องการ
+            Integer id = claims.get("id") != null ? Integer.valueOf(claims.get("id").toString()) : null;
+
+            // ถ้ามี roles ก็แปลงเป็น GrantedAuthority
+            Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+            Object rolesObj = claims.get("authorities");
+            System.out.println("rolesObj: " + rolesObj);
+
+            //บอก SpringSecurity ว่าไอหมอนี่มีสิทธิ์ไรบ้างด้วย SimpleGrantedAuthority
+            if (rolesObj instanceof List<?>) {
+                List<?> rolesList = (List<?>) rolesObj; // <-- cast เป็น List
+
+                for (Object roleItem : rolesList) {
+                    if (roleItem instanceof Map<?, ?>) { // <-- ดึงเป็น Map
+                        Map<?, ?> roleMap = (Map<?, ?>) roleItem;
+
+                        // ดึงค่า "role" ออกมาเป็น String
+                        String role = (String) roleMap.get("role");
+                        System.out.println("role: " + role);
+                        authorities.add(new SimpleGrantedAuthority(role));
+                    }
+                }
+            }
+
+            //ถ้ามาก็ไปใช้ spring security ได้เลย
+            System.out.println("Authorities after adding roles:");
+            authorities.forEach(auth -> System.out.println(" - " + auth.getAuthority()));
+
+            return id;
+        } catch (ParseException e) {
+            throw new RuntimeException("Invalid access token format", e);
+        }
     }
 }
