@@ -12,6 +12,7 @@ import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
 import VerifyEmail from '@/views/AuthUser/verifyEmail.vue'
+import UserProfile from '@/views/User/UserProfile.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -35,32 +36,43 @@ const router = createRouter({
     { path: '/sale-items/register', name: 'Register', component: Register },
     { path: '/sale-items/login', name: 'Login', component: Login },
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
+
+    //User
+    {path: '/user/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+
+    // Unknow-Path -> Home Page
+    { path: '/:pathMatch(.*)*', redirect: { name: 'Home' } },
+
   ],
 })
 
-// router.beforeEach(async (to) => {
-//   const auth = useAuthStore();
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
 
-//   // ถ้าต้อง auth
-//   if (to.meta.requiresAuth) {
-//     // ไม่มี accessToken -> ลอง refresh
-//     if (!auth.accessToken) {
-//       const refreshed = await auth.refreshToken();
-//       if (!refreshed) {
-//         return { name: 'Login', query: { redirect: to.fullPath } };
-//       }
-//     }
+  const guestOnlyRoutes = ['Login', 'Register', 'VerifyEmail'];
+  if (auth.accessToken && guestOnlyRoutes.includes(to.name)) {
+    return { name: 'Home' }; // redirect ไปหน้า Home (หรือจะไปหน้า Profile ก็ได้)
+  }
 
-//     // ตรวจสอบ role
-//     const allowedRoles = to.meta.roles || [];
-//     if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
-//       // ไม่ตรง role -> redirect ไปหน้า Home
-//       return { name: 'Home' };
-//     }
-//   }
+  // ถ้าต้อง auth
+  if (to.meta.requiresAuth) {
+    // ไม่มี accessToken -> ลอง refresh
+    if (!auth.accessToken) {
+      const refreshed = await auth.refreshToken();
+      if (!refreshed) {
+        return { name: 'Login', query: { redirect: to.fullPath } };
+      }
+    }
 
-//   return true;
-// });
+    // ตรวจสอบ role
+    const allowedRoles = to.meta.roles || [];
+    if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
+        // ไม่ตรง role -> redirect ไปหน้า Home
+      return { name: 'Login' };
+    }
+  }
 
+  return true;
+});
 
 export default router
