@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
+import sit.int221.sc3_server.exception.UnAuthorizeException;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -102,7 +103,7 @@ public class JwtUtils {
 //        }
     }
 
-    public void verifyToken(String token){
+    public boolean verifyToken(String token){
         try{
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
@@ -111,6 +112,7 @@ public class JwtUtils {
             if(!pass){
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Verified Error, Invalid JWT");
             }
+            return true;
         }catch (JOSEException | ParseException p){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verified Error, Invalid JWT", p);
         }
@@ -132,7 +134,19 @@ public class JwtUtils {
 
     public boolean isValidClaims(Map<String,Object> jwtClaims){
         System.out.println(jwtClaims);
-        return jwtClaims.containsKey("iat") && "http://localhost:8080".equals(jwtClaims.get("iss"))
-                && jwtClaims.containsKey("uid") && (Long) jwtClaims.get("uid")>0;
+        return jwtClaims.containsKey("iat")
+                && "https://intproj24.sit.kmutt.ac.th/sc3/".equals(jwtClaims.get("iss"))
+                && jwtClaims.containsKey("id")
+                && Long.parseLong(jwtClaims.get("id").toString())>0
+                && jwtClaims.containsKey("email");
+    }
+    public String extractUsername(String token){
+        verifyToken(token);
+        Map<String,Object> claims = getJWTClaimSet(token);
+        if(claims.containsKey("email")){
+            return claims.get("email").toString();
+        }else {
+            throw new UnAuthorizeException("This user does not exist");
+        }
     }
 }
