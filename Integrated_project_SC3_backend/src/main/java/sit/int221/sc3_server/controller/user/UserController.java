@@ -70,7 +70,6 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response) {
-
         if (jwtAuthUser.getUsername().isBlank()) {
             throw new UnAuthorizeException("Email or Password is incorrect");
         }
