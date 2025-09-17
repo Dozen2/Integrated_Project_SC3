@@ -23,17 +23,13 @@ import java.util.Map;
 
 @Component
 public class JwtUtils {
-
     @Value("#{30*1000*60}")
     private long MAX_TOKEN_INTERVAL;
-
     @Value("${app.security.jwt.key-id}")
     private String KEY_ID;
     @Getter
     private RSAKey rsaPrivateJWK;
-
     private RSAKey rsaPublicJWK;
-
 
     public JwtUtils(){
         try{
@@ -46,16 +42,16 @@ public class JwtUtils {
         }
     }
 
+
     public String generateToken(UserDetails userDetails){
         return generateToken(userDetails,MAX_TOKEN_INTERVAL, TokenType.ACCESS_TOKEN);
     }
 
+
     public String generateToken(UserDetails user,Long ageInMinute,TokenType tokenType){
         try {
             JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
-
             AuthUserDetail authUser = (AuthUserDetail) user;
-
             Date now = new Date();
             Date expiryDate = new Date(now.getTime() + ageInMinute * 60 * 1000);
 
@@ -77,10 +73,8 @@ public class JwtUtils {
                             .build(),
                     claimsSet
             );
-
             signedJWT.sign(signer);
             return signedJWT.serialize();
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -118,6 +112,7 @@ public class JwtUtils {
         }
     }
 
+
     public Map<String, Object> getJWTClaimSet(String token){
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
@@ -127,10 +122,12 @@ public class JwtUtils {
         }
     }
 
+
     public boolean isExpired(Map<String,Object> jwtClaims){
         Date expDate = (Date)jwtClaims.get("exp");
         return expDate.before(new Date());
     }
+
 
     public boolean isValidClaims(Map<String,Object> jwtClaims){
         System.out.println(jwtClaims);
@@ -140,6 +137,8 @@ public class JwtUtils {
                 && Long.parseLong(jwtClaims.get("id").toString())>0
                 && jwtClaims.containsKey("email");
     }
+
+
     public String extractUsername(String token){
         verifyToken(token);
         Map<String,Object> claims = getJWTClaimSet(token);
@@ -149,4 +148,6 @@ public class JwtUtils {
             throw new UnAuthorizeException("This user does not exist");
         }
     }
+
+
 }
