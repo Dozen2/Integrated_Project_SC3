@@ -2,17 +2,11 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
-const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
+const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/auth`;
 
 // ฟังก์ชัน register user
-async function registerUser(
-  userData,
-  nationalIdPhotoFront,
-  nationalIdPhotoBack
-) {
+async function registerUser( userData, nationalIdPhotoFront, nationalIdPhotoBack) {
   const formData = new FormData();
-
-  // field ที่ตรงกับ UserDTO
   formData.append("nickName", userData.nickName);
   formData.append("email", userData.email);
   formData.append("passwords", userData.passwords);
@@ -22,43 +16,38 @@ async function registerUser(
   formData.append("bankAccountNumber", userData.bankAccountNumber);
   formData.append("bankName", userData.bankName);
   formData.append("nationalId", userData.nationalId);
-
-  // file (optional)
   if (nationalIdPhotoFront) {
     formData.append("nationalIdPhotoFront", nationalIdPhotoFront);
   }
   if (nationalIdPhotoBack) {
     formData.append("nationalIdPhotoBack", nationalIdPhotoBack);
   }
-
-  const res = await fetch(userUrlV2, {
+  const res = await fetch(`${userUrlV2}/register`, {
     method: "POST",
     body: formData,
   });
-
   if (!res.ok) {
     const errorData = await res.json();
     throw new Error(`${errorData.message}`);
   }
-
   return res.json();
 }
 
+
 async function verifyEmail(token) {
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/verify-email?token=${token}`;
+  const url = `${userUrlV2}/verify-email?token=${token}`;
   console.log("fetching:", url);
-
   const response = await fetch(url, { method: "POST" });
-
-  return response.status; // ส่งข้อความกลับไปให้ caller
+  return response.status; 
 }
 
+
 async function refreshEmail(token) {
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh-email-token?token=${token}`;
+  const url = `${userUrlV2}/refresh-email-token?token=${token}`;
   console.log("refrech fetching:", url);
   try {
     const response = await fetch(url, { method: "POST" });
-    return response.status; // ส่งข้อความกลับไปให้ caller
+    return response.status; 
   } catch (error) {
     console.log(error);
   }
@@ -67,39 +56,30 @@ async function refreshEmail(token) {
 
 async function loginUser(username, password) {
   try {
-    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`, {
+    const res = await fetch(`${userUrlV2}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username, passwords: password }),
+      body: JSON.stringify({ username: username, password: password }),
     });
 
     if (!res.ok) throw new Error("Login failed");
-
     const data = await res.json();
     console.log("Login response:", data);
-    const accessToken = data.access_token;   // token ที่ BE ส่งกลับมา
+    const accessToken = data.access_token;  
     const refreshToken = data.refresh_token;
 
-
     Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true, sameSite: "Strict" });
-    
-
     const decoded = jwtDecode(accessToken);
-    console.log(decoded);
-
     const authorities = decoded.authorities || [];
 
     let role = "UNKNOWN";
-
     if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
       role = "ROLE_SELLER";
     } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
       role = "ROLE_BUYER";
     }
-    console.log(role);
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("role", role);
-
     return { accessToken, refreshToken, role };
   } catch (err) {
     console.error(err);
@@ -110,11 +90,10 @@ async function loginUser(username, password) {
 async function refreshToken() {
   const refreshToken = Cookies.get("refreshToken");
   if (!refreshToken) throw new Error("No refresh token");
-
-  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh`, {
+  const res = await fetch(`${userUrlV2}/refresh`, {
     method: "POST",
     headers: {
-      "x-refresh-token": Cookies.get("refreshToken")  // ดึงจาก cookie
+      "x-refresh-token": Cookies.get("refreshToken") 
     }
   });
 
@@ -123,5 +102,6 @@ async function refreshToken() {
   const decoded = jwtDecode(data.accessToken);
   return { accessToken: data.accessToken, role: decoded.role };
 }
+
 
 export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken };

@@ -73,6 +73,5 @@ onMounted(async() => {
     Cancel
   </button>
 </div>
-     
   </div>
 </template>
