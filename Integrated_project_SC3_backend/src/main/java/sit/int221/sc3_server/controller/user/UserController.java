@@ -61,6 +61,7 @@ public class UserController {
         }
     }
 
+
     @PostMapping("/refresh-email-token")
     public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token) throws MessagingException, UnsupportedEncodingException {
         userServices.emailExpired(token);
