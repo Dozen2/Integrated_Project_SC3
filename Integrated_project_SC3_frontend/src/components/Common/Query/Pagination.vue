@@ -150,14 +150,14 @@ onMounted(() => {
         <button
           @click="goToPage(1)"
           :disabled="page === 1"
-          class="itbms-page-first px-3 py-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="cursor-pointer itbms-page-first px-3 py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           First
         </button>
         <button
           @click="goToPage(Math.max(1, page - 1))"
           :disabled="page === 1"
-          class="itbms-page-prev px-3 py-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="cursor-pointer itbms-page-prev px-3 py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Prev
         </button>
@@ -170,7 +170,7 @@ onMounted(() => {
               'px-3 py-2 rounded transition min-w-10',
               page === p
                 ? 'bg-gray-800 text-white'
-                : 'text-gray-600 hover:bg-gray-100',
+                : 'text-gray-600 hover:bg-gray-300 cursor-pointer ',
             ]"
           >
             {{ p }}
@@ -180,14 +180,14 @@ onMounted(() => {
         <button
           @click="goToPage(Math.min(totalPage, page + 1))"
           :disabled="page === totalPage"
-          class="itbms-page-next px-3 py-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="itbms-page-next px-3 py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Next
         </button>
         <button
           @click="goToPage(totalPage)"
           :disabled="page === totalPage"
-          class="itbms-page-last px-3 py-2 rounded text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="itbms-page-last px-3 py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           Last
         </button>
