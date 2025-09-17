@@ -45,12 +45,11 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
             , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
-
-
         Buyer buyer = userServices.createUser(userDTO, front, back);
         UserResponseDTO dto = userServices.mapToDTO(buyer);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
+
 
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token) throws MessagingException, UnsupportedEncodingException {
@@ -83,7 +82,7 @@ public class UserController {
             Map<String, Object> tokens = userServices.authenticateUser(jwtAuthUser);
             ResponseCookie cookie = ResponseCookie.from("refresh_token", (String) tokens.get("refresh_token"))
                     .httpOnly(true)
-//                            .secure(true)
+//                  .secure(true)
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
                     .sameSite("Strict")
