@@ -129,8 +129,8 @@ UserServices {
         verifyToken.setBuyer(user);
         verifyTokenRepository.save(verifyToken);
         user.setVerifyToken(verifyToken);
-
         buyerRepository.save(user);
+
         emailService.sendMailVerification(user.getEmail(), verifyToken.getVerifyToken());
         return user;
     }
