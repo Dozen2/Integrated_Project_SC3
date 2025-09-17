@@ -1,6 +1,5 @@
 package sit.int221.sc3_server.controller.user;
 
-import com.nimbusds.jwt.SignedJWT;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
