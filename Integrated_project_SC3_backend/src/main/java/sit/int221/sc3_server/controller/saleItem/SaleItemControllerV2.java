@@ -52,21 +52,7 @@ public class SaleItemControllerV2 {
         return ResponseEntity.ok(pageDTO);
     }
 
-    //==================================================Mocking Access_token==================================================
 
-    @PostMapping("/decodeAccessToken")
-    public ResponseEntity<Integer> getAccessToken(@RequestHeader("Authorization") String authorizationHeader) {
-        // ตรวจสอบว่า header ต้องขึ้นต้นด้วย Bearer
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().build(); // หรือจะโยน exception ก็ได้
-        }
-        // ตัด "Bearer " ออก เหลือแค่ตัว token
-        String token = authorizationHeader.substring(7);
-        Integer userId = saleItemServiceV2.decodeAccessToken(token);
-        return ResponseEntity.ok(userId);
-    }
-
-    //========================================================================================================================
     @PostMapping("")
     public ResponseEntity<SaleItemDetailFileDto> createSaleItem(
             @ModelAttribute SaleItemCreateDTO saleItemCreateDTO ,
@@ -78,10 +64,12 @@ public class SaleItemControllerV2 {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
     @GetMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable int id) {
         return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
     }
+
 
     @GetMapping("/sale-items/file/{filename:.+}")
     @ResponseBody
@@ -111,10 +99,10 @@ public class SaleItemControllerV2 {
         return ResponseEntity.ok(response);
     }
 
+
     @DeleteMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemWithImageInfo> deleteSaleItem(@PathVariable int id){
              saleItemServiceV2.deleteSaleItem(id);
             return ResponseEntity.noContent().build() ;
         }
-
 }

@@ -149,5 +149,55 @@ public class JwtUtils {
         }
     }
 
+//=======================Mock VerifyEmail=============================
+public String generateEmailVerifyToken(Long userId, String email, RSAKey rsaKey) throws JOSEException {
+    JWSSigner signer = new RSASSASigner(rsaKey); // ใช้ Private Key ในการ sign
 
+    JWTClaimsSet claims = new JWTClaimsSet.Builder()
+            .subject(userId.toString())              // userId
+            .claim("purpose", "EMAIL_VERIFY")        // 🔹 ระบุว่าเป็น email verification
+            .claim("email", email)                   // email
+            .expirationTime(new Date(System.currentTimeMillis() + 15 * 60 * 1000)) // หมดอายุ 15 นาที
+            .issueTime(new Date())
+            .build();
+
+    SignedJWT signedJWT = new SignedJWT(
+            new JWSHeader.Builder(JWSAlgorithm.RS256) // ใช้ RSA256
+                    .keyID(rsaKey.getKeyID())
+                    .build(),
+            claims
+    );
+
+    signedJWT.sign(signer);
+
+    return signedJWT.serialize(); // return JWT string
+}
+
+
+
+    public JWTClaimsSet verifyEmailToken(String token, RSAKey rsaKey) throws ParseException, JOSEException {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        // ใช้ Public Key ตรวจสอบลายเซ็น
+        JWSVerifier verifier = new RSASSAVerifier(rsaKey.toRSAPublicKey());
+
+        if (!signedJWT.verify(verifier)) {
+            throw new RuntimeException("Invalid signature");
+        }
+
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+        // ตรวจสอบหมดอายุ
+        if (claims.getExpirationTime().before(new Date())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        // ตรวจสอบ purpose ว่าเป็น EMAIL_VERIFY เท่านั้น
+        String purpose = claims.getStringClaim("purpose");
+        if (!"EMAIL_VERIFY".equals(purpose)) {
+            throw new RuntimeException("Invalid token purpose");
+        }
+
+        return claims; // ส่ง claims กลับไปใช้งาน เช่น userId, email
+    }
 }
