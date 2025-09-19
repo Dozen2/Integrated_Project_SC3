@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
@@ -48,4 +51,8 @@ public class Seller {
 
     @OneToOne(mappedBy = "seller", fetch = FetchType.LAZY)
     private Buyer buyer; // 🔹 OneToOne ฝั่งกลับ
+
+    @OneToMany(mappedBy = "seller")
+    private Set<SaleItem> saleItems = new LinkedHashSet<>();
+
 }
