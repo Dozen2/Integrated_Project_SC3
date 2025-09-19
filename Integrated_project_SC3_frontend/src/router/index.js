@@ -11,9 +11,10 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
-import VerifyEmail from '@/views/AuthUser/verifyEmail.vue'
+import VerifyEmail from '@/views/AuthUser/VerlfyEmail.vue'
 import UserProfile from '@/views/User/UserProfile.vue'
 import { useAuthStore } from '@/stores/auth'
+
 
 
 

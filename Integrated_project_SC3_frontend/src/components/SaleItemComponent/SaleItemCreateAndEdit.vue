@@ -27,8 +27,6 @@ const boxTextTailwind =
   "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
 const boxTextTailwindError =
   "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
-const boxTextTailwindUseInConponent =
-  "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
 
 
 const brandError = ref(false);
@@ -950,9 +948,10 @@ else {
             RAM (GB)
           </label>
           <InputBox
-            v-model="saleItem.ramGb"
+            type="number"
+            v-model.number="saleItem.ramGb"
             placeholder="e.g. 8"
-            :inputClass="boxTextTailwindUseInConponent"
+            :inputClass="boxTextTailwindRamGB"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindRamGB === boxTextTailwindError" class="itbms-message mt-1 text-sm text-red-500">
@@ -973,9 +972,10 @@ else {
             Storage (GB)
           </label>
           <InputBox
-            v-model="saleItem.storageGb"
+            type="number"
+            v-model.number="saleItem.storageGb"
             placeholder="e.g. 128"
-            :inputClass="boxTextTailwindUseInConponent"
+            :inputClass="boxTextTailwindStorageGB"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindStorageGB === boxTextTailwindError"
@@ -997,9 +997,10 @@ else {
             Screen Size (Inches)
           </label>
           <InputBox
-            v-model="saleItem.screenSizeInch"
+            type="number"
+            v-model.number="saleItem.screenSizeInch"
             placeholder="e.g. 6.1"
-            :inputClass="boxTextTailwindUseInConponent"
+            :inputClass="boxTextTailwindScreenSizeInch"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindScreenSizeInch === boxTextTailwindError"
@@ -1025,7 +1026,7 @@ else {
           <InputBox
             v-model="saleItem.color"
             placeholder="e.g. Midnight Blue"
-            :inputClass="boxTextTailwindUseInConponent"
+            :inputClass="boxTextTailwindColor"
           />
           <div class="flex-1">
             <p v-show="(saleItem.color?.length ?? 0) > maxLength.color" class="itbms-message mt-1 text-sm text-red-500">
@@ -1047,9 +1048,10 @@ else {
             <span class="text-red-500 ml-1">*</span>
           </label>
           <InputBox
+            type="number"
             v-model="saleItem.quantity"
             placeholder="e.g. 10"
-            :inputClass="boxTextTailwindUseInConponent"
+            :inputClass="boxTextTailwindQuantity"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindQuantity === boxTextTailwindError"

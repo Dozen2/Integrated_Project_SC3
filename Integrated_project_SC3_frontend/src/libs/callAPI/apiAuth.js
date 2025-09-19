@@ -2,7 +2,7 @@ import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
-const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
+// const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
 
 // ฟังก์ชัน register user
 async function registerUser(
@@ -31,7 +31,7 @@ async function registerUser(
     formData.append("nationalIdPhotoBack", nationalIdPhotoBack);
   }
 
-  const res = await fetch(userUrlV2, {
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/register`, {
     method: "POST",
     body: formData,
   });
@@ -45,7 +45,7 @@ async function registerUser(
 }
 
 async function verifyEmail(token) {
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/verify-email?token=${token}`;
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/auth/verify-email?token=${token}`;
   console.log("fetching:", url);
 
   const response = await fetch(url, { method: "POST" });
@@ -54,7 +54,7 @@ async function verifyEmail(token) {
 }
 
 async function refreshEmail(token) {
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh-email-token?token=${token}`;
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/auth/refresh-email-token?token=${token}`;
   console.log("refrech fetching:", url);
   try {
     const response = await fetch(url, { method: "POST" });
@@ -67,10 +67,10 @@ async function refreshEmail(token) {
 
 async function loginUser(username, password) {
   try {
-    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/authentications`, {
+    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username, passwords: password }),
+      body: JSON.stringify({ username: username, password: password }),
     });
 
     if (!res.ok) throw new Error("Login failed");
@@ -82,7 +82,7 @@ async function loginUser(username, password) {
 
 
     Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true, sameSite: "Strict" });
-    
+
 
     const decoded = jwtDecode(accessToken);
     console.log(decoded);
@@ -111,11 +111,11 @@ async function refreshToken() {
   const refreshToken = Cookies.get("refreshToken");
   if (!refreshToken) throw new Error("No refresh token");
 
-  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/refresh`, {
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/refresh`, {
     method: "POST",
     headers: {
-      "x-refresh-token": Cookies.get("refreshToken")  // ดึงจาก cookie
-    }
+    },
+    credentials:"include"
   });
 
   if (!res.ok) throw new Error("Refresh failed");
@@ -124,4 +124,44 @@ async function refreshToken() {
   return { accessToken: data.accessToken, role: decoded.role };
 }
 
-export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken };
+async function fetchUserProfile(userId) {
+  const accessToken = localStorage.getItem("accessToken")
+  if (!accessToken) throw new Error("No access token")
+
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/${userId}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
+    },
+  })
+  if (!res.ok) throw new Error("Failed to fetch profile") 
+  
+  return res.json();
+}
+
+async function logout() {
+  const accessToken = localStorage.getItem("accessToken")
+  if (!accessToken) throw new Error("No access token")
+
+  const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/logout`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+    credentials: "include" // สำคัญ! เพื่อให้ cookie (refreshToken) ถูกส่งไปด้วย
+  });
+
+  if(!res.ok && res.status !== 204){
+    throw new Error("Logout failed")
+  }
+  return true
+}
+
+export { 
+  registerUser, 
+  verifyEmail, 
+  refreshEmail, 
+  loginUser, 
+  refreshToken, 
+  fetchUserProfile, 
+  logout};

@@ -1,6 +1,10 @@
 // stores/auth.js
 import { defineStore } from "pinia";
-import { loginUser, refreshToken as apiRefreshToken } from "@/libs/callAPI/apiAuth";
+import { 
+  loginUser, 
+  refreshToken as apiRefreshToken, 
+  fetchUserProfile,
+  logout as apiLogout } from "@/libs/callAPI/apiAuth";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -51,14 +55,31 @@ export const useAuthStore = defineStore("auth", {
     },
 
     // ฟังก์ชัน logout
-    logout() {
+    async logout() {
+      try{
+        await apiLogout();
+      }catch{
+        console.error("Logout API error:", err);
+      }
+
       this.accessToken = null;
       this.role = null;
       this.isLoggedIn = false;
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
+      // Cookies.remove("refreshToken");
       // optional: clear refresh token cookie
+    },
+
+    async loadUserProfile(userId){
+      try{
+        this.profile = await fetchUserProfile(userId)
+        return this.profile
+      }catch(err){
+        console.error("Error loading profile:", err);
+        throw err;
+      }
     }
   }
 });

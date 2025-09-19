@@ -1,15 +1,15 @@
 <script setup>
 import { LogOut, ShoppingCart, Smartphone, UserRound } from "lucide-vue-next";
 import { useAuthStore } from '@/stores/auth'
-
 import { RouterLink, useRouter } from "vue-router";
 
 const router = useRouter();
 const auth = useAuthStore();
 
-const logOut = () => {
+const logOut = async() => {
+  await auth.logout();
   router.push({ name: 'Home' });
-  auth.logout();
+  
 };
 
 </script>
@@ -60,11 +60,14 @@ const logOut = () => {
             {{ cartItemCount }}
           </span>
         </div>
+
         <div class="relative">
-          <button class="flex boader border-white rounded-full px-4 py-2 cursor-pointer transition-colors text-white font-semibold hover:bg-blue-600 " @click="logOut">
+          <button class="flex boader border-white rounded-full px-4 py-2 cursor-pointer transition-colors text-white font-semibold hover:bg-blue-600 " 
+          @click="logOut">
             <span class="mr-[7px]">Log Out</span> <LogOut color="#ffffff" />
           </button>
         </div>
+
       </div>
 
       <div v-else class="flex items-center gap-6 text-lg font-medium">
