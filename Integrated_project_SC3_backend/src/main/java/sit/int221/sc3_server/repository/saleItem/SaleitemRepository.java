@@ -15,14 +15,24 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
 
     int countByBrand_Id(int id);
 
+
     Page<SaleItem> findByBrand_NameIn(List<String> brandNames, Pageable pageable);
     boolean existsByModelIgnoreCase(String model);
 
 //    @Query("SELECT s FROM SaleItem s LEFT JOIN FETCH s.saleItemImages WHERE s.id = :id")
 //    Optional<SaleItem> findByIdWithImages(@Param("id") Integer id);
+    @Query("""
+select p from SaleItem p
+where (p.seller.id in :sellerId)
+""")
+    Page<SaleItem> findSaleItemBySellerId(
+            @Param("sellerId") int id,
+            Pageable pageable
+    );
 @Query("""
     select p from SaleItem p
-    WHERE (:brandNames IS NULL OR p.brand.name IN :brandNames)
+    WHERE (:sellerId is null or p.seller.id = :sellerId)
+    and   (:brandNames IS NULL OR p.brand.name IN :brandNames)
     and (
          :storageGb IS NULL
          or (-1 in :storageGb and p.storageGb is null)
@@ -38,6 +48,7 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
     )
 """)
 Page<SaleItem> findFilteredProduct(
+        @Param("sellerId") Integer sellerId,
         @Param("brandNames") List<String> brandNames,
         @Param("storageGb") List<Integer> storageGb,
         @Param("minPrice") Integer minPrice,
@@ -49,7 +60,8 @@ Page<SaleItem> findFilteredProduct(
 
     @Query("""
     select p from SaleItem p
-    WHERE (:brandNames is null or p.brand.name in :brandNames)
+    WHERE (:sellerId is null or p.seller.id = :sellerId)
+    and (:brandNames is null or p.brand.name in :brandNames)
       and (
             :storageGb is null 
             or p.storageGb in :storageGb
@@ -65,6 +77,7 @@ Page<SaleItem> findFilteredProduct(
     )
 """)
     Page<SaleItem> findFilteredProductAndNullStorageGb(
+            @Param("sellerId") Integer sellerId,
             @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,
@@ -75,7 +88,8 @@ Page<SaleItem> findFilteredProduct(
 
     @Query("""
     select p from SaleItem p
-    WHERE (:brandNames is null or p.brand.name in :brandNames)
+    WHERE (:sellerId is null or p.seller.id = :sellerId)
+    and (:brandNames is null or p.brand.name in :brandNames)
       and (
             :storageGb is null
             or p.storageGb in :storageGb
@@ -90,6 +104,7 @@ Page<SaleItem> findFilteredProduct(
     )
 """)
     Page<SaleItem> findFilteredProductAndNullStorageGbAndMinPrice(
+            @Param("sellerId") Integer sellerId,
             @Param("brandNames") List<String> brandNames,
             @Param("storageGb") List<Integer> storageGb,
             @Param("minPrice") Integer minPrice,

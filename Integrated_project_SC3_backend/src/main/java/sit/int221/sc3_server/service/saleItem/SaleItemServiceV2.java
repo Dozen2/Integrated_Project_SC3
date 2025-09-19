@@ -12,10 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemImageRequest;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
-import sit.int221.sc3_server.entity.Brand;
-import sit.int221.sc3_server.entity.SaleItem;
-import sit.int221.sc3_server.entity.SaleItemImage;
-import sit.int221.sc3_server.entity.StorageGbView;
+import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.*;
 import sit.int221.sc3_server.exception.crudException.CreateFailedException;
 import sit.int221.sc3_server.exception.crudException.DeleteFailedException;
@@ -25,6 +22,7 @@ import sit.int221.sc3_server.repository.brand.BrandRepository;
 import sit.int221.sc3_server.repository.saleItem.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
 import sit.int221.sc3_server.repository.saleItem.StorageGbViewRepository;
+import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.service.FileService;
 
 import java.util.*;
@@ -43,8 +41,10 @@ public class SaleItemServiceV2 {
     private FileService fileService;
     @Autowired
     private StorageGbViewRepository storageGbViewRepository;
+    @Autowired
+    private SellerRepository sellerRepository;
 
-    public Page<SaleItem> getAllProduct(List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper,String searchValue, Integer page, Integer size, String sortField, String sortDirection) {
+    public Page<SaleItem> getAllProduct(Integer sellerId, List<String> filterBrands, List<Integer> filterStorages, Integer filterPriceLower, Integer filterPriceUpper,String searchValue, Integer page, Integer size, String sortField, String sortDirection) {
         if(page == null){
             throw new PageNotFoundException("Required parameter 'page' is not present.");
         }
@@ -56,20 +56,20 @@ public class SaleItemServiceV2 {
         String keyword = (searchValue == null || searchValue.isBlank()) ? null : searchValue.toLowerCase();
 
         if(filterPriceLower != null && filterPriceUpper == null  ){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceLower,keyword,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(sellerId, filterBrands,filterStorages,filterPriceLower,keyword,pageable);
         }
         if(filterPriceUpper != null && filterPriceLower == null){
-            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(filterBrands,filterStorages,filterPriceUpper,keyword,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGbAndMinPrice(sellerId, filterBrands,filterStorages,filterPriceUpper,keyword,pageable);
         }
 
 
         if (filterStorages != null && filterStorages.contains(-1)) {
-            return saleitemRepository.findFilteredProductAndNullStorageGb(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
+            return saleitemRepository.findFilteredProductAndNullStorageGb(sellerId, filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
 
         }
 
 
-        return saleitemRepository.findFilteredProduct(filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
+        return saleitemRepository.findFilteredProduct(sellerId, filterBrands,filterStorages,filterPriceLower,filterPriceUpper,keyword,pageable);
     }
 
     public List<StorageGbView> getStorageView(){
@@ -245,7 +245,7 @@ public class SaleItemServiceV2 {
 
 
 
-    public SaleItem deleteSaleItem(int id) {
+    public SaleItem deleteSaleItem(Integer id) {
         SaleItem saleitem = saleitemRepository.findById(id)
                 .orElseThrow(() -> new ItemNotFoundException("Product ID not found"));
 
@@ -263,4 +263,30 @@ public class SaleItemServiceV2 {
         saleitemRepository.deleteById(id);
         return saleitem;
     }
+
+//    public Page<SaleItem> getAllBySellerId(Integer id,Integer page,Integer size){
+//        boolean exist = sellerRepository.existsById(id);
+//        if(!exist){
+//            throw new UnAuthenticateException("User not found");
+//        }
+//        Sort.Direction directionId = Sort.Direction.ASC;
+//        Pageable pageable = PageRequest.of(page,size,Sort.by(directionId,"id"));
+//        return saleitemRepository.findSaleItemBySellerId(id,pageable);
+//    }
+
+//    public SaleItem createSaleItemSeller(int sellerId,SaleItemCreateDTO saleItemCreateDTO,List<MultipartFile> files){
+//        int brandId = saleItemCreateDTO.getBrand().getId();
+//        Brand brand = brandRepository.findById(brandId).orElseThrow(
+//                ()-> new ItemNotFoundException("This brand does not exist"));
+//
+//        if(saleitemRepository.existsByModelIgnoreCase(saleItemCreateDTO.getModel())){
+//            throw new DuplicteItemException("This name already exist");
+//        }
+//
+//        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new UnAuthorizeException("user not found"));
+//        SaleItem saleItem = modelMapper.map(saleItemCreateDTO,SaleItem.class);
+//        saleItem.setBrand(brand);
+//        saleItem.setSeller(seller);
+//
+//    }
 }

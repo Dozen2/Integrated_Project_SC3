@@ -16,6 +16,7 @@ import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
 import sit.int221.sc3_server.DTO.user.UserDTO;
 import sit.int221.sc3_server.DTO.user.UserResponseDTO;
+import sit.int221.sc3_server.DTO.user.profile.UserProfileRequestRTO;
 import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.exception.UnAuthenticateException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
@@ -126,7 +127,7 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
         Integer userId = Integer.parseInt(claims.get("id").toString());
-         userServices.findById(userId);
+         userServices.checkIsActive(userId);
          ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
                  .httpOnly(true)
 //                 .secure(true)
@@ -138,7 +139,7 @@ public class UserController {
 
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/{id}")
     public ResponseEntity<?> getUserProfile(@PathVariable int id , Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
@@ -158,6 +159,22 @@ public class UserController {
         }
 
     }
+    @PutMapping("/user/profile/all")
+    public ResponseEntity<?> editUserProfile(@ModelAttribute UserProfileRequestRTO userProfileRequestRTO, Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthenticateException("Invalid token type");
+        }
+        boolean isSeller = authentication.getAuthorities()
+                .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
+        if(isSeller){
+            return ResponseEntity.ok().body(userServices.updateSeller(userProfileRequestRTO,authUserDetail.getId()));
+        }else{
+            return ResponseEntity.ok().body(userServices.updateBuyer(userProfileRequestRTO,authUserDetail.getId()));
+        }
+    }
+
+
 
 //    @PostMapping("/refresh")
 //    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {

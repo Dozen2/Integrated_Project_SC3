@@ -16,6 +16,7 @@ import sit.int221.sc3_server.DTO.user.UserDTO;
 import sit.int221.sc3_server.DTO.user.UserResponseDTO;
 import sit.int221.sc3_server.DTO.user.profile.BuyerProfileDTO;
 import sit.int221.sc3_server.DTO.user.profile.SellerProfileDTO;
+import sit.int221.sc3_server.DTO.user.profile.UserProfileRequestRTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.exception.UnAuthenticateException;
@@ -72,12 +73,16 @@ UserServices {
         throw new DuplicteItemException("This nationalID already exist");
     }
     }
-    public Buyer findById(int id){
+    public boolean checkIsActive(Integer id){
         Buyer buyer = buyerRepository.findById(id).orElseThrow(()->  new UnAuthorizeException("User not found"));
         if(!buyer.getIsActive()){
             throw new UnAuthenticateException("User is not active");
         }
-        return buyer;
+        return true;
+    }
+    public Buyer findBuyerBySellerId(Integer id){
+       Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+        return seller.getBuyer();
     }
 
     @Transactional
@@ -180,7 +185,7 @@ UserServices {
     public boolean verifyEmail(String tokenStr) {
         VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
 
-        System.out.println("Before check expried");
+        System.out.println("Before check expired");
         if (token.getExpiredDate().isBefore(Instant.now())) {
             return false;
         }
@@ -188,7 +193,7 @@ UserServices {
 
         Buyer user = token.getBuyer();
 
-        System.out.println("After check expried");
+        System.out.println("After check expired");
 
         user.setIsActive(true);
         user.setVerifyToken(null);
@@ -266,17 +271,42 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
 
     public BuyerProfileDTO getBuyerById(int id){
         Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        return this.mapBuyerDto(buyer);
+    }
+
+    public SellerProfileDTO getSeller(int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        return this.mapSellerDto(buyer);
+
+    }
+
+    public BuyerProfileDTO updateBuyer(UserProfileRequestRTO userProfileRequestRTO,int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+        buyer.setNickName(userProfileRequestRTO.getNickName());
+        buyer.setFullName(userProfileRequestRTO.getFullName());
+        Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
+        return this.mapBuyerDto(newBuyer);
+    }
+
+    public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO,int id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+        buyer.setNickName(userProfileRequestRTO.getNickName());
+        buyer.setFullName(userProfileRequestRTO.getFullName());
+        Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
+        return this.mapSellerDto(newBuyer);
+    }
+    public BuyerProfileDTO mapBuyerDto(Buyer buyer){
         BuyerProfileDTO dto = new BuyerProfileDTO();
         dto.setId(buyer.getId());
         dto.setFullName(buyer.getFullName());
         dto.setNickName(buyer.getNickName());
         dto.setEmail(buyer.getEmail());
         dto.setUserType(Role.BUYER.name());
+
         return dto;
     }
 
-    public SellerProfileDTO getSeller(int id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+    public SellerProfileDTO mapSellerDto(Buyer buyer){
         SellerProfileDTO dto = new SellerProfileDTO();
         dto.setId(buyer.getId());
         dto.setEmail(buyer.getEmail());
@@ -287,7 +317,5 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
         dto.setBankAccount(buyer.getSeller().getBankAccountNumber());
         dto.setNickName(buyer.getNickName());
         return dto;
-
     }
-
 }
