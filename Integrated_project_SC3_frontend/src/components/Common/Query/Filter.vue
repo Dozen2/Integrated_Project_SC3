@@ -178,7 +178,7 @@ const filteredOptions = computed(() => {
     <!-- <p class="text-gray-800 font-semibold whitespace-nowrap text-sm mb-[7px]">{{ label }}</p> -->
 
     <!-- Filter Dropdown -->
-    <div ref="dropdownRef" class="itbms-filter relative flex flex-col flex-1 max-w-md mb-[10px]">
+    <div ref="dropdownRef" class="itbms-filter relative flex flex-col flex-1 max-w-md mb-[5px]">
       <!-- Dropdown Toggle Button -->
       <div
         class="itbms-filter-button group relative px-4 py-3 border-2 border-gray-200 rounded-xl cursor-pointer bg-white min-w-48 text-left hover:border-blue-300 hover:shadow-md transition-all duration-300 ease-out"

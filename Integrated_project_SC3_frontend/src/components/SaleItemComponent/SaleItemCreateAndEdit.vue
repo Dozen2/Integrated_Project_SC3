@@ -734,7 +734,7 @@ else {
 </script>
 
 <template>
-  <div class="bg-white h-screen w-auto">
+  <div class="bg-white min-h-screen w-auto pt-1">
     <Title :label='prop.mode === "Edit" ? "Edit Phone Details" : "Add New Phone"'/>
 
     <div class=" m-5 ml-[120px] flex flex-row justify-center ">
