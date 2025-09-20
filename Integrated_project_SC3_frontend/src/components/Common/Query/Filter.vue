@@ -173,9 +173,9 @@ const filteredOptions = computed(() => {
 </script>
 
 <template>
-  <div class="items-start mx-[20px]">
+  <div class="items-start">
     <!-- Label -->
-    <p class="text-gray-800 font-semibold whitespace-nowrap text-sm mb-[7px]">{{ label }}</p>
+    <!-- <p class="text-gray-800 font-semibold whitespace-nowrap text-sm mb-[7px]">{{ label }}</p> -->
 
     <!-- Filter Dropdown -->
     <div ref="dropdownRef" class="itbms-filter relative flex flex-col flex-1 max-w-md mb-[10px]">
@@ -193,8 +193,8 @@ const filteredOptions = computed(() => {
           }">
             {{
               selectedValueList.length > 0
-                ? `${selectedValueList.length} Selected`
-                : placeholder || 'SelectFilter...'
+                ? `${label} Selected`
+                : placeholder || 'SelectFilter'
             }}
           </span>
 
@@ -222,7 +222,7 @@ const filteredOptions = computed(() => {
         
         <span v-for="(value, i) in selectedValueList" :key="i"
           class="group inline-flex items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full px-3 py-1.5 text-sm font-medium shadow-sm hover:from-blue-600 hover:to-blue-700 hover:shadow-md transition-all duration-200">
-          <span class="mr-2">{{ getDisplayText(value) }}</span>
+          <span class="mr-2">{{ getDisplayText(value)}}</span>
           <button @click="removeValue(i)"
             class="flex items-center justify-center w-5 h-5 bg-white/20 rounded-full hover:bg-white/30 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white/50"
             aria-label="ลบตัวเลือก" title="ลบตัวเลือกนี้">
@@ -269,7 +269,7 @@ const filteredOptions = computed(() => {
               <span
                 class="ml-3 text-gray-700 select-none font-medium group-hover:text-blue-700 transition-colors duration-150"
                 :class="{ 'text-blue-700': selectedValueList.includes(opt[valueField]) }">
-                {{ opt[displayField] }}
+                {{ opt[displayField]}}
               </span>
             </div>
 

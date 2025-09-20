@@ -36,7 +36,7 @@ onMounted(async() => {
 
 </script>
 <template>
-<div class="bg-gradient-to-br from-blue-100 via-white to-blue-200 pt-[50px] min-h-screen pb-10">
+<div class="bg-gradient-to-br  from-blue-100 via-white to-blue-200 pt-[50px] min-h-screen pb-10">
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-4xl">
       <div class="p-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6 flex justify-center">

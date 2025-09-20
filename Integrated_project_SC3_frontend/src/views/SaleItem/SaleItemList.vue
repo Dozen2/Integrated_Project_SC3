@@ -455,7 +455,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 p-10  bg-gradient-to-br from-blue-100 via-white to-blue-200">
+  <div class="flex flex-col gap-6 p-10  bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen">
     <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
@@ -487,15 +487,12 @@ onBeforeUnmount(() => {
     <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
     <div class="flex gap-6">
       <!-- Filters -->
-      <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
-        <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
-          <span class="flex"><Funnel /> &nbsp; Filter by:</span>
-        </div>
+      <div class="w-1/6 flex flex-col gap-4 mt-5">
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
           :options="brand"
           label="Brands"
-          placeholder="Select brands"
+          placeholder="Select ฺBrands"
           :sessionKey="SESSION_KEYS.BRAND"
           valueField="name"
           displayField="name"
@@ -520,7 +517,7 @@ onBeforeUnmount(() => {
           :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
           :options="priceOption"
           label="Price"
-          placeholder="Select Price Range"
+          placeholder="Select PriceRange"
           :sessionKey="SESSION_KEYS.PRICE"
           valueField="value"
           displayField="name"
@@ -570,7 +567,7 @@ onBeforeUnmount(() => {
         </Filter>
 
         <!-- Clear Button -->
-        <div class="flex justify-end mr-[25px]">
+        <div class="flex ">
           <ClearButton
             :sessionKeys="[
               SESSION_KEYS.BRAND,

@@ -127,6 +127,11 @@ const getAllSaleItemV2 = async (
   }
 };
 
+
+//SaleItem Seller
+//********************************************************************************************/
+
+
 async function getSaleItemById(id) {
   try {
     const SaleItem = await fetch(`${urlV1}/${id}`);
@@ -170,20 +175,17 @@ async function addSaleItem(newSaleItem) {
 //addSaleItemV2 that add to be form data
 async function addSaleItemV2(newSaleItem) {
   try {
-    console.log("Testttt01"); // ตรวจสอบสถานะการตอบกลับ
     const response = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2`, {
       method: "POST",
       body: newSaleItem, 
     });
 
-    console.log("Testttt02"); // ตรวจสอบสถานะการตอบกลับ
     // ตรวจสอบสถานะการตอบกลับ
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     
-    console.log("Testttt03"); // ตรวจสอบสถานะการตอบกลับ
     return await response.json(); // หรือ return response ตามที่ต้องการ
   } catch (error) {
     console.error("Error adding sale item:", error);
@@ -207,6 +209,7 @@ async function updateSaleItemV2(id, updatedSaleItem) {
     throw new Error("Cannot update your SaleItem");
   }
 }
+
 
 async function updateSaleItem(id, updatedSaleItem) {
   try {
