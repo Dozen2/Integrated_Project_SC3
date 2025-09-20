@@ -1,6 +1,5 @@
 package sit.int221.sc3_server.controller.user;
 
-import com.nimbusds.jwt.SignedJWT;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,7 +36,6 @@ public class UserController {
     private FileService fileService;
     @Autowired
     private JwtUtils jwtUtils;
-
     @Autowired
     private JwtUserDetailService jwtUserDetailService;
     @Value("${app.cookie.path}")
@@ -47,117 +45,112 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
             , @RequestPart(value = "nationalIdPhotoBack", required = false) MultipartFile back) throws MessagingException, UnsupportedEncodingException {
-
-
-        Buyer buyer = userServices.createUser(userDTO,front,back);
+        Buyer buyer = userServices.createUser(userDTO, front, back);
         UserResponseDTO dto = userServices.mapToDTO(buyer);
-    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
+
     @PostMapping("/verify-email")
-    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
+    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token) throws MessagingException, UnsupportedEncodingException {
         boolean verify = userServices.verifyEmail(token);
-        if(verify){
+        if (verify) {
             return ResponseEntity.ok("Email successfully verify");
-        }else{
+        } else {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("ExpiredToken");
         }
     }
 
+
     @PostMapping("/refresh-email-token")
-    public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
+    public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token) throws MessagingException, UnsupportedEncodingException {
         userServices.emailExpired(token);
         return ResponseEntity.ok("Email successfully refresh");
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
-
-        if (jwtAuthUser.getUsername().isBlank()){
+    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response) {
+        if (jwtAuthUser.getUsername().isBlank()) {
             throw new UnAuthorizeException("Email or Password is incorrect");
         }
-                try {
-                    boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getUsername());
-                    if(!check){
-                        throw new UnAuthorizeException("Email or Password is incorrect");
-                    }
-                    Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
-                    ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
-                            .httpOnly(true)
-//                            .secure(true)
-                            .path(cookiePath)
-                            .maxAge(Duration.ofDays(1))
-                            .sameSite("Strict")
-                            .build();
-                    response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
+        try {
+            boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getUsername());
+            if (!check) {
+                throw new UnAuthorizeException("Email or Password is incorrect");
+            }
+            Map<String, Object> tokens = userServices.authenticateUser(jwtAuthUser);
+            ResponseCookie cookie = ResponseCookie.from("refresh_token", (String) tokens.get("refresh_token"))
+                    .httpOnly(true)
+//                  .secure(true)
+                    .path(cookiePath)
+                    .maxAge(Duration.ofDays(1))
+                    .sameSite("Strict")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-                    return ResponseEntity.ok(Map.of(
-                            "access_token",tokens.get("access_token")
-                    ));
-                }catch (BadCredentialsException e){
-                    return ResponseEntity.status(400).build();
-                }
-
-
+            return ResponseEntity.ok(Map.of(
+                    "access_token", tokens.get("access_token")
+            ));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(400).build();
+        }
     }
 
+
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
+    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token", required = false) String token) {
         if (token == null || token.isEmpty()) {
-            // ถ้าไม่มี header → return 400 Bad Request
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Invalid Token");
         }
-
         return ResponseEntity.ok(userServices.refreshToken(token));
     }
 
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String authHeader = request.getHeader("Authorization");
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().build();
         }
         String token = authHeader.substring(7);
-        Map<String,Object> claims;
-        try{
-            claims =jwtUtils.getJWTClaimSet(token);
-        }catch (Exception e){
+        Map<String, Object> claims;
+        try {
+            claims = jwtUtils.getJWTClaimSet(token);
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
         Integer userId = Integer.parseInt(claims.get("id").toString());
-         userServices.findById(userId);
-         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
-                 .httpOnly(true)
+        userServices.findById(userId);
+        ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
 //                 .secure(true)
-                 .path("/")
-                 .maxAge(0)  // expire ทันที
-                 .build();
-         response.addHeader("Set-Cookie",deleteCookie.toString());
-         return ResponseEntity.noContent().build();
-
+                .path("/")
+                .maxAge(0)  // expire ทันที
+                .build();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
+        return ResponseEntity.noContent().build();
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserProfile(@PathVariable int id , Authentication authentication){
+    public ResponseEntity<?> getUserProfile(@PathVariable int id, Authentication authentication) {
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
-        if(!authUserDetail.getId().equals(id)){
+        if (!authUserDetail.getId().equals(id)) {
             throw new UnAuthenticateException("request user id not matched with id in access token");
         }
-
-        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+        if (!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())) {
             throw new UnAuthenticateException("Invalid token type");
         }
         boolean isSeller = authentication.getAuthorities()
-                .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
-        if(!isSeller){
+                .stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_SELLER"));
+        if (!isSeller) {
             return ResponseEntity.ok(userServices.getBuyerById(authUserDetail.getId()));
-        }else {
-           return ResponseEntity.ok(userServices.getSeller(authUserDetail.getId()));
+        } else {
+            return ResponseEntity.ok(userServices.getSeller(authUserDetail.getId()));
         }
-
     }
 
 //    @PostMapping("/refresh")

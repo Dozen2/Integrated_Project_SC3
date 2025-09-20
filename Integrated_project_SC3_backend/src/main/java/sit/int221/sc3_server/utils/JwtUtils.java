@@ -23,39 +23,35 @@ import java.util.Map;
 
 @Component
 public class JwtUtils {
-
     @Value("#{30*1000*60}")
     private long MAX_TOKEN_INTERVAL;
-
     @Value("${app.security.jwt.key-id}")
     private String KEY_ID;
     @Getter
     private RSAKey rsaPrivateJWK;
-
     private RSAKey rsaPublicJWK;
 
-
-    public JwtUtils(){
-        try{
+    public JwtUtils() {
+        try {
             rsaPrivateJWK = new RSAKeyGenerator(2048).keyID(KEY_ID).generate();
             rsaPublicJWK = rsaPrivateJWK.toPublicJWK();
             System.out.println(rsaPublicJWK.toJSONString());
             System.out.println(rsaPrivateJWK.toJSONString());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(userDetails,MAX_TOKEN_INTERVAL, TokenType.ACCESS_TOKEN);
+
+    public String generateToken(UserDetails userDetails) {
+        return generateToken(userDetails, MAX_TOKEN_INTERVAL, TokenType.ACCESS_TOKEN);
     }
 
-    public String generateToken(UserDetails user,Long ageInMinute,TokenType tokenType){
+
+    public String generateToken(UserDetails user, Long ageInMinute, TokenType tokenType) {
         try {
             JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
-
             AuthUserDetail authUser = (AuthUserDetail) user;
-
             Date now = new Date();
             Date expiryDate = new Date(now.getTime() + ageInMinute * 60 * 1000);
 
@@ -67,7 +63,7 @@ public class JwtUtils {
                     .claim("nickname", authUser.getNickName())   // หรือ getNickName() ถ้ามี
                     .claim("id", authUser.getId())
                     .claim("email", authUser.getUsername())
-                    .claim("authorities",user.getAuthorities())
+                    .claim("authorities", user.getAuthorities())
                     .claim("typ", tokenType.toString())
                     .build();
 
@@ -77,10 +73,8 @@ public class JwtUtils {
                             .build(),
                     claimsSet
             );
-
             signedJWT.sign(signer);
             return signedJWT.serialize();
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -103,51 +97,97 @@ public class JwtUtils {
 //        }
     }
 
-    public boolean verifyToken(String token){
-        try{
+    public boolean verifyToken(String token) {
+        try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
             boolean pass = signedJWT.verify(verifier);
             System.out.println("Token verified!!!" + pass);
-            if(!pass){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Verified Error, Invalid JWT");
+            if (!pass) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verified Error, Invalid JWT");
             }
             return true;
-        }catch (JOSEException | ParseException p){
+        } catch (JOSEException | ParseException p) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verified Error, Invalid JWT", p);
         }
     }
 
 
-    public Map<String, Object> getJWTClaimSet(String token){
+    public Map<String, Object> getJWTClaimSet(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             return signedJWT.getJWTClaimsSet().getClaims();
-        }catch (ParseException e){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid JWT (Can't parsed)",e);
+        } catch (ParseException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT (Can't parsed)", e);
         }
     }
 
-    public boolean isExpired(Map<String,Object> jwtClaims){
-        Date expDate = (Date)jwtClaims.get("exp");
+
+    public boolean isExpired(Map<String, Object> jwtClaims) {
+        Date expDate = (Date) jwtClaims.get("exp");
         return expDate.before(new Date());
     }
 
-    public boolean isValidClaims(Map<String,Object> jwtClaims){
+
+    public boolean isValidClaims(Map<String, Object> jwtClaims) {
         System.out.println(jwtClaims);
         return jwtClaims.containsKey("iat")
                 && "https://intproj24.sit.kmutt.ac.th/sc3/".equals(jwtClaims.get("iss"))
                 && jwtClaims.containsKey("id")
-                && Long.parseLong(jwtClaims.get("id").toString())>0
+                && Long.parseLong(jwtClaims.get("id").toString()) > 0
                 && jwtClaims.containsKey("email");
     }
-    public String extractUsername(String token){
+
+
+    public String extractUsername(String token) {
         verifyToken(token);
-        Map<String,Object> claims = getJWTClaimSet(token);
-        if(claims.containsKey("email")){
+        Map<String, Object> claims = getJWTClaimSet(token);
+        if (claims.containsKey("email")) {
             return claims.get("email").toString();
-        }else {
+        } else {
             throw new UnAuthorizeException("This user does not exist");
         }
+    }
+
+    //======================= Mock VerifyEmail =============================
+    public String generateEmailVerifyToken(Long userId, String email) throws JOSEException {
+        JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
+
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(userId.toString())
+                .claim("purpose", "EMAIL_VERIFY")
+                .claim("email", email)
+                .expirationTime(new Date(System.currentTimeMillis() + 15 * 60 * 1000)) // หมดอายุ 15 นาที
+                .issueTime(new Date())
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256)
+                        .keyID(rsaPrivateJWK.getKeyID()) // keyID เพื่อ track ว่าใช้ key ตัวไหน
+                        .build(),
+                claims
+        );
+        signedJWT.sign(signer);
+        return signedJWT.serialize(); // return JWT string
+    }
+
+
+    public String verifyEmailToken(String token) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK.toRSAPublicKey());
+
+        if (!signedJWT.verify(verifier)) {
+            throw new RuntimeException("Invalid signature");
+        }
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+        // ตรวจสอบวันหมดอายุ
+        if (claims.getExpirationTime().before(new Date())) {
+            throw new RuntimeException("Token expired");
+        }
+        // ตรวจสอบว่าเป็น token สำหรับ verify email
+        if (!"EMAIL_VERIFY".equals(claims.getStringClaim("purpose"))) {
+            throw new RuntimeException("Invalid token purpose");
+        }
+        return claims.getStringClaim("email");
     }
 }

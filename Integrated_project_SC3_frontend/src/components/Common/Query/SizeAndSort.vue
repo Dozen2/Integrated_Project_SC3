@@ -8,6 +8,7 @@ import {
   watch,
 } from "vue";
 
+
 const props = defineProps({
   initialSize: Number,
   initialSortField: String,

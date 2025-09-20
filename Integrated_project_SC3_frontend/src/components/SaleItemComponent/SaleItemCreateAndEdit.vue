@@ -176,7 +176,6 @@ watch(
   },
   { deep: true }
 );
-
 const checkDecimal = (num) => {
   return !(Math.floor(num * 100) === num * 100);
 };
@@ -315,7 +314,7 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const handleFileChange = (event) => {
+const handleFileChange = async(event) => {
   const selectedFiles = Array.from(event.target.files);
   const MAX_IMAGES = 4;
   const MAX_FILENAME_LENGTH = 50;
@@ -372,46 +371,41 @@ filesToProcess = validation.validFiles;
   console.log("filesToProcess: ",filesToProcess)
   
   const filesProcessed = [];
-  filesToProcess.forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageUrl = e.target.result;
-      const nextOrder = fileImageOrganize.value.length;
-      
-      fileImageOrganize.value.push({
-        fileName: null, // ไฟล์ใหม่
-        orgFileName: file.name,
-        imageUrl: imageUrl,
-        imageViewOrder: nextOrder +1
-      });
+  for (const [index, file] of filesToProcess.entries()) {
+  const reader = new FileReader();
 
-      saleItem.saleItemImage.push({
-      imageFile: file,
-      imageUrl: imageUrl,
-      orgFileName: file.name,
-      imageViewOrder: nextOrder + 1
-    });
-    };
+  const imageUrl = await new Promise((resolve) => {
+    reader.onload = (e) => resolve(e.target.result);
     reader.readAsDataURL(file);
-    filesProcessed.push(file);
-    console.log("index: " +Number( index + saleItem.saleItemImage.length + 1));
   });
+
+  const nextOrder = fileImageOrganize.value.length;
+
+  console.log("filesToProcess: ", filesToProcess[index].name);
+  console.log("filesToProcess: ", filesToProcess);
+
+  fileImageOrganize.value.push({
+    fileName: null, // ไฟล์ใหม่
+    orgFileName: file.name,
+    imageUrl: imageUrl,
+    imageViewOrder: nextOrder + 1,
+  });
+
+  saleItem.saleItemImage.push({
+    imageFile: file,
+    imageUrl: imageUrl,
+    orgFileName: file.name,
+    imageViewOrder: nextOrder + 1,
+  });
+
+  filesProcessed.push(file);
+}
+
   
+  console.log("fileImageOrganize.value:", fileImageOrganize.value);
+
   // เพิ่มไฟล์ลงใน files array
   files.value.push(...filesProcessed);
-
-  // saleItem.saleItemImage.push( ...filesProcessed.map((file, index) => ({
-  //   imageFile: file,
-  //   orgFileName: file.name,
-  //   imageViewOrder: fileImageOrganize.value.length + index +1
-  // })));
-  
-  // console.log("Updated files array:", files.value);
-  // console.log("Updated filesProcessed array:", filesProcessed);
-  // console.log("Updated filesName array:", files.value.map(f => f.name));
-  // console.log("Updated fileImageOrganize:", fileImageOrganize.value);
-  // console.log("Updated saleItem eiei:", saleItem);
-  
   event.target.value = "";
 };
 
@@ -463,7 +457,6 @@ const removeFile = (index) => {
     let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
       (item) => item.fileName === fileImageOrganize.value[index].fileName
     );
-    console.log("Hello123456");
     console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
     if (findIndexSaleItemImage !== -1) {
       saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
@@ -473,7 +466,6 @@ const removeFile = (index) => {
     let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
       (item) => item.orgFileName === fileImageOrganize.value[index].orgFileName
     );
-    console.log("HelloNewFile");
     console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
     
     if (findIndexSaleItemImage !== -1) {
@@ -501,13 +493,6 @@ const removeFile = (index) => {
   console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
   console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
   console.log("After removal, files array:", files.value);
-
-  // ปรับ currentIndex ถ้าจำเป็น
-  // if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
-  //   currentIndex.value = fileImageOrganize.value.length - 1;
-  // } else if (fileImageOrganize.value.length === 0) {
-  //   currentIndex.value = 0;
-  // }
 };
 
 const deletedImage = ref([]);
@@ -588,7 +573,6 @@ const nextImage = () => {
     currentIndex.value = 0;
   }
 };
-
 
 //===================================File image called=============================
 const fileImageFirstResponse = [];
@@ -714,7 +698,6 @@ if (Array.isArray(saleItem.saleItemImage)) {
       }
     } 
   });
-// }
 
   //loop deletedImage and append to formData
   deletedImage.value.forEach((fileName) => {
@@ -742,7 +725,7 @@ else {
   router.go(-1);
 }
   } catch (err) {
-    console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
+    console.error("Something wrong: ", err.message);
     alert(err.message);
     router.push(`/sale-items`);
   } finally {

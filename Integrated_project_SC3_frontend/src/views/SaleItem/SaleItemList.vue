@@ -455,7 +455,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 m-10">
+  <div class="flex flex-col gap-6 p-10  bg-gradient-to-br from-blue-100 via-white to-blue-200">
     <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
@@ -467,25 +467,6 @@ onBeforeUnmount(() => {
       >
         {{ alertStore.message }}
       </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex items-center justify-between gap-4">
-      <!-- New Product -->
-      <RouterLink
-        :to="{ name: 'ProuctCreate' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
-      >
-        <span class="itbms-sale-item-add tracking-wide">New Product</span>
-      </RouterLink>
-
-      <!-- Manage Items -->
-      <RouterLink
-        :to="{ name: 'ProductManage' }"
-        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
-      >
-        <span class="itbms-manage-brand tracking-wide">Manage Sale Items</span>
-      </RouterLink>
     </div>
 
     <!-- 🔹 Search + SizeAndSort แนวนอน -->

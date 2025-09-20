@@ -9,11 +9,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sit.int221.sc3_server.DTO.*;
+import sit.int221.sc3_server.DTO.PageDTO;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
+import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
-import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.service.FileService;
@@ -24,7 +24,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/itb-mshop/v2")
-//@CrossOrigin(origins = "${app.cors.allowedOrigins}")
 
 public class SaleItemControllerV2 {
     @Autowired
@@ -53,6 +52,7 @@ public class SaleItemControllerV2 {
         return ResponseEntity.ok(pageDTO);
     }
 
+
     @PostMapping("")
     public ResponseEntity<SaleItemDetailFileDto> createSaleItem(
             @ModelAttribute SaleItemCreateDTO saleItemCreateDTO ,
@@ -64,10 +64,12 @@ public class SaleItemControllerV2 {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
     @GetMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable int id) {
         return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
     }
+
 
     @GetMapping("/sale-items/file/{filename:.+}")
     @ResponseBody
@@ -97,11 +99,10 @@ public class SaleItemControllerV2 {
         return ResponseEntity.ok(response);
     }
 
+
     @DeleteMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemWithImageInfo> deleteSaleItem(@PathVariable int id){
              saleItemServiceV2.deleteSaleItem(id);
             return ResponseEntity.noContent().build() ;
         }
-
-
 }

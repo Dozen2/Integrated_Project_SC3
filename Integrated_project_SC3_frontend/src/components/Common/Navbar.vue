@@ -11,15 +11,14 @@ const logOut = async() => {
   router.push({ name: 'Home' });
   
 };
-
 </script>
 
 <template>
   <div
-  class="sticky top-0 z-50 bg-blue-800 h-20 flex items-center justify-between px-8 border-b border-slate-600 text-slate-300 font-sans"
+    class="sticky top-0 z-50 bg-blue-800 h-20 flex items-center justify-between px-8 border-b border-slate-600 text-slate-300 font-sans"
   >
     <RouterLink to="/" class="flex items-center gap-3 group">
-     <Smartphone />
+      <Smartphone />
       <h1
         class="font-bold text-2xl tracking-wide text-white group-hover:text-sky-400 transition-colors duration-300"
       >
@@ -27,7 +26,7 @@ const logOut = async() => {
       </h1>
     </RouterLink>
 
-    <div class="flex-grow max-w-lg mx-8">
+    <!-- <div class="flex-grow max-w-lg mx-8">
       <div class="relative">
         <input
           type="text"
@@ -35,19 +34,30 @@ const logOut = async() => {
           class="w-full bg-blue-300 border border-slate-700 rounded-full py-2 pl-5 pr-4 text-black focus:outline-none focus:border-sky-500 transition-colors"
         />
       </div>
-    </div>
+    </div> -->
 
-<!-- =======================Option=========================     -->
+    <!-- =======================Option=========================     -->
 
     <div class="flex items-center gap-8">
-
-      <div v-if="auth.role" class="flex items-center gap-6 ">
+      <div v-if="auth.role" class="flex items-center gap-6">
+        <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between gap-4">
+          <RouterLink
+            :to="{ name: 'ProductManage' }"
+            class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
+          >
+            <span class="itbms-manage-brand tracking-wide"
+              >Manage Sale Items</span
+            >
+          </RouterLink>
+        </div>
         <div class="relative inline-block">
           <!-- ปุ่มหลัก -->
-          <RouterLink :to="{ name: 'UserProfile' }" >
-            <button class="p-2 rounded-full cursor-pointer  bg-blue-100 hover:bg-blue-200 transition-colors">
+          <RouterLink :to="{ name: 'UserProfile' }">
+            <button
+              class="p-2 rounded-full cursor-pointer bg-blue-100 hover:bg-blue-200 transition-colors"
+            >
               <UserRound color="#000000" />
-        </button>
+            </button>
           </RouterLink>
         </div>
 
@@ -86,7 +96,6 @@ const logOut = async() => {
           </span></RouterLink
         >
       </div>
-
     </div>
   </div>
 </template>
