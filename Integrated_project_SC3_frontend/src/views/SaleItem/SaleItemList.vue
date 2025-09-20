@@ -475,7 +475,7 @@ onBeforeUnmount(() => {
         <h1 class="text-6xl text-blue-500 flex"><Smartphone size=60 color="#478eff" />ITBMS SHOP SC3</h1>
       </div>
 
-      <div class="flex flex-col items-end gap-2">
+      <div class="flex flex-col items-end gap-5">
         <div>
           <Search
             :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
