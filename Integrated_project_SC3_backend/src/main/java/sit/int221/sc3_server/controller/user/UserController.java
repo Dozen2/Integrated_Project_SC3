@@ -109,7 +109,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Invalid Token");
         }
-
         return ResponseEntity.ok(userServices.refreshToken(token));
     }
 
