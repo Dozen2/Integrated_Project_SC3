@@ -1,10 +1,6 @@
 <script setup>
 import {
-  ArrowDownAZ,
-  ArrowDownNarrowWide,
   ArrowDownWideNarrow,
-  ArrowUpAZ,
-  ArrowUpNarrowWide,
   ArrowUpWideNarrow,
   ListFilter,
 } from "lucide-vue-next";

@@ -1,27 +1,75 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onBeforeMount, onMounted, reactive, ref, watch } from "vue"; // เพิ่ม watch
 import { unitPrice, nullCatching } from "@/libs/utils.js"
 import { useAlertStore } from "@/stores/alertStore.js"
 import { deleteUserById } from "@/libs/api.js";
-import { getAllSaleItemV1 } from "@/libs/callAPI/apiSaleItem.js";
+import { getAllSaleItemSeller} from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
+import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
+import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
+import { Pencil, Trash2 } from "lucide-vue-next";
 
 const alertStore = useAlertStore();
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 
-// Data from parent component
-const product = ref([]);
+const saleItem = ref([]);
 const brand = ref([]);
 
-// Modal and delete states
 const showDeleteModal = ref(false);
 const pendingDeleteId = ref(null);
 
-// Fetch data function
+const pagination = ref({
+  page: 0,
+  size: 10,
+  sort: "asc",
+  totalPages: 0,
+  totalElements: 0,
+});
+
+
+onBeforeMount(async () => {
+  await fetchselect();
+  if (alertStore.message) {
+    setTimeout(() => {
+      alertStore.clearMessage();
+    }, 3000);
+  }
+});
+
+watch(() => pagination.value.page, (newPage) => {
+  sessionStorage.setItem("seller_pagination", newPage.toString());
+});
+
 const fetchselect = async () => {
   try {
-    const productData = await getAllSaleItemV1();
-    product.value = productData;
+    const sellerId = 2; 
+
+    // ดึงค่าจาก sessionStorage แทน localStorage
+    const page = parseInt(sessionStorage.getItem("seller_pagination") ?? "0", 10);
+    const size = sessionStorage.getItem("seller_size") 
+      ? parseInt(sessionStorage.getItem("seller_size"), 10) 
+      : 10;
+
+    console.log("Fetching page:", page);
+    pagination.value.page = page;
+    pagination.value.size = size;
+
+    // เรียก API
+    const saleItemData = await getAllSaleItemSeller(sellerId, size, page);
+    saleItem.value = saleItemData;
+    console.log("Fetched sale items:", saleItemData);
+
+    // อัปเดต pagination state
+    pagination.value = {
+      page: saleItemData.page,
+      size: saleItemData.size,
+      totalPages: saleItemData.totalPages,
+      totalElements: saleItemData.totalElements,
+    };
+
+    // เก็บค่าลง sessionStorage
+    sessionStorage.setItem("seller_pagination", saleItemData.page);
+    sessionStorage.setItem("seller_size", saleItemData.size);
 
     const brandData = await getAllBrand();
     brand.value = brandData;
@@ -30,7 +78,14 @@ const fetchselect = async () => {
   }
 };
 
-// Delete functions
+const handlePageChange = (newPage) => {
+  pagination.value.page = newPage;
+  fetchselect();
+};
+
+
+//============================================================================
+
 const confirmDeleteProduct = async () => {
   try {
     await deleteUserById(`${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`, pendingDeleteId.value);
@@ -53,18 +108,6 @@ const deleteProduct = (id) => {
   showDeleteModal.value = true;
 };
 
-onMounted(async () => {
-  await fetchselect();
-  
-  console.log('Combined component mounted');
-  console.log(product.value);
-
-  if (alertStore.message) {
-    setTimeout(() => {
-      alertStore.clearMessage();
-    }, 3000);
-  }
-});
 </script>
 
 <template>
@@ -79,15 +122,18 @@ onMounted(async () => {
       /></span>
     </RouterLink> -->
     <h1 class="text-4xl font-bold text-blue-700 flex items-center">SaleItem Management</h1>
-    <RouterLink
+    <div class="flex items-center gap-4"> 
+      <RouterLink
       :to="{ name: 'ProuctCreate' }"
       class="inline-flex items-center gap-2 border-blue-400 border bg-gray-100 text-blue-700 hover:bg-gray-200 text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
     >
       <span class="itbms-sale-item-add tracking-wide flex"
         >Add New SaleItem</span
-      >
+        >
     </RouterLink>
+    </div>
   </div>
+
 
     <!-- Alert Message -->
     <div v-if="alertStore.message" :class="`itbms-message px-4 py-2 rounded mb-4 ${alertStore.type === 'error'
@@ -97,7 +143,7 @@ onMounted(async () => {
     </div>
 
     <!-- Empty State -->
-    <div v-if="!product || product.length === 0" class="itbms-no text-center text-gray-500 text-xl">
+    <div v-if="!saleItem.content || saleItem.content.length === 0" class="itbms-no text-center text-gray-500 text-xl">
       no sale item
     </div>
 
@@ -119,7 +165,7 @@ onMounted(async () => {
     </div>
 
     <!-- Product Table -->
-    <div class="overflow-x-auto shadow">
+    <div class="overflow-x-auto shadow mb-7">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-blue-700 text-white">
           <tr>
@@ -134,37 +180,37 @@ onMounted(async () => {
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="(product, index) in product" :key="product.id" class="itbms-row hover:bg-blue-50"
+          <tr v-for="(saleItem, index) in saleItem.content" :key="saleItem.id" class="itbms-row hover:bg-blue-50"
             :class="{ 'bg-blue-50': index % 2 === 0 }">
-            <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900 itbms-id">{{ product.id }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-brand">{{ product.brandName }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-model">{{ product.model }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-ramGb">{{ nullCatching(product.ramGb)
+            <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900 itbms-id">{{ saleItem.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-brand">{{ saleItem.brandName }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-model">{{ saleItem.model }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-ramGb">{{ nullCatching(saleItem.ramGb)
               }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-storageGb">{{
-              nullCatching(product.storageGb) }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-color">{{ nullCatching(product.color)
+              nullCatching(saleItem.storageGb) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-color">{{ nullCatching(saleItem.color)
               }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-price">{{ unitPrice(product.price) }}
+            <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500 itbms-price">{{ unitPrice(saleItem.price) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-base text-gray-500">
               <div class="flex space-x-2">
-                <RouterLink :to="{ name: 'Edit', params: { id: product.id } }">
+                <RouterLink :to="{ name: 'Edit', params: { id: saleItem.id } }">
                   <button
                     class="itbms-edit-button bg-blue-700 hover:bg-blue-800 text-white w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer">
-                    🖋️
+                    <Pencil size=20 strokeWidth=1.5 />
                   </button>
                 </RouterLink>
-                <button @click="deleteProduct(product.id)"
+                <button @click="deleteProduct(saleItem.id)"
                   class="itbms-delete-button bg-white hover:bg-red-500 border border-gray-300 text-gray-700 w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer">
-                  🗑️
+                  <Trash2 size=20 strokeWidth=1.5 />
                 </button>
               </div>
             </td>
           </tr>
 
           <!-- Empty state -->
-          <tr v-if="!product || product.length === 0">
+          <tr v-if="!saleItem.content || saleItem.content.length === 0">
             <td colspan="8" class="px-6 py-4 text-center text-gray-500 itbms-no">
               No sale items available
             </td>
@@ -172,5 +218,25 @@ onMounted(async () => {
         </tbody>
       </table>
     </div>
+
+    <div class="flex gap-4 justify-center">
+
+      <PaginationSeller
+      v-model="pagination.page"
+      :total-page="pagination.totalPages"
+      storage-key="seller_pagination"
+      @update:modelValue="fetchselect"
+    />
+    <SizeAndSortSeller
+      v-model:modelSize="pagination.size"
+      v-model:modelSort="pagination.sort"
+      v-model:modelPage="pagination.page"
+      storage-key-size="seller_size"
+      storage-key-sort="seller_sort"
+      reset-storage="seller_pagination"
+      @update:modelPage="handlePageChange"
+      />
+    </div>
+
   </div>
 </template>
