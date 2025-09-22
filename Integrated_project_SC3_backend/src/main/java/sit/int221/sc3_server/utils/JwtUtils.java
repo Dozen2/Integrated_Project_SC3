@@ -109,7 +109,7 @@ public class JwtUtils {
             boolean pass = signedJWT.verify(verifier);
             System.out.println("Token verified!!!" + pass);
             if(!pass){
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Verified Error, Invalid JWT");
+                throw new UnAuthorizeException("Verified Error, Invalid JWT");
             }
             return true;
         }catch (JOSEException | ParseException p){
