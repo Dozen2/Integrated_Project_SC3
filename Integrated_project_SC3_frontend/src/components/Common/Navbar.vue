@@ -43,6 +43,11 @@ const logOut = async () => {
 
         <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between gap-4">
           <DropDownManagement />
+                   <div>
+            <button @click="refresh">
+              refresh token
+            </button>
+          </div>
           <!-- <RouterLink
             :to="{ name: 'ProductManage' }"
             class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
