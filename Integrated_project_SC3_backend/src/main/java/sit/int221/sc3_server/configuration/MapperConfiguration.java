@@ -4,6 +4,7 @@ import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemImageDTO;
 import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SaleItemDetailSeller;
@@ -18,6 +19,7 @@ public class MapperConfiguration {
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
+
         mapper.typeMap(SaleItemImage.class, SaleItemImageDTO.class);
 
 

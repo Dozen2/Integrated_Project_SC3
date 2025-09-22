@@ -69,6 +69,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     ((AuthUserDetail) userDetails).getNickName(),
                     ((AuthUserDetail) userDetails).getEmail(),
                     (String) claims.get("typ"),
+                    ((AuthUserDetail) userDetails).getSellerId(),
                     userDetails.getAuthorities()
             );
             UsernamePasswordAuthenticationToken uPaT =
