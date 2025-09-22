@@ -1,6 +1,7 @@
 // stores/auth.js
 import { defineStore } from "pinia";
 import { loginUser, refreshToken as apiRefreshToken } from "@/libs/callAPI/apiAuth";
+import { jwtDecode } from "jwt-decode";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -59,6 +60,12 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
       // optional: clear refresh token cookie
+    },
+
+    getAuthData(){
+      const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
+  const decoded = jwtDecode(accessToken);
+  return decoded;
     }
   }
 });

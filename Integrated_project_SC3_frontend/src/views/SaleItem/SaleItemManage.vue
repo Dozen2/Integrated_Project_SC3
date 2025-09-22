@@ -42,8 +42,6 @@ watch(() => pagination.value.page, (newPage) => {
 
 const fetchselect = async () => {
   try {
-    const sellerId = 1; 
-
     // ดึงค่าจาก sessionStorage แทน localStorage
     const page = parseInt(sessionStorage.getItem("seller_pagination") ?? "0", 10);
     const size = sessionStorage.getItem("seller_size") 
@@ -55,7 +53,7 @@ const fetchselect = async () => {
     pagination.value.size = size;
 
     // เรียก API
-    const saleItemData = await getAllSaleItemSeller(sellerId, size, page);
+    const saleItemData = await getAllSaleItemSeller(size, page);
     saleItem.value = saleItemData;
     console.log("Fetched sale items:", saleItemData);
 
@@ -82,7 +80,6 @@ const handlePageChange = (newPage) => {
   pagination.value.page = newPage;
   fetchselect();
 };
-
 
 //============================================================================
 

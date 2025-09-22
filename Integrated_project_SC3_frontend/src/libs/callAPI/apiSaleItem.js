@@ -128,11 +128,11 @@ const getAllSaleItemV2 = async (
 //SaleItem Seller
 //=============================================================================
 
-const getAllSaleItemSeller = async (sellerId, size, page) => {
+const  getAllSaleItemSeller = async (size, page) => {
   const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
   const decoded = jwtDecode(accessToken);
 
-  console.log("Decoded JWT in getAllSaleItemSeller:", decoded);
+  console.log("Decoded JWT in getAllSaleItemSeller:", decoded.sellerId);
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
   }
@@ -142,7 +142,7 @@ const getAllSaleItemSeller = async (sellerId, size, page) => {
   // params.append("sortField", sortField);
   params.append("page", page);
 
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${sellerId}/sale-items?${params.toString()}`;
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items?${params.toString()}`;
   console.log("API Call URL:", url);
 
   try {

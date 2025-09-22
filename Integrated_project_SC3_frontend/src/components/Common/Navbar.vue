@@ -12,6 +12,8 @@ const logOut = () => {
   router.push({ name: "Home" });
   auth.logout();
 };
+
+const userNickName = auth.getAuthData()?.nickname || "Guest";
 </script>
 
 <template>
@@ -56,15 +58,18 @@ const logOut = () => {
         </div>
         
         
-        <div class="relative inline-block">
+        <div class="relative flex">
           <!-- ปุ่มหลัก -->
           <RouterLink :to="{ name: 'UserProfile' }">
             <button
-              class="p-2 rounded-full cursor-pointer bg-blue-100 hover:bg-blue-200 transition-colors"
+              class="p-2 rounded-full cursor-pointer bg-blue-100 hover:bg-blue-200 transition-colors flex"
             >
               <UserRound color="#000000" />
             </button>
           </RouterLink>
+          <h2 class="items-center justify-center ml-2 text-lg font-medium text-white flex pr-2">
+            {{userNickName}}
+          </h2>
         </div>
         
         <div class="relative">

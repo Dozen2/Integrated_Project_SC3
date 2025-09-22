@@ -33,7 +33,6 @@ async function registerUser( userData, nationalIdPhotoFront, nationalIdPhotoBack
   return res.json();
 }
 
-
 async function verifyEmail(token) {
   const url = `${userUrlV2}/verify-email?token=${token}`;
   console.log("fetching:", url);
