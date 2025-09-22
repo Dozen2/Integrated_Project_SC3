@@ -26,11 +26,11 @@ const form = reactive({
   },
 });
 
+
 onMounted(async () => {
   try {
     if (auth.accessToken) {
-      const decoded = JSON.parse(atob(auth.accessToken.split(".")[1]));
-      const userId = decoded.id;
+      const userId = auth.getAuthData().id;
       userProfile.value = await auth.loadUserProfile(userId);
       originalProfile.value = {
         nickName: userProfile.value.nickName,
@@ -100,45 +100,28 @@ const isFormValid = computed(() => {
 
   if (userProfile.value.nickName !== originalProfile.value.nickName) {
     changedFieldsValid = changedFieldsValid && form.nickname.isValid;
-    console.log("Nickname changed, valid:", form.nickname.isValid);
   }
   if (userProfile.value.fullName !== originalProfile.value.fullName) {
     changedFieldsValid = changedFieldsValid && form.fullname.isValid;
-    console.log("Fullname changed, valid:", form.fullname.isValid);
   }
   return changedFieldsValid;
 });
 
+const maskValue = (value) => {
+  if (!value || value.length <= 2) return value; // ถ้าสั้นเกิน ไม่ต้อง mask
+  const firstPart = value.slice(0, 5);             // เอา 5 ตัวแรก
+  const lastPart = value.slice(-1);                // เอาตัวสุดท้าย
+  const middle = "X".repeat(value.length - 6);     // mask ตรงกลาง
+
+  return firstPart + middle + lastPart;
+};
+
 const maskPhoneNumber = () => {
-  if (!userProfile.value.phoneNumber) return;
-  let raw = userProfile.value.phoneNumber;
-  let masked = "";
-  let count = 0;
-  for (let i = raw.length - 1; i >= 0; i--) {
-    if (count < 4) {
-      masked = raw[i] + masked;
-      count++;
-    } else {
-      masked = "X" + masked;
-    }
-  }
-  phoneNumber.value = masked;
+  phoneNumber.value = maskValue(userProfile.value.phoneNumber);
 };
 
 const maskBankAccount = () => {
-  if (!userProfile.value.bankAccount) return;
-  let raw = userProfile.value.bankAccount;
-  let masked = "";
-  let count = 0;
-  for (let i = raw.length - 1; i >= 0; i--) {
-    if (count < 4) {
-      masked = raw[i] + masked;
-      count++;
-    } else {
-      masked = "X" + masked;
-    }
-  }
-  bankAccount.value = masked;
+  bankAccount.value = maskValue(userProfile.value.bankAccount);
 };
 </script>
 
