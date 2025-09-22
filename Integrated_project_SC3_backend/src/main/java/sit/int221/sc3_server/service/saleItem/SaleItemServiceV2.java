@@ -264,15 +264,61 @@ public class SaleItemServiceV2 {
         return saleitem;
     }
 
-//    public Page<SaleItem> getAllBySellerId(Integer id,Integer page,Integer size){
-//        boolean exist = sellerRepository.existsById(id);
-//        if(!exist){
-//            throw new UnAuthenticateException("User not found");
-//        }
-//        Sort.Direction directionId = Sort.Direction.ASC;
-//        Pageable pageable = PageRequest.of(page,size,Sort.by(directionId,"id"));
-//        return saleitemRepository.findSaleItemBySellerId(id,pageable);
-//    }
+    @Transactional
+    public SaleItem createSellerSaleItem(Integer sellerId,SaleItemCreateDTO saleItemCreateDTO, List<MultipartFile> images){
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new UnAuthorizeException("user not found"));
+        // 1. หา brand
+        int brandId = saleItemCreateDTO.getBrand().getId();
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new ItemNotFoundException("Brand with ID " + brandId + " not found."));
+
+        // 2. เช็ค duplicate model
+        String model = saleItemCreateDTO.getModel().trim();
+        if(saleitemRepository.existsByModelIgnoreCase(model)){
+            throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
+        }
+
+        // 3. Map DTO → Entity
+        SaleItem saleItem = modelMapper.map(saleItemCreateDTO, SaleItem.class);
+        saleItem.setSeller(seller);
+        saleItem.setBrand(brand);
+        // 4. Save SaleItem ก่อน เพื่อให้ได้ id
+//         saleItem = saleitemRepository.saveAndFlush(saleItem);
+
+        // 6. จัดการไฟล์รูปภาพ
+        if(images != null && !images.isEmpty()){
+//            List<String> storedFileNames = fileService.storeList(images);
+            int sequence = 1;
+            for (MultipartFile image : images) {
+                String originalFilename = image.getOriginalFilename();
+                //แยกนามสกุลไฟล์
+                String keepFileSurname = "";
+                int keepIndexFileName = originalFilename.lastIndexOf('.');
+                if(keepIndexFileName > 0){
+                    keepFileSurname = originalFilename.substring(keepIndexFileName);
+                }
+
+                //สุ่มชื่อใหม่
+                String newFileName = UUID.randomUUID().toString() + keepFileSurname;
+                System.out.println("Uploading file: " + image.getOriginalFilename() + ", contentType: " + image.getContentType());
+                fileService.store(image,newFileName,"saleitem");
+                SaleItemImage saleItemImage = new SaleItemImage();
+                saleItemImage.setSaleItem(saleItem);
+                saleItemImage.setFileName(newFileName);         // ชื่อใหม่
+                saleItemImage.setOriginalFileName(originalFilename); // ชื่อเก่า
+                saleItemImage.setImageViewOrder(sequence++);
+                System.out.println(saleItemImage);
+
+                saleItem.getSaleItemImage().add(saleItemImage);
+            }
+        }
+        SaleItem saveItem = saleitemRepository.saveAndFlush(saleItem);
+        System.out.println(saveItem);
+
+//        return saleitemRepository.saveAndFlush(saleItem);
+        return saveItem;
+    }
+
 
 //    public SaleItem createSaleItemSeller(int sellerId,SaleItemCreateDTO saleItemCreateDTO,List<MultipartFile> files){
 //        int brandId = saleItemCreateDTO.getBrand().getId();

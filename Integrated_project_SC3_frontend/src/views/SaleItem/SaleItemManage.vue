@@ -8,8 +8,11 @@ import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
 import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
 import { Pencil, Trash2 } from "lucide-vue-next";
+import { useAuthStore } from '@/stores/auth'
+
 
 const alertStore = useAlertStore();
+const auth = useAuthStore();
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 
 const saleItem = ref([]);
@@ -34,6 +37,7 @@ onBeforeMount(async () => {
       alertStore.clearMessage();
     }, 3000);
   }
+  console.log(auth.getAuthData().nickname)
 });
 
 watch(() => pagination.value.page, (newPage) => {
@@ -42,8 +46,6 @@ watch(() => pagination.value.page, (newPage) => {
 
 const fetchselect = async () => {
   try {
-    const sellerId = 1; 
-
     // ดึงค่าจาก sessionStorage แทน localStorage
     const page = parseInt(sessionStorage.getItem("seller_pagination") ?? "0", 10);
     const size = sessionStorage.getItem("seller_size") 
@@ -55,7 +57,7 @@ const fetchselect = async () => {
     pagination.value.size = size;
 
     // เรียก API
-    const saleItemData = await getAllSaleItemSeller(sellerId, size, page);
+    const saleItemData = await getAllSaleItemSeller(size, page);
     saleItem.value = saleItemData;
     console.log("Fetched sale items:", saleItemData);
 
@@ -82,7 +84,6 @@ const handlePageChange = (newPage) => {
   pagination.value.page = newPage;
   fetchselect();
 };
-
 
 //============================================================================
 
@@ -112,26 +113,21 @@ const deleteProduct = (id) => {
 
 <template>
   <div class="p-6 max-w-7xl mx-auto">
+  <h3 class="text-3xl font-bold text-blue-700 mb-[-15px]">Wellcome {{ auth.getAuthData().nickname }}</h3>
 <div class="flex justify-between items-center gap-4  mt-[20px]">
-    <!-- <RouterLink
-      :to="{ name: 'BrandManage' }"
-      class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
-    >
-      <span class="itbms-manage-brand tracking-wide flex"
-        >Brand Management &nbsp; <MoveRight strokeWidth="{1.5}"
-      /></span>
-    </RouterLink> -->
+  <div>
     <h1 class="text-4xl font-bold text-blue-700 flex items-center">SaleItem Management</h1>
-    <div class="flex items-center gap-4"> 
-      <RouterLink
-      :to="{ name: 'ProuctCreate' }"
-      class="inline-flex items-center gap-2 border-blue-400 border bg-gray-100 text-blue-700 hover:bg-gray-200 text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
-    >
-      <span class="itbms-sale-item-add tracking-wide flex"
-        >Add New SaleItem</span
-        >
-    </RouterLink>
+  </div>
+    <div class=" items-center gap-4"> 
     </div>
+        <RouterLink
+        :to="{ name: 'ProuctCreate' }"
+        class="inline-flex items-center gap-2 border-blue-400 border bg-gray-100 text-blue-700 hover:bg-gray-200 text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+      >
+        <span class="itbms-sale-item-add tracking-wide flex"
+          >Add New SaleItem</span
+          >
+      </RouterLink>
   </div>
 
 

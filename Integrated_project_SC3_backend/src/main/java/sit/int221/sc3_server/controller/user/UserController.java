@@ -85,11 +85,12 @@ public class UserController {
                     }
                     Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
                     ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
-                            .httpOnly(false)
+                            .httpOnly(true)
                             .secure(false)
                             .path(cookiePath)
                             .maxAge(Duration.ofDays(1))
                             .sameSite("Lax")
+//                            .sameSite("Strict")
                             .build();
                     response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 

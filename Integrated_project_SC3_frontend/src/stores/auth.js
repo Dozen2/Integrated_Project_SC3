@@ -1,12 +1,13 @@
 // stores/auth.js
 import { defineStore } from "pinia";
-import { 
-  loginUser, 
-  refreshToken as apiRefreshToken, 
+import { jwtDecode } from "jwt-decode";
+import {
+  loginUser,
+  refreshToken as apiRefreshToken,
   fetchUserProfile,
   logout as apiLogout,
-  editUserProfile as apiEditUserProfile 
-   } from "@/libs/callAPI/apiAuth";
+  editUserProfile as apiEditUserProfile
+} from "@/libs/callAPI/apiAuth";
 import router from "@/router";
 
 
@@ -17,7 +18,7 @@ export const useAuthStore = defineStore("auth", {
     isLoggedIn: !!localStorage.getItem("accessToken"),
   }),
 
-  actions: {  
+  actions: {
     // ฟังก์ชัน login
     async login(username, password) {
       try {
@@ -45,7 +46,7 @@ export const useAuthStore = defineStore("auth", {
 
         console.log("✅ AccessToken ใหม่:", accessToken);
         console.log("new role = ", role);
-        
+
 
         this.accessToken = accessToken;
         this.role = role;
@@ -64,9 +65,9 @@ export const useAuthStore = defineStore("auth", {
 
     // ฟังก์ชัน logout
     async logout() {
-      try{
+      try {
         await apiLogout();
-      }catch{
+      } catch {
         console.error("Logout API error:", err);
       }
 
@@ -80,18 +81,24 @@ export const useAuthStore = defineStore("auth", {
       // optional: clear refresh token cookie
     },
 
-    async loadUserProfile(userId){
-      try{
+    getAuthData() {
+      const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
+      const decoded = jwtDecode(accessToken);
+      return decoded;
+    },
+
+    async loadUserProfile(userId) {
+      try {
         this.profile = await fetchUserProfile(userId)
         return this.profile
-      }catch(err){
+      } catch (err) {
         console.error("Error loading profile:", err);
         throw err;
       }
     },
 
-    async updateProfile(userData){
-            try {
+    async updateProfile(userData) {
+      try {
         const updatedProfile = await apiEditUserProfile(userData);
         this.profile = updatedProfile; // อัปเดตค่าใน store ด้วย
         return updatedProfile;
@@ -100,6 +107,5 @@ export const useAuthStore = defineStore("auth", {
         throw err;
       }
     },
-    
-  }
+  },
 });

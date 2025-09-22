@@ -34,12 +34,14 @@ public class JwtUserDetailService implements UserDetailsService {
             throw new UnAuthorizeException("User is not verify");
         }
 //        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
+        Integer sellerId = (buyer.getSeller()!= null)? buyer.getSeller().getId():null;
         return new AuthUserDetail(buyer.getId(),             // id
                 buyer.getEmail(),          // username (ใช้ email)
                 buyer.getPasswords(),      // password
                 buyer.getNickName(),       // nickName
                 buyer.getEmail(),
                 null,
+                sellerId,
                 getAuthorities(buyer.getRoles()));
     }
 
@@ -47,12 +49,14 @@ public class JwtUserDetailService implements UserDetailsService {
     Buyer buyer = buyerRepository.findById(id).orElseThrow(
             ()->new ResourceNotFoundException("User id "+ id + " does not exist"));
 //        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
+        Integer sellerId = (buyer.getSeller()!= null)? buyer.getSeller().getId():null;
         return new AuthUserDetail(buyer.getId(),             // id
                 buyer.getEmail(),          // username (ใช้ email)
                 buyer.getPasswords(),      // password
                 buyer.getNickName(),       // nickName
                 buyer.getEmail(),
                 null,
+                sellerId,
                 getAuthorities(buyer.getRoles()));
     }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {

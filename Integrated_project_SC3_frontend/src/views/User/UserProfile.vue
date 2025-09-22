@@ -80,7 +80,7 @@ const editUserProfile = async () => {
       fullName: userProfile.value.fullName,
       nickName: userProfile.value.nickName,
     });
-
+    auth.refreshToken()
     isEditMode.value = false; // กลับไป view mode
     // alert("Profile updated successfully!");
   } catch (err) {
