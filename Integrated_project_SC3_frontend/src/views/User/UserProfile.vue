@@ -14,6 +14,7 @@ const originalProfile = ref({});
 const isEditMode = ref(false);
 const phoneNumber = ref("");
 const bankAccount = ref("");
+const userType = ref("");
 
 const form = reactive({
   nickname: {
@@ -33,6 +34,7 @@ onMounted(async () => {
   try {
     if (auth.accessToken) {
       const userId = auth.getAuthData().id;
+      userType.value = auth.getAuthData().authorities[1].role.slice(5);
       userProfile.value = await auth.loadUserProfile(userId);
       originalProfile.value = {
         nickName: userProfile.value.nickName,
@@ -161,6 +163,7 @@ const cancelButton = () => {
 
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
+          <userDataList label="Type" v-model="userType" />
           <userDataList
             label="NickName"
             v-model="userProfile.nickName"
