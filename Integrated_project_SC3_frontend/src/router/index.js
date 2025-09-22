@@ -30,8 +30,8 @@ const router = createRouter({
     { path: '/sale-items/:id/edit', name: 'Edit', component: ProuctEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
     { path: '/sale-items/create', name: 'ProuctCreate', component: ProuctCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
     { path: '/sale-items/list', name: 'ProductManage', component: ProductManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
-    { path: '/brands/add', name: 'BrandCreate', component: BrandCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
     { path: '/brands', name: 'BrandManage', component: BrandManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands/add', name: 'BrandCreate', component: BrandCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
     { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
 
     // Auth

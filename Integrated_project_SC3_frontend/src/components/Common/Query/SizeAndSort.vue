@@ -1,12 +1,10 @@
 <script setup>
-import { ArrowDownAZ, ArrowDownNarrowWide, ArrowDownWideNarrow, ArrowUpAZ, ArrowUpNarrowWide, ArrowUpWideNarrow, ListFilter } from "lucide-vue-next";
 import {
-  defineEmits,
-  defineProps,
-  onMounted,
-  ref,
-  watch,
-} from "vue";
+  ArrowDownWideNarrow,
+  ArrowUpWideNarrow,
+  ListFilter,
+} from "lucide-vue-next";
+import { defineEmits, defineProps, onMounted, ref, watch } from "vue";
 
 
 const props = defineProps({
@@ -20,7 +18,7 @@ const emit = defineEmits(["sizeChanged", "sortChanged"]);
 const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_FIELD: "SaleItem-SortField",
-  SORT_DIRECTION: "SaleItem-SortDirection"
+  SORT_DIRECTION: "SaleItem-SortDirection",
 };
 
 const size = ref(10);
@@ -43,7 +41,7 @@ const getSessionValue = (key, defaultValue) => {
 
 // Set session storage value
 const setSessionValue = (key, value) => {
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     sessionStorage.setItem(key, JSON.stringify(value));
   } else {
     sessionStorage.setItem(key, value.toString());
@@ -70,7 +68,7 @@ watch(
     if (newSortDirection !== undefined) {
       sortDirection.value = newSortDirection || "asc";
     }
-    
+
     if (sortField.value === "brand.name") {
       currentSort.value = sortDirection.value === "asc" ? "asc" : "desc";
     } else {
@@ -89,10 +87,10 @@ const sortAsc = () => {
   sortDirection.value = "asc";
   sortField.value = "brand.name";
   currentSort.value = "asc";
-  
+
   setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
   setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
-  
+
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -103,10 +101,10 @@ const sortDesc = () => {
   sortDirection.value = "desc";
   sortField.value = "brand.name";
   currentSort.value = "desc";
-  
+
   setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
   setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
-  
+
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -117,10 +115,10 @@ const resetSort = () => {
   sortDirection.value = "asc";
   sortField.value = "id";
   currentSort.value = "none";
-  
+
   setSessionValue(SESSION_KEYS.SORT_FIELD, sortField.value);
   setSessionValue(SESSION_KEYS.SORT_DIRECTION, sortDirection.value);
-  
+
   emit("sortChanged", {
     sortField: sortField.value,
     sortDirection: sortDirection.value,
@@ -131,12 +129,21 @@ onMounted(() => {
   // Load from session storage first, then from props as fallback
   const sessionSize = getSessionValue(SESSION_KEYS.SIZE, null);
   const sessionSortField = getSessionValue(SESSION_KEYS.SORT_FIELD, null);
-  const sessionSortDirection = getSessionValue(SESSION_KEYS.SORT_DIRECTION, null);
-  
-  size.value = sessionSize !== null ? sessionSize : (props.initialSize || 10);
-  sortField.value = sessionSortField !== null ? sessionSortField : (props.initialSortField || "id");
-  sortDirection.value = sessionSortDirection !== null ? sessionSortDirection : (props.initialSortDirection || "asc");
-  
+  const sessionSortDirection = getSessionValue(
+    SESSION_KEYS.SORT_DIRECTION,
+    null
+  );
+
+  size.value = sessionSize !== null ? sessionSize : props.initialSize || 10;
+  sortField.value =
+    sessionSortField !== null
+      ? sessionSortField
+      : props.initialSortField || "id";
+  sortDirection.value =
+    sessionSortDirection !== null
+      ? sessionSortDirection
+      : props.initialSortDirection || "asc";
+
   // Set initial sort state
   if (sortField.value === "brand.name") {
     currentSort.value = sortDirection.value === "asc" ? "asc" : "desc";
@@ -148,14 +155,11 @@ onMounted(() => {
 
 <template>
   <div class="flex items-center gap-4">
-    <span class="text-gray-700">Shows:</span>
-
-    <!-- Page Size Dropdown -->
     <select
       id="size"
       v-model="size"
       @change="setSize(size)"
-      class="itbms-page-size border border-gray-300 rounded px-3 py-2 bg-purple-100 text-purple-800 focus:ring-purple-400 focus:ring-2 min-w-16"
+      class="cursor-pointer border border-blue-300 rounded-lg px-5 py-2 bg-white text-blue-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition duration-200 ease-in-out min-w-[4rem]"
     >
       <option :value="5">5</option>
       <option :value="10">10</option>
@@ -168,10 +172,10 @@ onMounted(() => {
       <button
         @click="sortAsc"
         :class="[
-          'itbms-brand-asc p-2 border border-gray-300 rounded transition',
+          'itbms-brand-asc p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'asc'
-            ? 'bg-purple-500 text-white'
-            : 'hover:bg-purple-100',
+            ? 'bg-blue-500 text-white'
+            : 'hover:bg-blue-100',
         ]"
         title="Sort Ascending"
       >
@@ -180,10 +184,10 @@ onMounted(() => {
       <button
         @click="sortDesc"
         :class="[
-          'itbms-brand-desc p-2 border border-gray-300 rounded transition',
+          'itbms-brand-desc p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'desc'
-            ? 'bg-purple-500 text-white'
-            : 'hover:bg-purple-100',
+            ? 'bg-blue-500 text-white'
+            : 'hover:bg-blue-100',
         ]"
         title="Sort Descending"
       >
@@ -192,10 +196,10 @@ onMounted(() => {
       <button
         @click="resetSort"
         :class="[
-          'itbms-brand-none p-2 border border-gray-300 rounded transition',
+          'itbms-brand-none p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'none'
-            ? 'bg-purple-500 text-white'
-            : 'hover:bg-purple-100',
+            ? 'bg-blue-500 text-white'
+            : 'hover:bg-blue-100',
         ]"
         title="Reset Sort"
       >

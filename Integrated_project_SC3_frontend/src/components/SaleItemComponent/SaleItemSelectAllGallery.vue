@@ -36,7 +36,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-6 max-w-7xl mx-auto">
+  <div class=" py-6 max-w-7xl mx-auto">
     <div v-if="product.length === 0" class="text-center text-gray-500 text-xl">
       no sale item
     </div>

@@ -38,6 +38,7 @@ public class UserController {
     private FileService fileService;
     @Autowired
     private JwtUtils jwtUtils;
+
     @Autowired
     private JwtUserDetailService jwtUserDetailService;
     @Value("${app.cookie.path}")

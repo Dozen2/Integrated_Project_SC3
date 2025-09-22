@@ -13,7 +13,7 @@ import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
 import Search from "@/components/Common/Query/Search.vue";
-import { Funnel } from "lucide-vue-next";
+import { ChevronDown, Funnel, Smartphone } from "lucide-vue-next";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -421,7 +421,7 @@ const hasActiveFilters = (filters) => {
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
     filters.size !== DEFAULT_VALUES.size ||
-    !! filters.search  
+    !!filters.search
   );
 };
 
@@ -438,7 +438,7 @@ onBeforeMount(async () => {
   console.log("Initial filters:", filters);
 
   console.log(hasActiveFilters(filters));
-  
+
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
   } else {
@@ -450,12 +450,13 @@ onBeforeMount(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
-  
 });
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 p-10  bg-gradient-to-br from-blue-100 via-white to-blue-200">
+  <div
+    class="flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
+  >
     <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
@@ -469,33 +470,44 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 🔹 Search + SizeAndSort แนวนอน -->
-    <div class="flex justify-between items-center gap-4">
-      <SizeAndSort
-        :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
-        :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
-        :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
-        @sizeChanged="handleSizeChange"
-        @sortChanged="handleSortChange" 
-      />
-      <Search 
-      :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
-      :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
-      @search="handleSearch" />
+    <div class="flex justify-between items-center gap-6">
+      <div class="flex items-center">
+        <h1 class="text-6xl text-blue-500 flex"><Smartphone size=60 color="#478eff" />ITBMS SHOP SC3</h1>
+      </div>
+
+      <div class="flex flex-col items-end gap-5">
+        <div>
+          <Search
+            :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
+            :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
+            @search="handleSearch"
+          />
+        </div>
+        <div>
+          <SizeAndSort
+            :initialSize="
+              getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)
+            "
+            :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+            :initialSortDirection="
+              getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')
+            "
+            @sizeChanged="handleSizeChange"
+            @sortChanged="handleSortChange"
+          />
+        </div>
+      </div>
     </div>
 
     <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
     <div class="flex gap-6">
       <!-- Filters -->
-      <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
-        <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
-          <span class="flex"><Funnel /> &nbsp; Filter by:</span>
-        </div>
+      <div class="w-1/7 flex flex-col gap-4 mt-5">
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
           :options="brand"
           label="Brands"
-          placeholder="Select brands"
+          placeholder="Fitler ฺBrands"
           :sessionKey="SESSION_KEYS.BRAND"
           valueField="name"
           displayField="name"
@@ -507,7 +519,7 @@ onBeforeUnmount(() => {
           :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
           :options="STORAGE_OPTIONS"
           label="Storages"
-          placeholder="Select StoragesGB"
+          placeholder="Fitler StoragesGB"
           :sessionKey="SESSION_KEYS.STORAGE"
           valueField="name"
           displayField="name"
@@ -520,7 +532,7 @@ onBeforeUnmount(() => {
           :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
           :options="priceOption"
           label="Price"
-          placeholder="Select Price Range"
+          placeholder="Fitler PriceRange"
           :sessionKey="SESSION_KEYS.PRICE"
           valueField="value"
           displayField="name"
@@ -570,7 +582,7 @@ onBeforeUnmount(() => {
         </Filter>
 
         <!-- Clear Button -->
-        <div class="flex justify-end mr-[25px]">
+        <div class="flex">
           <ClearButton
             :sessionKeys="[
               SESSION_KEYS.BRAND,

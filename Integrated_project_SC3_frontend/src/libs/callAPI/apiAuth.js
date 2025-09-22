@@ -94,6 +94,9 @@ async function loginUser(username, password) {
 
     const authorities = decoded.authorities || [];
 
+    console.log("Decoded JWT:", decoded);
+    console.log("Authorities:", authorities);
+
     let role = "UNKNOWN";
 
     if (authorities.some(auth => auth.role === "ROLE_SELLER")) {

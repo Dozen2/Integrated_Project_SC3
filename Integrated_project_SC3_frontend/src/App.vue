@@ -14,7 +14,11 @@ const hideNavbarOn = ['/login', '/verify-email']
 
 </script>
 <template>
-    <navbar v-if="!hideNavbarOn.includes(route.path)" />
-    <Toast />
+  <div
+    class=" bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
+  >
+  <navbar v-if="!hideNavbarOn.includes(route.path)" />
+  <Toast />
   <RouterView />
+</div>
 </template>

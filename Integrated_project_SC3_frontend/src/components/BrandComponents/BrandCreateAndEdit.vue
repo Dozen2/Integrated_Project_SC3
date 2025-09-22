@@ -199,7 +199,7 @@ alertStore.addToast("The brand has been updated.", "Update success", "success");
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-blue-50 to-white p-6">
+  <div class=" p-6">
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="mb-6">

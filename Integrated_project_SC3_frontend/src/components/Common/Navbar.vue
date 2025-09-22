@@ -2,6 +2,7 @@
 import { LogOut, ShoppingCart, Smartphone, UserRound } from "lucide-vue-next";
 import { useAuthStore } from '@/stores/auth'
 import { RouterLink, useRouter } from "vue-router";
+import DropDownManagement from "./DropDownManagement.vue";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -12,11 +13,6 @@ const logOut = async() => {
   
 };
 
-const refresh = async() => {
-  await auth.refreshToken()
-  console.log('refesh pass!!!!');
-  
-}
 </script>
 
 <template>
@@ -46,22 +42,21 @@ const refresh = async() => {
 
     <div class="flex items-center gap-8">
       <div v-if="auth.role" class="flex items-center gap-6">
+
+        
         <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between gap-4">
-          <RouterLink
+          <DropDownManagement />
+          <!-- <RouterLink
             :to="{ name: 'ProductManage' }"
             class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
           >
             <span class="itbms-manage-brand tracking-wide"
               >Manage Sale Items</span
             >
-          </RouterLink>
-
-          <div>
-            <button @click="refresh">
-              test refresh 
-            </button>
-          </div>
+          </RouterLink> -->
         </div>
+        
+        
         <div class="relative inline-block">
           <!-- ปุ่มหลัก -->
           <RouterLink :to="{ name: 'UserProfile' }">
@@ -72,7 +67,7 @@ const refresh = async() => {
             </button>
           </RouterLink>
         </div>
-
+        
         <div class="relative">
           <ShoppingCart color="#ffffff" />
           <span
