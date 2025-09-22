@@ -1,3 +1,4 @@
+import { jwtDecode } from "jwt-decode";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const urlV1 = `${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`;
 const urlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items`;
@@ -129,6 +130,9 @@ const getAllSaleItemV2 = async (
 
 const getAllSaleItemSeller = async (sellerId, size, page) => {
   const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
+  const decoded = jwtDecode(accessToken);
+
+  console.log("Decoded JWT in getAllSaleItemSeller:", decoded);
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
   }

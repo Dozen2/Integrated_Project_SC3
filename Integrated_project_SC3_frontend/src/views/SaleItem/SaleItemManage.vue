@@ -42,7 +42,7 @@ watch(() => pagination.value.page, (newPage) => {
 
 const fetchselect = async () => {
   try {
-    const sellerId = 2; 
+    const sellerId = 1; 
 
     // ดึงค่าจาก sessionStorage แทน localStorage
     const page = parseInt(sessionStorage.getItem("seller_pagination") ?? "0", 10);
