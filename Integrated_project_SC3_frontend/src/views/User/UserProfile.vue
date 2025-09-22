@@ -3,8 +3,10 @@ import { ref, onMounted, reactive, computed } from "vue";
 import userDataList from "@/components/UserComponent/userDataList.vue";
 import { useAuthStore } from "@/stores/auth";
 import { UserRound, UserRoundPen } from "lucide-vue-next";
+import { useAlertStore } from "@/stores/alertStore";
 
 const auth = useAuthStore();
+const toast = useAlertStore();
 
 const userProfile = ref({});
 const originalProfile = ref({});
@@ -78,6 +80,12 @@ const editUserProfile = async () => {
       fullName: userProfile.value.fullName,
     };
     isEditMode.value = false;
+toast.addToast(
+      "The user profile has been successfully updated.",
+      "Update profile successful.",
+      "success",
+      5000
+    );
   } catch (err) {
     console.error("Update profile error:", err);
     alert("Error: " + err.message);
@@ -108,11 +116,9 @@ const isFormValid = computed(() => {
 });
 
 const maskValue = (value) => {
-  if (!value || value.length <= 2) return value; // ถ้าสั้นเกิน ไม่ต้อง mask
-  const firstPart = value.slice(0, 5);             // เอา 5 ตัวแรก
-  const lastPart = value.slice(-1);                // เอาตัวสุดท้าย
-  const middle = "X".repeat(value.length - 6);     // mask ตรงกลาง
-
+  const firstPart = value.slice(0, value.length-4);
+  const lastPart = value.slice(-1);
+  const middle = "x".repeat(3);    
   return firstPart + middle + lastPart;
 };
 
@@ -122,6 +128,12 @@ const maskPhoneNumber = () => {
 
 const maskBankAccount = () => {
   bankAccount.value = maskValue(userProfile.value.bankAccount);
+};
+
+const cancelButton = () => {
+  userProfile.value.nickName = originalProfile.value.nickName;
+  userProfile.value.fullName = originalProfile.value.fullName;
+  isEditMode.value = false;
 };
 </script>
 
@@ -201,7 +213,7 @@ const maskBankAccount = () => {
           Save
         </button>
         <button
-          @click="isEditMode = false"
+          @click="cancelButton"
           class="bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
         >
           Cancel
