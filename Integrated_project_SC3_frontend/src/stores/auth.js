@@ -1,10 +1,15 @@
 // stores/auth.js
 import { defineStore } from "pinia";
+import { jwtDecode } from "jwt-decode";
 import {
   loginUser,
   refreshToken as apiRefreshToken,
+  fetchUserProfile,
+  logout as apiLogout,
+  editUserProfile as apiEditUserProfile
 } from "@/libs/callAPI/apiAuth";
-import { jwtDecode } from "jwt-decode";
+import router from "@/router";
+
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -17,10 +22,7 @@ export const useAuthStore = defineStore("auth", {
     // ฟังก์ชัน login
     async login(username, password) {
       try {
-        const { accessToken, refreshToken, role } = await loginUser(
-          username,
-          password
-        );
+        const { accessToken, refreshToken, role } = await loginUser(username, password);
 
         this.accessToken = accessToken;
         this.role = role;
@@ -42,6 +44,10 @@ export const useAuthStore = defineStore("auth", {
       try {
         const { accessToken, role } = await apiRefreshToken();
 
+        console.log("✅ AccessToken ใหม่:", accessToken);
+        console.log("new role = ", role);
+
+
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;
@@ -52,35 +58,53 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
+        router.push("/login");
         return false;
       }
     },
 
     // ฟังก์ชัน logout
-    logout() {
+    async logout() {
+      try {
+        await apiLogout();
+      } catch {
+        console.error("Logout API error:", err);
+      }
+
       this.accessToken = null;
       this.role = null;
       this.isLoggedIn = false;
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
+      // Cookies.remove("refreshToken");
       // optional: clear refresh token cookie
     },
 
     getAuthData() {
       const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
+      const decoded = jwtDecode(accessToken);
+      return decoded;
+    },
 
-      if (!accessToken) {
-        console.error("No access token found in localStorage");
-        return null;
-      }
-
+    async loadUserProfile(userId) {
       try {
-        const decoded = jwtDecode(accessToken);
-        return decoded;
-      } catch (error) {
-        console.error("Invalid token:", error);
-        return null;
+        this.profile = await fetchUserProfile(userId)
+        return this.profile
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        throw err;
+      }
+    },
+
+    async updateProfile(userData) {
+      try {
+        const updatedProfile = await apiEditUserProfile(userData);
+        this.profile = updatedProfile; // อัปเดตค่าใน store ด้วย
+        return updatedProfile;
+      } catch (err) {
+        console.error("Update profile failed:", err);
+        throw err;
       }
     },
   },

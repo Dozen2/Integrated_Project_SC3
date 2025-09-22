@@ -6,6 +6,7 @@ import {
 } from "lucide-vue-next";
 import { defineEmits, defineProps, onMounted, ref, watch } from "vue";
 
+
 const props = defineProps({
   initialSize: Number,
   initialSortField: String,

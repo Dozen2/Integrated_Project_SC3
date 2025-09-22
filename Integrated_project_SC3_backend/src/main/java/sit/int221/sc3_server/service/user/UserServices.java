@@ -221,7 +221,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
             new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
     authenticationManager.authenticate(uToken);
     UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-    long refreshTokenAgeInMinute = 24 * 60;
+    long refreshTokenAgeInMinute = 24*60 ;
 
     String accessToken = jwtUtils.generateToken(userDetails);
     String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
@@ -317,5 +317,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
         dto.setBankAccount(buyer.getSeller().getBankAccountNumber());
         dto.setNickName(buyer.getNickName());
         return dto;
+
     }
+
 }

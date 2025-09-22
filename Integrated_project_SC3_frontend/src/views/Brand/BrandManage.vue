@@ -7,6 +7,7 @@ import BrandCreate from "@/views/Brand/BrandCreate.vue";
 import { deleteUserById, getAllData } from "@/libs/api.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js"
 import { MoveLeft } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/auth";
 
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const alertStore = useAlertStore();
@@ -16,6 +17,8 @@ const pendingDeleteId = ref(null);
 const brandToDeleteName = ref("");
 const cannotdelete = ref(false);
 const brand = ref([]);
+
+const auth = useAuthStore();
 
 const fetchBrands = async () => {
   try {
@@ -97,6 +100,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="max-w-7xl mx-auto mt-[40px]">
+    <h3 class="text-3xl font-bold text-blue-700">Wellcome {{ auth.getAuthData().nickname }}</h3>
     <div class="flex justify-between items-center gap-4 mb-4">
         <h1 class="text-4xl font-bold text-blue-700 flex items-center">Brand Management</h1>
         <RouterLink :to="{ name: 'BrandCreate' }"

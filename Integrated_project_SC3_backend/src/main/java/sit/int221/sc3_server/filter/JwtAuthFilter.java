@@ -20,6 +20,7 @@ import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.utils.JwtUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -38,6 +39,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Integer userId = null;
         String jwtToken;
         Map<String, Object> claims = null;
+        System.out.println(requestTokenHeader);
+        Collections.list(request.getHeaderNames()).forEach(System.out::println);
         if(requestTokenHeader != null){
             if(requestTokenHeader.startsWith("Bearer ")){
                 jwtToken = requestTokenHeader.substring(7);
