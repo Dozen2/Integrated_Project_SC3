@@ -142,12 +142,12 @@ public class SaleItemControllerV2 {
             throw new UnAuthenticateException("user is not active");
         }
         String authUsername = authUserDetail.getUsername();
-        Integer authUserId = authUserDetail.getId();
-        Page<SaleItem> saleItems = saleItemServiceV2.getAllProduct(id,filterBrands,filterStorages,filterPriceLower,filterPriceUpper,searchParam,page,size,sortField,sortDirection);
+        Integer authSellerId = authUserDetail.getSellerId();
+        Page<SaleItem> saleItems = saleItemServiceV2.getAllProduct(authSellerId,filterBrands,filterStorages,filterPriceLower,filterPriceUpper,searchParam,page,size,sortField,sortDirection);
         PageDTO<SaleItemDetailSeller> pageDTO = listMapper.toPageDTO(saleItems, SaleItemDetailSeller.class,modelMapper);
         pageDTO.getContent().forEach(dto ->{
             if(dto.getSellerDTO() == null) dto.setSellerDTO(new SellerDTO());
-            dto.getSellerDTO().setId(authUserId);
+            dto.getSellerDTO().setId(authSellerId);
             dto.getSellerDTO().setUserName(authUsername);
 
         });
@@ -156,24 +156,26 @@ public class SaleItemControllerV2 {
     }
 
 
-//    @PostMapping("/sellers/{id}/sale-items")
-//    public ResponseEntity<SaleItemDetailFileDto> createSaleItemSeller(@ModelAttribute SaleItemCreateDTO saleItemCreateDTO
-//                                                                        ,@RequestPart(required = false) List<MultipartFile> files
-//                                                                        ,@PathVariable int id,
-//                                                                      Authentication authentication){
-//    AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-//    Buyer buyer = userServices.findBuyerBySellerId(id);
-//    if("ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-//        throw new UnAuthorizeException("Invalid token");
-//    }
-//    if(!authUserDetail.getId().equals(buyer.getId())){
-//        throw new UnAuthorizeException("Seller not found");
-//    }
-//
-//    if(!buyer.getIsActive()){
-//        throw new UnAuthenticateException("user is not active");
-//    }
-//
-//
-//    }
+    @PostMapping("/sellers/{id}/sale-items")
+    public ResponseEntity<SaleItemDetailFileDto> createSaleItemSeller(@ModelAttribute SaleItemCreateDTO saleItemCreateDTO
+                                                                        ,@RequestPart(required = false) List<MultipartFile> images
+                                                                        ,@PathVariable(value = "id") int id,
+                                                                      Authentication authentication){
+    AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+    Buyer buyer = userServices.findBuyerBySellerId(id);
+    if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+        throw new UnAuthorizeException("Invalid token");
+    }
+    if(!authUserDetail.getId().equals(buyer.getId())){
+        throw new UnAuthorizeException("Seller not found");
+    }
+
+    if(!buyer.getIsActive()){
+        throw new UnAuthenticateException("user is not active");
+    }
+
+    SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getSellerId(), saleItemCreateDTO,images);
+    SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 }

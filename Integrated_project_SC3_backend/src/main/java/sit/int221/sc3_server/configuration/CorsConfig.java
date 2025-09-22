@@ -43,6 +43,7 @@ public class CorsConfig implements WebMvcConfigurer {
             configuration.setAllowedHeaders(List.of("*"));
             configuration.setAllowCredentials(true);
             configuration.setMaxAge(3600L);
+            configuration.setExposedHeaders(List.of("Set-cookie"));
         }
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

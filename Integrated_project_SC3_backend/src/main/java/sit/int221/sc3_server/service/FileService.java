@@ -61,8 +61,8 @@ public class FileService {
             }
             Path targetDir;
             switch (folderType.toLowerCase()){
-                case "saleitem" ->targetDir = Paths.get("./saleItemImages").toAbsolutePath().normalize();
-                case "nationalid" ->targetDir = Paths.get("./nationalIdPhoto").toAbsolutePath().normalize();
+                case "saleitem" ->targetDir = this.fileStorageLocation;
+                case "nationalid" ->targetDir = this.nationalIdProfilePath;
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unknown folder type "+ folderType);
             }
             Files.createDirectories(targetDir);

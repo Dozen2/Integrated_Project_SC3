@@ -85,10 +85,11 @@ public class UserController {
                     Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
                     ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
                             .httpOnly(true)
-//                            .secure(true)
+                            .secure(false)
                             .path(cookiePath)
                             .maxAge(Duration.ofDays(1))
-                            .sameSite("Strict")
+                            .sameSite("Lax")
+//                            .sameSite("Strict")
                             .build();
                     response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 
@@ -118,18 +119,9 @@ public class UserController {
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             return ResponseEntity.badRequest().build();
         }
-        String token = authHeader.substring(7);
-        Map<String,Object> claims;
-        try{
-            claims =jwtUtils.getJWTClaimSet(token);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().build();
-        }
-        Integer userId = Integer.parseInt(claims.get("id").toString());
-         userServices.checkIsActive(userId);
          ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
                  .httpOnly(true)
-//                 .secure(true)
+                 .secure(false)
                  .path("/")
                  .maxAge(0)  // expire ทันที
                  .build();
@@ -175,32 +167,5 @@ public class UserController {
 
 
 
-//    @PostMapping("/refresh")
-//    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
-//        if (refreshToken == null || !jwtUtils.validateToken(refreshToken)) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
-//        }
-//
-//        String username = jwtUtils.extractUsername(refreshToken);
-//        UserDetails userDetails = jwtUtils.loadUserByUsername(username);
-//
-//        // สร้าง access token ใหม่
-//        String newAccessToken = jwtUtils.generateToken(userDetails, 30, TokenType.access_token);
-//
-//        return ResponseEntity.ok(Map.of(
-//                "accessToken", newAccessToken,
-//                "tokenType", "Bearer",
-//                "expiresIn", 30 * 60
-//        ));
-//    }
 
-//    @GetMapping("/user/file/{filename:.+}")
-//    @ResponseBody
-//    public ResponseEntity<Resource> serveFile(
-//            @PathVariable String filename) {
-//        Resource file = fileService.loadFileAsResourceNational(filename);
-//        System.out.println(MediaType.valueOf(fileService.getFileType(file)));
-//        return ResponseEntity.ok()
-//                .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
-//    }
 }
