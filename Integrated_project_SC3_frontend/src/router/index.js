@@ -50,7 +50,6 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
-
   const guestOnlyRoutes = ['Login', 'Register', 'VerifyEmail'];
   if (auth.accessToken && guestOnlyRoutes.includes(to.name)) {
     return { name: 'Home' }; // redirect ไปหน้า Home (หรือจะไปหน้า Profile ก็ได้)
@@ -73,7 +72,6 @@ router.beforeEach(async (to) => {
       return { name: 'Login' };
     }
   }
-
   return true;
 });
 

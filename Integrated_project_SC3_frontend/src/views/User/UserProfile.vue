@@ -8,7 +8,14 @@ import { useAlertStore } from "@/stores/alertStore";
 const auth = useAuthStore();
 const toast = useAlertStore();
 
-const userProfile = ref({});
+const userProfile = ref({
+  email: "",
+  fullName: "",
+  nickName: "",
+  phoneNumber: "",
+  bankAccount: "",
+  bankName: "",
+});
 const originalProfile = ref({});
 
 const isEditMode = ref(false);
@@ -28,13 +35,17 @@ const form = reactive({
     isFirstInput: true,
   },
 });
+const isLoading = ref(false);
 
 
 onMounted(async () => {
+  isLoading.value = true;
+  const role = await auth.getAuthData().authorities[auth.getAuthData().authorities.length - 1].role;
+  console.log("User role:", role);
   try {
     if (auth.accessToken) {
       const userId = auth.getAuthData().id;
-      userType.value = auth.getAuthData().authorities[1].role.slice(5);
+      userType.value = role.slice(5);
       userProfile.value = await auth.loadUserProfile(userId);
       originalProfile.value = {
         nickName: userProfile.value.nickName,
@@ -44,8 +55,12 @@ onMounted(async () => {
   } catch (err) {
     console.error("Load profile error:", err);
   }
-  maskPhoneNumber();
-  maskBankAccount();
+  if(role == 'ROLE_SELLER'){
+    maskPhoneNumber();
+    maskBankAccount();
+  }
+  
+  isLoading.value = false;
 });
 
 const validateNickname = () => {
@@ -118,10 +133,9 @@ const isFormValid = computed(() => {
 });
 
 const maskValue = (value) => {
-  const firstPart = value.slice(0, value.length-4);
-  const lastPart = value.slice(-1);
-  const middle = "x".repeat(3);    
-  return firstPart + middle + lastPart;
+  const firstPart = "x".repeat(value.length - 4);
+  const middle = value.slice(-4,-1);
+  return firstPart + middle + "x";
 };
 
 const maskPhoneNumber = () => {
@@ -136,11 +150,22 @@ const cancelButton = () => {
   userProfile.value.nickName = originalProfile.value.nickName;
   userProfile.value.fullName = originalProfile.value.fullName;
   isEditMode.value = false;
+  form.nickname.isValid = false;
+  form.nickname.isFirstInput = true;
+  form.fullname.isValid = false;
+  form.fullname.isFirstInput = true;
+
 };
 </script>
 
 <template>
-  <div
+
+  <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
+    <div class="text-blue-600 text-5xl font-semibold">
+      Loading...
+    </div>
+  </div>
+  <div v-else
     class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10"
   >
     <div
@@ -163,16 +188,16 @@ const cancelButton = () => {
 
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
-          <userDataList label="Type" v-model="userType" />
           <userDataList
-            label="NickName"
-            v-model="userProfile.nickName"
-            :isEditMode="isEditMode"
+          label="NickName"
+          v-model="userProfile.nickName"
+          :isEditMode="isEditMode"
             :isValid="form.nickname.isValid"
             :isFirstInput="form.nickname.isFirstInput"
             :errorText="form.nickname.errorText"
             @validateValue="validateNickname"
           />
+          <userDataList label="Email" v-model="userProfile.email" />
           <userDataList
             label="FullName"
             v-model="userProfile.fullName"
@@ -181,12 +206,12 @@ const cancelButton = () => {
             :isFirstInput="form.fullname.isFirstInput"
             :errorText="form.fullname.errorText"
             @validateValue="validateFullname"
-          />
-          <userDataList label="Email" v-model="userProfile.email" />
+            />
+            <userDataList label="Type" v-model="userType" />
           <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList label="PhoneNumber" v-model="phoneNumber" />
-            <userDataList label="BankName" v-model="userProfile.bankName" />
-            <userDataList label="BankAccount" v-model="bankAccount" />
+            <userDataList label="Mobile" v-model="phoneNumber" />
+            <userDataList label="Bank Account No" v-model="bankAccount" />
+            <userDataList label="Bank Name" v-model="userProfile.bankName" />
           </div>
         </form>
       </div>
