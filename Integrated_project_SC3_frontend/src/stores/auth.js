@@ -22,8 +22,8 @@ export const useAuthStore = defineStore("auth", {
     // ฟังก์ชัน login
     async login(username, password) {
       try {
-        const { accessToken, refreshToken, role } = await loginUser(username, password);
-
+        // const { accessToken, refreshToken, role } = await loginUser(username, password);
+       const { accessToken, role } = await loginUser(username, password);
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;

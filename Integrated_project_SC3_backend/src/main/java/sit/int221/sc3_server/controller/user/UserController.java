@@ -191,11 +191,14 @@ public class UserController {
     @PutMapping("/user/profile/all")
     public ResponseEntity<?> editUserProfile(@ModelAttribute UserProfileRequestRTO userProfileRequestRTO, Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthenticateException("Invalid token type");
         }
+
         boolean isSeller = authentication.getAuthorities()
                 .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
+
         if(isSeller){
             return ResponseEntity.ok().body(userServices.updateSeller(userProfileRequestRTO,authUserDetail.getId()));
         }else{
