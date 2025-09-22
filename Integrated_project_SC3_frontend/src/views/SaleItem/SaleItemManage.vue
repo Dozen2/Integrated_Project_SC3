@@ -138,11 +138,6 @@ const deleteProduct = (id) => {
       {{ alertStore.message }}
     </div>
 
-    <!-- Empty State -->
-    <div v-if="!saleItem.content || saleItem.content.length === 0" class="itbms-no text-center text-gray-500 text-xl">
-      no sale item
-    </div>
-
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">

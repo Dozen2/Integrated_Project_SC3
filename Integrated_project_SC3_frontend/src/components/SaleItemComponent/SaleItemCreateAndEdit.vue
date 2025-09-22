@@ -65,7 +65,6 @@ const saleItem = reactive({
   saleItemImage: [],
 });
 
-
 const originalSaleItem = reactive({});
 
 // ตัวแปรสำหรับการจัดการไฟล์
@@ -151,7 +150,6 @@ const compareSaleItem = (a, b) => {
     b === null
   )
     return false;
-
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
   if (keysA.length !== keysB.length) return false;

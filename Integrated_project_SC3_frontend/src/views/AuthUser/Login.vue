@@ -60,9 +60,11 @@ const authStore = useAuthStore();
 
 const summitForm = async () => {
   try {
+    await authStore.login(email.value, password.value);
+    const role = await authStore.getAuthData().authorities[authStore.getAuthData().authorities.length - 1].role;
+    console.log("User role after login:", role);
     loading.value = true;
     // const res = await registerUser(formData);
-    await authStore.login(email.value, password.value);
     loading.value = false;
     alertStore.addToast(
       "The user account has been successfully registered.",
@@ -70,9 +72,17 @@ const summitForm = async () => {
       "success",
       5000
     );
-    console.log(authStore.role);
-    route.push("/sale-items");
+    if(role == 'ROLE_SELLER'){
+      console.log("Navigating to product management page for seller.");
+      route.push("/sale-items/list");
+      return;
+    }
+    else {
+      route.push("/sale-items");
+      return;
+    }
   } catch (err) {
+    console.error("Login error:", err);
     loading.value = false;
     alertStore.addToast("Email or Password incorrect.", err.message, "error");
   }
