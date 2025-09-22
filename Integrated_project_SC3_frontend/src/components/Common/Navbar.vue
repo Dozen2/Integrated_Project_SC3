@@ -11,6 +11,12 @@ const logOut = async() => {
   router.push({ name: 'Home' });
   
 };
+
+const refresh = async() => {
+  await auth.refreshToken()
+  console.log('refesh pass!!!!');
+  
+}
 </script>
 
 <template>
@@ -49,6 +55,12 @@ const logOut = async() => {
               >Manage Sale Items</span
             >
           </RouterLink>
+
+          <div>
+            <button @click="refresh">
+              test refresh 
+            </button>
+          </div>
         </div>
         <div class="relative inline-block">
           <!-- ปุ่มหลัก -->

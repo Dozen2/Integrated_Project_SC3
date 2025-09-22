@@ -24,6 +24,13 @@ const props = defineProps({
   },
   errorText: String,
 });
+
+const emit = defineEmits(["update:modelValue"]);
+
+function updateValue(e) {
+  emit("update:modelValue", e.target.value);
+}
+
 </script>
 
 <template>
@@ -36,7 +43,7 @@ const props = defineProps({
     <!-- Input (Edit mode) -->
     <div class="col-span-8" v-if="isEditMode">
       <input
-        :value="props.value"
+        :value="props.modelValue"
         :type="type"
         @input="(e) => { updateValue(e); validateValue(); }"
         @blur="handleBlur"
@@ -52,7 +59,7 @@ const props = defineProps({
     <!-- Value (View mode) -->
     <div class="col-span-8" v-else>
       <span class="text-lg text-gray-800">
-        {{ props.value }}
+        {{ props.modelValue }}
       </span>
     </div>
   </div>

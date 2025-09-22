@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Component
 public class JwtUtils {
-    @Value("#{30*1000*60}")
+    @Value("#{30*1000*60}")//30*1000*60
     private long MAX_TOKEN_INTERVAL;
     @Value("${app.security.jwt.key-id}")
     private String KEY_ID;
@@ -54,6 +54,9 @@ public class JwtUtils {
             AuthUserDetail authUser = (AuthUserDetail) user;
             Date now = new Date();
             Date expiryDate = new Date(now.getTime() + ageInMinute * 60 * 1000);
+
+
+
 
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .issuer("https://intproj24.sit.kmutt.ac.th/sc3/")

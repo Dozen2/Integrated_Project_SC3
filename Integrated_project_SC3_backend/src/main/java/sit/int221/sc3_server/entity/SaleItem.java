@@ -63,6 +63,11 @@ public class SaleItem {
     @Column(name = "color", length = 60)
     private String color;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Seller seller;
+
     @CreationTimestamp
     @Column(name = "createdOn", nullable = false, updatable = false)
     private Instant createdOn;

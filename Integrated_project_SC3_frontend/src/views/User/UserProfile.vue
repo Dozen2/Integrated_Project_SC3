@@ -8,6 +8,8 @@ const auth = useAuthStore();
 console.log('Current Role:', auth.role);
 const userProfile = ref({});
 const isEditMode = ref(false);
+const phoneNumber = ref()
+const bankAccount = ref()
 
 // const mockUserProfile = {
 //   userType: auth.role.slice(5),
@@ -19,15 +21,72 @@ const isEditMode = ref(false);
 //   bankAccount: "123-456-7890"
 // };
 
+const maskphoneNumber = () => {
+  let phomNum = userProfile.value.phoneNumber;
+  // console.log("Original:", phomNum);
+
+  let maskPhon = '';
+  let count = 0; // นับตัวเลขที่เพิ่มเข้า mask
+
+  for (let i = phomNum.length - 1; i >= 0; i--) {
+    // ถ้ายังไม่ครบ 4 ตัว ให้เพิ่มตัวเลขจริง
+    if (count < 4) {
+      maskPhon = phomNum[i] + maskPhon; // เพิ่มด้านหน้า
+      count++;
+    } else {
+      maskPhon = 'X' + maskPhon; // ตัวที่เหลือเป็น X
+    }
+  }
+
+  // console.log("Masked:", maskPhon);
+  return phoneNumber.value = maskPhon
+}
+
+const maskBankAccount = () => {
+  let bankAcc = userProfile.value.bankAccount;
+  // console.log("Original:", bankAcc);
+
+  let maskbank = '';
+  let count = 0; // นับตัวเลขที่เพิ่มเข้า mask
+
+  for (let i = bankAcc.length - 1; i >= 0; i--) {
+    // ถ้ายังไม่ครบ 4 ตัว ให้เพิ่มตัวเลขจริง
+    if (count < 4) {
+      maskbank = bankAcc[i] + maskbank; // เพิ่มด้านหน้า
+      count++;
+    } else {
+      maskbank = 'X' + maskbank; // ตัวที่เหลือเป็น X
+    }
+  }
+
+  // console.log("Masked:", maskbank);
+  return bankAccount.value = maskbank
+}
+
+
+
+
 const summitForm = () => {
   // Logic to handle form submission
+
   console.log("Form submitted with data:", userProfile.value);
   isEditMode.value = false; // Exit edit mode after submission
 };
 
-const editUserProfile = () => {
-  // ...
-  isEditMode.value = true;
+const editUserProfile = async () => {
+  try {
+    // เรียก API update profile ผ่าน store
+    await auth.updateProfile({
+      fullName: userProfile.value.fullName,
+      nickName: userProfile.value.nickName,
+    });
+
+    isEditMode.value = false; // กลับไป view mode
+    // alert("Profile updated successfully!");
+  } catch (err) {
+    console.error("Update profile error:", err);
+    alert("Error: " + err.message);
+  }
 };
 
 onMounted(async () => {
@@ -38,9 +97,12 @@ onMounted(async () => {
     const userId = decoded.id;
 
     userProfile.value = await auth.loadUserProfile(userId);
+
   } catch (err) {
     console.error("Load profile error:", err);
   }
+  maskphoneNumber();
+  maskBankAccount();
 });
 
 </script>
@@ -64,13 +126,13 @@ onMounted(async () => {
 
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
-          <userDataList label="NickName" :value="userProfile.nickName" :isEditMode="isEditMode" />
-          <userDataList label="FullName" :value="userProfile.fullName" :isEditMode="isEditMode" />
-          <userDataList label="Email" :value="userProfile.email" :isEditMode="isEditMode" />
+          <userDataList label="NickName" v-model="userProfile.nickName" :isEditMode="isEditMode" />
+          <userDataList label="FullName" v-model="userProfile.fullName" :isEditMode="isEditMode" />
+          <userDataList label="Email" v-model="userProfile.email" />
           <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList label="PhoneNumber" :value="userProfile.phoneNumber" :isEditMode="isEditMode" />
-            <userDataList label="BankName" :value="userProfile.bankName" :isEditMode="isEditMode" />
-            <userDataList label="BankAccount" :value="userProfile.bankAccount" :isEditMode="isEditMode" />
+            <userDataList label="PhoneNumber" v-model="phoneNumber" />
+            <userDataList label="BankName" v-model="userProfile.bankName" />
+            <userDataList label="BankAccount" v-model="bankAccount" />
           </div>
         </form>
       </div>
@@ -79,24 +141,18 @@ onMounted(async () => {
     <!-- Buttons -->
     <div class="flex mt-6 justify-center space-x-4">
       <template v-if="!isEditMode">
-        <button
-          @click="isEditMode = true"
-          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors"
-        >
+        <button @click="isEditMode = true"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors">
           Edit
         </button>
       </template>
       <template v-else>
-        <button
-          @click="editUserProfile"
-          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors"
-        >
+        <button @click="editUserProfile"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors">
           Save
         </button>
-        <button
-          @click="isEditMode = false"
-          class="bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors"
-        >
+        <button @click="isEditMode = false"
+          class="bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors">
           Cancel
         </button>
       </template>

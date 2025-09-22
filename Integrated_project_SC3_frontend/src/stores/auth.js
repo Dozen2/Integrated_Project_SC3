@@ -4,7 +4,10 @@ import {
   loginUser, 
   refreshToken as apiRefreshToken, 
   fetchUserProfile,
-  logout as apiLogout } from "@/libs/callAPI/apiAuth";
+  logout as apiLogout,
+  editUserProfile as apiEditUserProfile 
+   } from "@/libs/callAPI/apiAuth";
+import router from "@/router";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -40,6 +43,10 @@ export const useAuthStore = defineStore("auth", {
       try {
         const { accessToken, role } = await apiRefreshToken();
 
+        console.log("✅ AccessToken ใหม่:", accessToken);
+        console.log("new role = ", role);
+        
+
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;
@@ -50,6 +57,7 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
+        router.push("/login");
         return false;
       }
     },
@@ -80,6 +88,18 @@ export const useAuthStore = defineStore("auth", {
         console.error("Error loading profile:", err);
         throw err;
       }
-    }
+    },
+
+    async updateProfile(userData){
+            try {
+        const updatedProfile = await apiEditUserProfile(userData);
+        this.profile = updatedProfile; // อัปเดตค่าใน store ด้วย
+        return updatedProfile;
+      } catch (err) {
+        console.error("Update profile failed:", err);
+        throw err;
+      }
+    },
+    
   }
 });
