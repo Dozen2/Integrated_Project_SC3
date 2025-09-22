@@ -3,6 +3,8 @@ import InputBox from "@/components/Common/InputBox.vue";
 import { ref, reactive, computed } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
+import { useAuthStore } from "../../stores/auth";
+
 
 const alertStore = useAlertStore();
 const route = useRouter();
@@ -18,7 +20,7 @@ const form = reactive({
   },
   password: {
     errorText:
-      "Password must be 8+ chars with uppercase, lowercase, number, special char",
+      "Password must be less than 40 characters",
     isValid: false,
     isFirstInput: true,
   },
@@ -27,11 +29,11 @@ const form = reactive({
 const isFormValid = computed(() => {
   const results = Object.entries(form).map(([key, f]) => ({
     field: key,
-    isValid: f.isValid ?? null, // ถ้าไม่มี isValid จะได้ null
+    isValid: f.isValid ?? null, 
     isFirstInput: f.isFirstInput ?? null,
   }));
 
-  console.table(results); // log สวยๆ ดูได้ว่าฟิลด์ไหนผ่านไม่ผ่าน
+  console.table(results);
 
   return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
 });
@@ -44,10 +46,7 @@ const validateEmail = () => {
 };
 
 const validatePassword = () => {
-  form.password.isValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#/\-+^()=\[\]{}><])[A-Za-z\d@$!%*?&#/\-+^()=\[\]{}><]{8,}$/.test(
-      password.value
-    );
+  form.password.isValid = /^.{0,39}$/.test(password.value)
   updateIsFirstInput("password", password.value);
 };
 
@@ -57,31 +56,29 @@ const updateIsFirstInput = (field, value) => {
 };
 
 const loading = ref(false);
+const authStore = useAuthStore();
 
 const summitForm = async () => {
   try {
-    const formData = {
-      email: email.value,
-      passwords: password.value,
-    };
-
     loading.value = true;
     // const res = await registerUser(formData);
+    await authStore.login(email.value, password.value);
     loading.value = false;
-    console.log("✅ Register success:", res);
     alertStore.addToast(
       "The user account has been successfully registered.",
       "Create buyer successful.",
       "success",
       5000
     );
-    route.push({ name: "Products" });
+    console.log(authStore.role);
+    route.push("/sale-items");
   } catch (err) {
     loading.value = false;
-    alertStore.addToast(err.message, "Register failed", "error");
+    alertStore.addToast("Email or Password incorrect.", err.message, "error");
   }
 };
 </script>
+
 <template>
   <div
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"

@@ -1,4 +1,5 @@
 <script setup>
+import { BrushCleaning } from "lucide-vue-next";
 import { defineProps, defineEmits } from "vue";
 
 const props = defineProps({
@@ -21,9 +22,9 @@ function clearFilters() {
 <template>
   <button
     @click="clearFilters"
-    class="px-3 py-2 text-white bg-red-500 hover:bg-red-600 cursor-pointer rounded-lg transition-colors duration-200 whitespace-nowrap"
+    class="px-3 py-2 text-white bg-blue-500 hover:bg-blue-600 cursor-pointer rounded-lg transition-colors duration-200 whitespace-nowrap"
     title="Clear all filters"
   >
-    Clear all fiter
+     <span class="flex"><BrushCleaning strokeWidth={1.5} />&nbsp;Clear all </span>
   </button>
 </template>

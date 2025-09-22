@@ -1,3 +1,4 @@
+import { jwtDecode } from "jwt-decode";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const urlV1 = `${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`;
 const urlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items`;
@@ -15,7 +16,7 @@ async function getImageByImageName(imgName) {
     if (!res.ok) {
       if (res.status === 404) {
         // สามารถจัดการ error 404 ให้เฉพาะเจาะจงได้
-        return { error: "Image not found" }; 
+        return { error: "Image not found" };
       }
       throw new Error(`HTTP error! status: ${res.status}`);
     }
@@ -23,13 +24,11 @@ async function getImageByImageName(imgName) {
     const imageBlob = await res.blob();
     const imageUrl = URL.createObjectURL(imageBlob);
     return imageUrl;
-
   } catch (error) {
     // ปรับปรุงการจัดการ error ให้แสดงข้อความที่เข้าใจง่ายขึ้น
     throw new Error(`Failed to fetch image: ${error.message}`);
   }
 }
-
 
 async function getViewStorageForSelect() {
   try {
@@ -46,7 +45,6 @@ async function getViewStorageForSelect() {
     throw new Error(`Fetch failed: ${error.message}`);
   }
 }
-
 
 async function getAllSaleItemV1() {
   try {
@@ -79,17 +77,17 @@ const getAllSaleItemV2 = async (
   filterStorages = filterStorages || [];
 
   const params = new URLSearchParams();
-  
+
   // Filter brands
   filterBrand.forEach((brand) => {
     params.append("filterBrands", brand || "");
   });
-  
+
   // Filter storages
   filterStorages.forEach((storage) => {
     params.append("filterStorages", storage || "");
   });
-  
+
   // Price range filters
   if (filterPriceLower !== null && filterPriceLower !== "") {
     params.append("filterPriceLower", filterPriceLower);
@@ -102,13 +100,13 @@ const getAllSaleItemV2 = async (
   if (search && search.trim() !== "") {
     params.append("searchParam", search.trim());
   }
-  
+
   // Sorting and pagination
   params.append("sortField", sortField || "createdOn");
   params.append("sortDirection", sortDirection || "desc");
   params.append("size", size || 10);
   params.append("page", page || 0);
-  
+
   const pathInput = params.toString();
   console.log("API Call URL:", `${urlV2}?${pathInput}`);
 
@@ -126,6 +124,51 @@ const getAllSaleItemV2 = async (
     throw new Error(`Fetch failed: ${error.message}`);
   }
 };
+
+//SaleItem Seller
+//=============================================================================
+
+const  getAllSaleItemSeller = async (size, page) => {
+  const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
+  const decoded = jwtDecode(accessToken);
+
+  console.log("Decoded JWT in getAllSaleItemSeller:", decoded.sellerId);
+  if (!accessToken) {
+    throw new Error("No access token found in localStorage");
+  }
+
+  const params = new URLSearchParams();
+  params.append("size", size);
+  // params.append("sortField", sortField);
+  params.append("page", page);
+
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items?${params.toString()}`;
+  console.log("API Call URL:", url);
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`, // ใช้ token จาก localStorage
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        return { error: "not_found" };
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const saleItems = await res.json();
+    return saleItems;
+  } catch (error) {
+    throw new Error(`Fetch failed: ${error.message}`);
+  }
+};
+
+//=============================================================================
 
 async function getSaleItemById(id) {
   try {
@@ -172,13 +215,15 @@ async function addSaleItemV2(newSaleItem) {
   try {
     const response = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2`, {
       method: "POST",
-      body: newSaleItem, // FormData จะตั้ง Content-Type เป็น multipart/form-data อัตโนมัติ
+      body: newSaleItem,
     });
 
     // ตรวจสอบสถานะการตอบกลับ
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     return await response.json(); // หรือ return response ตามที่ต้องการ
@@ -192,7 +237,7 @@ async function addSaleItemV2(newSaleItem) {
 async function updateSaleItemV2(id, updatedSaleItem) {
   try {
     const res = await fetch(`${urlV2}/${id}`, {
-     method: "PUT",
+      method: "PUT",
       body: updatedSaleItem,
     });
     if (!res.ok) {
@@ -256,6 +301,7 @@ const deleteSaleItemByIdV2 = async (id) => {
 export {
   getAllSaleItemV1,
   getAllSaleItemV2,
+  getAllSaleItemSeller,
   getSaleItemById,
   addSaleItem,
   updateSaleItem,
@@ -265,5 +311,5 @@ export {
   getImageByImageName,
   addSaleItemV2,
   getViewStorageForSelect,
-  updateSaleItemV2
+  updateSaleItemV2,
 };

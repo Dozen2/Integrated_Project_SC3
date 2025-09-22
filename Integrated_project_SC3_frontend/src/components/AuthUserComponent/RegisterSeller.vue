@@ -56,7 +56,7 @@ const form = reactive({
     isFirstInput: true,
   },
   phoneNumber: {
-    errorText: "Phone number is required",
+    errorText: "Phone number must be 0-10 digits",
     isValid: false,
     isFirstInput: true,
   },
@@ -123,7 +123,7 @@ const validateNationalId = () => {
 };
 
 const validatePhoneNumber = () => {
-  form.phoneNumber.isValid = phoneNumber.value.trim().length > 0;
+  form.phoneNumber.isValid = /^[0-9]{10}$/.test(phoneNumber.value) && phoneNumber.value.trim().length > 0;
   updateIsFirstInput("phoneNumber", phoneNumber.value);
 };
 

@@ -11,76 +11,70 @@ import BrandManage from '@/views/Brand/BrandManage.vue'
 import BrandEdit from '@/views/Brand/BrandEdit.vue'
 import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
-import VerifyEmail from '@/views/AuthUser/VerifyEmail.vue'
+import VerifyEmail from '@/views/AuthUser/VerlfyEmail.vue'
+import UserProfile from '@/views/User/UserProfile.vue'
+import { useAuthStore } from '@/stores/auth'
+
+
 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'Home',
-      component: HomePage
-    },
-    {
-      path: '/sale-items',
-      name: 'Products',
-      component: ProductList
-    },
-    {
-      path: '/sale-items/:id',
-      name: 'Detail',
-      component: ProductDetail
-    },
-    {
-      path: '/sale-items/:id/edit',
-      name: 'Edit',
-      component: ProuctEdit,
-      props: true
-    },
-    {
-      path: '/sale-items/create',
-      name: 'ProuctCreate',
-      component: ProuctCreate
+    // Buyer หรือ Public
+    { path: '/', name: 'Home', component: HomePage },
+    { path: '/sale-items', name: 'Products', component: ProductList },
+    { path: '/sale-items/:id', name: 'Detail', component: ProductDetail },
 
-    },
-    {
-      path: '/sale-items/list',
-      name: 'ProductManage',
-      component: ProductManage
-    },
-    {
-      path: '/brands/add',
-      name: 'BrandCreate',
-      component: BrandCreate
-    },
-    {
-      path: '/brands',
-      name: 'BrandManage',
-      component: BrandManage
+    // Seller
+    { path: '/sale-items/:id/edit', name: 'Edit', component: ProuctEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/sale-items/create', name: 'ProuctCreate', component: ProuctCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/sale-items/list', name: 'ProductManage', component: ProductManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands', name: 'BrandManage', component: BrandManage, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands/add', name: 'BrandCreate', component: BrandCreate, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
+    { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
 
-    },
-    {
-      path: '/brands/:id/edit',
-      name: 'BrandEdit',
-      component: BrandEdit
-    },
-    {
-      path: '/sale-items/register',
-      name: 'Register',
-      component: Register
-    },
-    {
-      path: '/sale-items/login',
-      name: 'Login',
-      component: Login
-    },
-    {
-      path: '/verify-email',
-      name: 'VerifyeMail',
-      component: VerifyEmail
-    },
+    // Auth
+    { path: '/sale-items/register', name: 'Register', component: Register },
+    { path: '/sale-items/login', name: 'Login', component: Login },
+    { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
+
+    //User
+    {path: '/user/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+
+    // Unknow-Path -> Home Page
+    { path: '/:pathMatch(.*)*', redirect: { name: 'Home' } },
+
   ],
 })
+
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
+
+  const guestOnlyRoutes = ['Login', 'Register', 'VerifyEmail'];
+  if (auth.accessToken && guestOnlyRoutes.includes(to.name)) {
+    return { name: 'Home' }; // redirect ไปหน้า Home (หรือจะไปหน้า Profile ก็ได้)
+  }
+
+  // ถ้าต้อง auth
+  if (to.meta.requiresAuth) {
+    // ไม่มี accessToken -> ลอง refresh
+    if (!auth.accessToken) {
+      const refreshed = await auth.refreshToken();
+      if (!refreshed) {
+        return { name: 'Login', query: { redirect: to.fullPath } };
+      }
+    }
+
+    // ตรวจสอบ role
+    const allowedRoles = to.meta.roles || [];
+    if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
+        // ไม่ตรง role -> redirect ไปหน้า Home
+      return { name: 'Login' };
+    }
+  }
+
+  return true;
+});
 
 export default router

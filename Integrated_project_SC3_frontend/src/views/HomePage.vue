@@ -122,29 +122,21 @@ onMounted(() => {
         <RouterLink to="/sale-items">
           <button
             ref="el => buttons.value.push(el)"
-            class="group px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg shadow-md hover:shadow-xl hover:shadow-blue-600/25 transition-all duration-300 transform hover:-translate-y-1"
+            class="cursor-pointer group px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg shadow-md hover:shadow-xl hover:shadow-blue-600/25 transition-all duration-300 transform hover:-translate-y-1"
           >
             <span class="flex items-center justify-center space-x-2">
               <span>Start Shopping</span>
-              <svg
-                class="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-              </svg>
             </span>
           </button>
         </RouterLink>
 
         <!-- Secondary CTA -->
-        <RouterLink to="/sale-items/list">
+        <RouterLink to="">
           <button
             ref="el => buttons.value.push(el)"
-            class="px-10 py-4 border-2 border-gray-300 text-gray-700 rounded-full font-semibold text-lg hover:border-gray-400 hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm"
+            class="cursor-pointer px-15 py-4 border-2 border-gray-300 text-gray-700 rounded-full font-semibold text-lg hover:border-gray-400 hover:bg-gray-100 transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm"
           >
-            Become a Partner
+            About Us
           </button>
         </RouterLink>
       </div>

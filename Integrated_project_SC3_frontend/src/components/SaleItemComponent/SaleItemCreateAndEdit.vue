@@ -20,12 +20,14 @@ import { useAlertStore } from "@/stores/alertStore.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand";
 import { ChevronLeft, ChevronRight, Upload, X } from 'lucide-vue-next'; 
 import {ChevronDown, ChevronUp} from 'lucide-vue-next';
+import InputBox from "../Common/InputBox.vue";
 
 
 const boxTextTailwind =
   "w-[600px] p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
 const boxTextTailwindError =
   "w-[600px] p-3 border-2 border-red-400 rounded-lg focus:ring-2 focus:ring-red-500 focus:outline-none bg-white shadow-sm transition-all duration-200";
+
 
 const brandError = ref(false);
 const boxTextTailwindModel = ref(boxTextTailwind);
@@ -96,7 +98,7 @@ onBeforeMount(async () => {
         await getBrandIdByName(data.brandName);
       }
       
-      // ✅ แก้ไข: ย้ายการ push รูปมาไว้หลัง fetch ข้อมูล
+      // ย้ายการ push รูปมาไว้หลัง fetch ข้อมูล
       if (data.saleItemImage && Array.isArray(data.saleItemImage)) {
         saleItem.saleItemImage = [...data.saleItemImage];
         fileImageFirstResponse.length = 0; // clear array ก่อน
@@ -174,7 +176,6 @@ watch(
   },
   { deep: true }
 );
-
 const checkDecimal = (num) => {
   return !(Math.floor(num * 100) === num * 100);
 };
@@ -300,13 +301,11 @@ const setSessionStorage = () => {
 
 //----------------------------------------------File Management-------------------------------------------------------------------------------------
 const fileImageOrganize = ref([]);
-// File size limits ตาม backend spec
 const FILE_SIZE_LIMITS = {
   MAX_FILE_SIZE: 2 * 1024 * 1024, // 2MB
   MAX_REQUEST_SIZE: 5 * 1024 * 1024, // 5MB
 };
 
-// ฟังก์ชันแปลงขนาดไฟล์เป็น string ที่อ่านง่าย
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -315,9 +314,7 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// เมื่อเลือกไฟล์ - รีโลจิกใหม่เพื่อใช้กับ fileImageOrganize.value (แบบเรียบง่าย)
-// ✅ แก้ไข: เพิ่ม debug ใน handleFileChange
-const handleFileChange = (event) => {
+const handleFileChange = async(event) => {
   const selectedFiles = Array.from(event.target.files);
   const MAX_IMAGES = 4;
   const MAX_FILENAME_LENGTH = 50;
@@ -347,7 +344,6 @@ const handleFileChange = (event) => {
     const remainingSlots = MAX_IMAGES - currentImageCount;
     
     if (remainingSlots <= 0) {
-      // alert(`คุณสามารถอัปโหลดได้สูงสุด ${MAX_IMAGES} รูปเท่านั้น\nปัจจุบันมีรูปครบ ${MAX_IMAGES} รูปแล้ว`);
        alertStore.addToast(`You've reached the upload limit of ${MAX_IMAGES} images.`, "Image upload limit exceeded.", "warning", 8000);
       
       event.target.value = "";
@@ -361,14 +357,7 @@ const handleFileChange = (event) => {
   // ตรวจสอบขนาดไฟล์
   const validation = validateFileSize(filesToProcess);
   
-  // if (!validation.isValid) {
-  //   alert(validation.errors.join('\n'));
-  //   event.target.value = "";
-  //   return;
-  // }
-
   if (!validation.isValid) {
-  // alert(validation.errors.join("\n"));
       alertStore.addToast(validation.errors.join("\n"), "Image upload limit exceeded.", "warning", 8000);
 
 }
@@ -376,54 +365,47 @@ const handleFileChange = (event) => {
 filesToProcess = validation.validFiles;
   
   if (warningMessage) {
-    // alert(warningMessage);
     alertStore.addToast(warningMessage, "Image upload limit exceeded.", "warning", 8000);
   }
 
   console.log("filesToProcess: ",filesToProcess)
   
-  // เพิ่มไฟล์ใหม่ลงใน fileImageOrganize และ files array
   const filesProcessed = [];
-  filesToProcess.forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageUrl = e.target.result;
-      const nextOrder = fileImageOrganize.value.length;
-      
-      fileImageOrganize.value.push({
-        fileName: null, // ไฟล์ใหม่
-        orgFileName: file.name,
-        imageUrl: imageUrl,
-        imageViewOrder: nextOrder +1
-      });
+  for (const [index, file] of filesToProcess.entries()) {
+  const reader = new FileReader();
 
-      saleItem.saleItemImage.push({
-      imageFile: file,
-      imageUrl: imageUrl,
-      orgFileName: file.name,
-      imageViewOrder: nextOrder + 1
-    });
-    };
+  const imageUrl = await new Promise((resolve) => {
+    reader.onload = (e) => resolve(e.target.result);
     reader.readAsDataURL(file);
-    filesProcessed.push(file);
-    console.log("index: " +Number( index + saleItem.saleItemImage.length + 1));
   });
+
+  const nextOrder = fileImageOrganize.value.length;
+
+  console.log("filesToProcess: ", filesToProcess[index].name);
+  console.log("filesToProcess: ", filesToProcess);
+
+  fileImageOrganize.value.push({
+    fileName: null, // ไฟล์ใหม่
+    orgFileName: file.name,
+    imageUrl: imageUrl,
+    imageViewOrder: nextOrder + 1,
+  });
+
+  saleItem.saleItemImage.push({
+    imageFile: file,
+    imageUrl: imageUrl,
+    orgFileName: file.name,
+    imageViewOrder: nextOrder + 1,
+  });
+
+  filesProcessed.push(file);
+}
+
   
+  console.log("fileImageOrganize.value:", fileImageOrganize.value);
+
   // เพิ่มไฟล์ลงใน files array
   files.value.push(...filesProcessed);
-
-  // saleItem.saleItemImage.push( ...filesProcessed.map((file, index) => ({
-  //   imageFile: file,
-  //   orgFileName: file.name,
-  //   imageViewOrder: fileImageOrganize.value.length + index +1
-  // })));
-  
-  // console.log("Updated files array:", files.value);
-  // console.log("Updated filesProcessed array:", filesProcessed);
-  // console.log("Updated filesName array:", files.value.map(f => f.name));
-  // console.log("Updated fileImageOrganize:", fileImageOrganize.value);
-  // console.log("Updated saleItem eiei:", saleItem);
-  
   event.target.value = "";
 };
 
@@ -479,15 +461,25 @@ const removeFile = (index) => {
     if (findIndexSaleItemImage !== -1) {
       saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
     }
+  } else {
+    // ถ้าเป็นไฟล์ใหม่ที่ยังไม่มี fileName ให้ลบจาก saleItem.saleItemImage โดยใช้ orgFileName แทน
+    let findIndexSaleItemImage = saleItem.saleItemImage.findIndex(
+      (item) => item.orgFileName === fileImageOrganize.value[index].orgFileName
+    );
+    console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+    
+    if (findIndexSaleItemImage !== -1) {
+      saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
+    }
   }
 
+  console.log("fileImageOrganize.value[index].fileName: " +fileImageOrganize.value[index].fileName);
+  console.log("index: " +index);
+
   console.log("deletedImage:", deletedImage.value);
-  // ลบจาก fileImageOrganize
   fileImageOrganize.value.splice(index, 1);
-  
-  // ลบจาก files array
   files.value.splice(index, 1);
-  
+
   // อัปเดต imageViewOrder ใหม่
   fileImageOrganize.value.forEach((item, idx) => {
     item.imageViewOrder = idx;
@@ -500,15 +492,7 @@ const removeFile = (index) => {
   
   console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
   console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
-  // ปรับ currentIndex ถ้าจำเป็น
-  if (currentIndex.value >= fileImageOrganize.value.length && fileImageOrganize.value.length > 0) {
-    currentIndex.value = fileImageOrganize.value.length - 1;
-  } else if (fileImageOrganize.value.length === 0) {
-    currentIndex.value = 0;
-  }
-
-  
-
+  console.log("After removal, files array:", files.value);
 };
 
 const deletedImage = ref([]);
@@ -589,7 +573,6 @@ const nextImage = () => {
     currentIndex.value = 0;
   }
 };
-
 
 //===================================File image called=============================
 const fileImageFirstResponse = [];
@@ -715,7 +698,6 @@ if (Array.isArray(saleItem.saleItemImage)) {
       }
     } 
   });
-// }
 
   //loop deletedImage and append to formData
   deletedImage.value.forEach((fileName) => {
@@ -743,7 +725,7 @@ else {
   router.go(-1);
 }
   } catch (err) {
-    console.error("เกิดข้อผิดพลาดระหว่างบันทึก:", err.message);
+    console.error("Something wrong: ", err.message);
     alert(err.message);
     router.push(`/sale-items`);
   } finally {
@@ -754,29 +736,11 @@ else {
 </script>
 
 <template>
-  <div class="bg-white h-screen w-auto">
-    <!-- Header with decorative elements -->
-    <div class="relative mb-5 mt-6">
-      <div class="absolute inset-0 flex items-center" aria-hidden="true">
-        <div class="w-2/3 mx-auto border-t border-blue-300"></div>
-      </div>
-      <div class="relative flex justify-center">
-        <span class="bg-gradient-to-r from-blue-100 via-white to-blue-100 px-6 py-2 rounded-full">
-          <h1 class="text-2xl font-bold text-blue-700 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-              <line x1="12" y1="18" x2="12" y2="18"></line>
-            </svg>
-            {{
-              prop.mode === "Edit" ? "Edit Phone Details" : "Add New Phone"
-            }}
-          </h1>
-        </span>
-      </div>
-    </div>
+  <div class="bg-white min-h-screen w-auto pt-1">
+    <Title :label='prop.mode === "Edit" ? "Edit Phone Details" : "Add New Phone"'/>
 
     <div class=" m-5 ml-[120px] flex flex-row justify-center ">
+
       <!-- Image Preview Section - ใช้ saleItem.saleItemImage แทน saleItemImage -->
       <div class="grid grid-rows-[auto_auto] gap-4 p-4 flex-1/2 relative ">
         
@@ -867,6 +831,7 @@ else {
       <!-- ====================================================End of Image Uploader==================================================== -->
 
       <div class="m-3 p-6 h-[600px] w-[600px] rounded-2xl bg-white flex-1/2">
+        
         <!-- Brand Selection -->
         <div class="w-full max-w-[500px] mb-6">
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -899,15 +864,18 @@ else {
             Model
             <span class="text-red-500 ml-1">*</span>
           </label>
-          
-          <div class="flex-1">
-            <input type="text" v-model="saleItem.model" @blur="trimField('model')"
-              :class="`itbms-model ${boxTextTailwindModel} w-full`" placeholder="e.g. iPhone 13 Pro" />
+
+          <InputBox
+            v-model="saleItem.model"
+            placeholder="e.g. iPhone 13 Pro"
+            :inputClass="boxTextTailwindModel"
+          />
             <p v-show="saleItem.model.length > maxLength.model" class="itbms-message mt-1 text-sm text-red-500">
               Model must be 1-60 characters long.
             </p>
-          </div>
+          
         </div>
+
 
         <!-- Price -->
         <div class="flex items-center mb-6 max-w-[600px]">
@@ -920,16 +888,17 @@ else {
             Price (Baht)
             <span class="text-red-500 ml-1">*</span>
           </label>
-          <div class="flex-1 relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span class="text-gray-500">฿</span>
-            </div>
-            <input type="number" v-model.number="saleItem.price"
-              :class="`itbms-price pl-8 ${boxTextTailwindPrice} w-full`" placeholder="e.g. 29900" />
+
+          <InputBox 
+            v-model="saleItem.price"
+            placeholder="e.g. 29900"
+            :inputClass="boxTextTailwindModel"  
+          />
+          <div class="flex-1">
+            <p v-show="saleItem.price < 0" class="itbms-message mt-1 text-sm text-red-500 ml-24">
+              Price must be non-negative integer.
+            </p>
           </div>
-          <p v-show="saleItem.price < 0" class="itbms-message mt-1 text-sm text-red-500 ml-24">
-            Price must be non-negative integer.
-          </p>
         </div>
 
         <!-- RAM -->
@@ -942,9 +911,13 @@ else {
             </svg>
             RAM (GB)
           </label>
+          <InputBox
+            type="number"
+            v-model.number="saleItem.ramGb"
+            placeholder="e.g. 8"
+            :inputClass="boxTextTailwindRamGB"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.ramGb" :class="`itbms-ramGb ${boxTextTailwindRamGB} w-full`"
-              placeholder="e.g. 8" />
             <p v-show="boxTextTailwindRamGB === boxTextTailwindError" class="itbms-message mt-1 text-sm text-red-500">
               RAM size must be positive integer or not specified.
             </p>
@@ -962,9 +935,13 @@ else {
             </svg>
             Storage (GB)
           </label>
+          <InputBox
+            type="number"
+            v-model.number="saleItem.storageGb"
+            placeholder="e.g. 128"
+            :inputClass="boxTextTailwindStorageGB"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.storageGb"
-              :class="`itbms-storageGb ${boxTextTailwindStorageGB} w-full`" placeholder="e.g. 128" />
             <p v-show="boxTextTailwindStorageGB === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Storage size must be positive integer or not specified.
@@ -983,9 +960,13 @@ else {
             </svg>
             Screen Size (Inches)
           </label>
+          <InputBox
+            type="number"
+            v-model.number="saleItem.screenSizeInch"
+            placeholder="e.g. 6.1"
+            :inputClass="boxTextTailwindScreenSizeInch"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.screenSizeInch" step="0.1"
-              :class="`itbms-screenSizeInch ${boxTextTailwindScreenSizeInch} w-full`" placeholder="e.g. 6.1" />
             <p v-show="boxTextTailwindScreenSizeInch === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Screen size must be positive number with at most 2 decimal
@@ -1006,9 +987,12 @@ else {
             </svg>
             Color
           </label>
+          <InputBox
+            v-model="saleItem.color"
+            placeholder="e.g. Midnight Blue"
+            :inputClass="boxTextTailwindColor"
+          />
           <div class="flex-1">
-            <input type="text" v-model="saleItem.color" @blur="trimField('color')"
-              :class="`itbms-color ${boxTextTailwindColor} w-full`" placeholder="e.g. Midnight Blue" />
             <p v-show="(saleItem.color?.length ?? 0) > maxLength.color" class="itbms-message mt-1 text-sm text-red-500">
               Color must be 1-40 characters long or not specified.
             </p>
@@ -1027,9 +1011,13 @@ else {
             Quantity
             <span class="text-red-500 ml-1">*</span>
           </label>
+          <InputBox
+            type="number"
+            v-model="saleItem.quantity"
+            placeholder="e.g. 10"
+            :inputClass="boxTextTailwindQuantity"
+          />
           <div class="flex-1">
-            <input type="number" v-model.number="saleItem.quantity" @focus="saleItem.quantity = null"
-              :class="`itbms-quantity ${boxTextTailwindQuantity} w-full`" placeholder="e.g. 10" />
             <p v-show="boxTextTailwindQuantity === boxTextTailwindError"
               class="itbms-message mt-1 text-sm text-red-500">
               Quantity must be non-negative integer.
@@ -1061,6 +1049,7 @@ else {
           </p>
         </div>
 
+
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row sm:justify-end gap-4 max-w-[500px]">
           <button type="button"
@@ -1086,6 +1075,8 @@ else {
             Save
           </button>
         </div>
+
+
         <br>
         <br>
       </div>

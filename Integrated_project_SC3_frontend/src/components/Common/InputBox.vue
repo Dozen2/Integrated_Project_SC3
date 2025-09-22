@@ -1,14 +1,17 @@
 <script setup>
 import { Eye, EyeClosed, EyeOff } from "lucide-vue-next";
+import { Password } from "primevue";
 import { onMounted, ref } from "vue";
+
 const props = defineProps({
   label: String,
   placeholder: String,
+  modelValue: String,
+  errorText: String,
   type: {
     type: String,
     default: "text",
   },
-  modelValue: String,
   isValid: {
     type: Boolean,
     default: true,
@@ -17,8 +20,12 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  errorText: String,
+  inputClass: {
+    type: String,
+    default: "",
+  }
 });
+
 
 const emits = defineEmits(["update:modelValue", "validateValue"]);
 
@@ -35,9 +42,11 @@ function validateValue() {
 }
 
 function handleBlur(e) {
-  let trimmed = e.target.value?.trim() ?? "";
-  emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
-  emits("validateValue");                // validate ต่อได้เลย
+  if(inputType.value != "password"){  
+    let trimmed = e.target.value?.trim() ?? "";
+    emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
+    emits("validateValue");                // validate ต่อได้เลย
+  }
 }
 
 function togglePasswordVisibility() {
@@ -63,6 +72,7 @@ function togglePasswordVisibility() {
        @blur="handleBlur"
       :class="[
         'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2',
+        inputClass,
         isValid || isFirstInput
           ? 'border focus:ring-blue-400'
           : 'border border-red-500 focus:ring-red-400',

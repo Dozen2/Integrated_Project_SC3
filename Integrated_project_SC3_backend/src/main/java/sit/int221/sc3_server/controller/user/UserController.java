@@ -43,6 +43,7 @@ public class UserController {
     private JwtUserDetailService jwtUserDetailService;
     @Value("${app.cookie.path}")
     private String cookiePath;
+
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserResponseDTO> createUser(@Valid @ModelAttribute UserDTO userDTO
             , @RequestPart(value = "nationalIdPhotoFront", required = false) MultipartFile front
@@ -104,7 +105,16 @@ public class UserController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
+    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token,HttpServletRequest request){
+        System.out.println("======== ALL HEADERS ========");
+        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
+            System.out.println(headerName + ": " + request.getHeader(headerName));
+        });
+        System.out.println("============================");
+        System.out.println("========");
+        System.out.println(token);
+        System.out.println("========");
+
         if (token == null || token.isEmpty()) {
             // ถ้าไม่มี header → return 400 Bad Request
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -114,21 +124,46 @@ public class UserController {
         return ResponseEntity.ok(userServices.refreshToken(token));
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
-        String authHeader = request.getHeader("Authorization");
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
-            return ResponseEntity.badRequest().build();
-        }
-         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
-                 .httpOnly(true)
-                 .secure(false)
-                 .path("/")
-                 .maxAge(0)  // expire ทันที
-                 .build();
-         response.addHeader("Set-Cookie",deleteCookie.toString());
-         return ResponseEntity.noContent().build();
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
+//        String authHeader = request.getHeader("Authorization");
+//        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+//            return ResponseEntity.badRequest().build();
+//        }
+////        String token = authHeader.substring(7);
+////        Map<String,Object> claims;
+////        try{
+////            claims =jwtUtils.getJWTClaimSet(token);
+////        }catch (Exception e){
+////            return ResponseEntity.badRequest().build();
+////        }
+////        Integer userId = Integer.parseInt(claims.get("id").toString());
+////         userServices.checkIsActive(userId);
+//         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
+//                 .httpOnly(true)
+////                 .secure(true)
+//                 .path("/")
+//                 .maxAge(0)  // expire ทันที
+//                 .build();
+//         response.addHeader("Set-Cookie",deleteCookie.toString());
+//         return ResponseEntity.noContent().build();
+//
+//    }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
+        System.out.println("======== ALL HEADERS ========");
+        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
+            System.out.println(headerName + ": " + request.getHeader(headerName));
+        });
+        System.out.println("============================");
+        ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/user/{id}")
@@ -151,6 +186,7 @@ public class UserController {
         }
 
     }
+
     @PutMapping("/user/profile/all")
     public ResponseEntity<?> editUserProfile(@ModelAttribute UserProfileRequestRTO userProfileRequestRTO, Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
@@ -171,5 +207,32 @@ public class UserController {
 
 
 
+//    @PostMapping("/refresh")
+//    public ResponseEntity<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+//        if (refreshToken == null || !jwtUtils.validateToken(refreshToken)) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+//        }
+//
+//        String username = jwtUtils.extractUsername(refreshToken);
+//        UserDetails userDetails = jwtUtils.loadUserByUsername(username);
+//
+//        // สร้าง access token ใหม่
+//        String newAccessToken = jwtUtils.generateToken(userDetails, 30, TokenType.access_token);
+//
+//        return ResponseEntity.ok(Map.of(
+//                "accessToken", newAccessToken,
+//                "tokenType", "Bearer",
+//                "expiresIn", 30 * 60
+//        ));
+//    }
 
+//    @GetMapping("/user/file/{filename:.+}")
+//    @ResponseBody
+//    public ResponseEntity<Resource> serveFile(
+//            @PathVariable String filename) {
+//        Resource file = fileService.loadFileAsResourceNational(filename);
+//        System.out.println(MediaType.valueOf(fileService.getFileType(file)));
+//        return ResponseEntity.ok()
+//                .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
+//    }
 }
