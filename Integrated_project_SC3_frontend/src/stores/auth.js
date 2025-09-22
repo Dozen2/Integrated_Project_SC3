@@ -1,8 +1,10 @@
 // stores/auth.js
 import { defineStore } from "pinia";
-import { loginUser, refreshToken as apiRefreshToken } from "@/libs/callAPI/apiAuth";
+import {
+  loginUser,
+  refreshToken as apiRefreshToken,
+} from "@/libs/callAPI/apiAuth";
 import { jwtDecode } from "jwt-decode";
-
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -11,11 +13,14 @@ export const useAuthStore = defineStore("auth", {
     isLoggedIn: !!localStorage.getItem("accessToken"),
   }),
 
-  actions: {  
+  actions: {
     // ฟังก์ชัน login
     async login(username, password) {
       try {
-        const { accessToken, refreshToken, role } = await loginUser(username, password);
+        const { accessToken, refreshToken, role } = await loginUser(
+          username,
+          password
+        );
 
         this.accessToken = accessToken;
         this.role = role;
@@ -62,10 +67,21 @@ export const useAuthStore = defineStore("auth", {
       // optional: clear refresh token cookie
     },
 
-    getAuthData(){
+    getAuthData() {
       const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
-  const decoded = jwtDecode(accessToken);
-  return decoded;
-    }
-  }
+
+      if (!accessToken) {
+        console.error("No access token found in localStorage");
+        return null;
+      }
+
+      try {
+        const decoded = jwtDecode(accessToken);
+        return decoded;
+      } catch (error) {
+        console.error("Invalid token:", error);
+        return null;
+      }
+    },
+  },
 });
