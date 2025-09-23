@@ -171,13 +171,11 @@ const changeToViewMode = () => {
 </script>
 
 <template>
-
   <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
     <div class="text-blue-600 text-5xl font-semibold">
       Loading...
     </div>
   </div>
-
   <div v-else
     class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10"
   >
