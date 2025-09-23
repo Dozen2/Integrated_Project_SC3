@@ -99,7 +99,7 @@ const refresh = async () => {
       </div>
 
       <div v-else class="flex items-center gap-6 text-lg font-medium">
-        <RouterLink :to="{ name: 'signin' }">
+        <RouterLink :to="{ name: 'Login' }">
           <span class="cursor-pointer hover:text-sky-400 transition-colors duration-300">Login</span>
         </RouterLink>
 
