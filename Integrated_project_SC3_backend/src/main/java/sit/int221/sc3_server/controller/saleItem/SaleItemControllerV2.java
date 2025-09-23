@@ -178,4 +178,18 @@ public class SaleItemControllerV2 {
     SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+//    @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
+//    public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
+//            ,@PathVariable(value="id") int sellerId
+//            ,Authentication authentication) {
+//        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+//        if(!authUserDetail.getSellerId().equals(sellerId)){
+//            throw new UnAuthorizeException("request user id not matched with id in access token");
+//        }
+//        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+//            throw new UnAuthorizeException("Invalid token");
+//        }
+//        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
+//    }
+
 }

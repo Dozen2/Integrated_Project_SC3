@@ -22,8 +22,8 @@ export const useAuthStore = defineStore("auth", {
     // ฟังก์ชัน login
     async login(username, password) {
       try {
-        const { accessToken, refreshToken, role } = await loginUser(username, password);
-
+        // const { accessToken, refreshToken, role } = await loginUser(username, password);
+       const { accessToken, role } = await loginUser(username, password);
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;
@@ -57,8 +57,10 @@ export const useAuthStore = defineStore("auth", {
 
         return true;
       } catch (err) {
-        this.logout();
-        router.push("/login");
+        // this.logout();
+        // router.push("/login"); 
+        console.log("refresh not finis");
+        
         return false;
       }
     },

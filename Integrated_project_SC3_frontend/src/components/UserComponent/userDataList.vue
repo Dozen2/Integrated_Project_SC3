@@ -25,12 +25,26 @@ const props = defineProps({
   errorText: String,
 });
 
-const emit = defineEmits(["update:modelValue"]);
+
+const emits = defineEmits(["update:modelValue", "validateValue"]);
+
+// เก็บ type จริงที่ input ใช้
+const inputType = ref(props.type);
 
 function updateValue(e) {
-  emit("update:modelValue", e.target.value);
+  emits("update:modelValue", e.target.value);
+}
+function validateValue() {
+  emits("validateValue");
 }
 
+function handleBlur(e) {
+  if(inputType.value != "password"){  
+    let trimmed = e.target.value?.trim() ?? "";
+    emits("update:modelValue", trimmed);   // อัปเดต v-model เป็นค่าที่ trim แล้ว
+    emits("validateValue");                // validate ต่อได้เลย
+  }
+}
 </script>
 
 <template>
@@ -39,9 +53,11 @@ function updateValue(e) {
     <span class="col-span-4 text-lg text-blue-700 font-medium">
       {{ props.label }}
     </span>
+    
 
     <!-- Input (Edit mode) -->
     <div class="col-span-8" v-if="isEditMode">
+      
       <input
         :value="props.modelValue"
         :type="type"
@@ -54,6 +70,9 @@ function updateValue(e) {
             : 'border-red-400 focus:ring-red-300'
         ]"
       />
+      <span class="text-sm text-red-500" v-show="!isValid && !isFirstInput"
+        >* {{ errorText }}</span
+      >
     </div>
 
     <!-- Value (View mode) -->
