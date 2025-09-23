@@ -113,7 +113,7 @@ const deleteProduct = (id) => {
 
 <template>
   <div class="p-6 max-w-7xl mx-auto">
-  <h3 class="text-3xl font-bold text-blue-700 mb-[-15px]">Wellcome {{ auth.getAuthData().nickname }}</h3>
+  <h3 class="itbms-nickname text-3xl font-bold text-blue-700 mb-[-15px]">Wellcome {{ auth.getAuthData().nickname }}</h3>
 <div class="flex justify-between items-center gap-4  mt-[20px]">
   <div>
     <h1 class="text-4xl font-bold text-blue-700 flex items-center">SaleItem Management</h1>

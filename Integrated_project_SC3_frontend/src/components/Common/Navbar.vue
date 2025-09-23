@@ -70,7 +70,9 @@ const refresh = async () => {
 
         <div class="relative flex">
           <!-- ปุ่มหลัก -->
-          <RouterLink :to="{ name: 'UserProfile' }">
+          <RouterLink 
+          :to="{ name: 'UserProfile' }"
+          class="itbms-profile">
             <button class="p-2 rounded-full cursor-pointer bg-blue-100 hover:bg-blue-200 transition-colors flex">
               <UserRound color="#000000" />
             </button>
@@ -87,7 +89,7 @@ const refresh = async () => {
 
         <div class="relative">
           <button
-            class="flex boader border-white rounded-full px-4 py-2 cursor-pointer transition-colors text-white font-semibold hover:bg-blue-600 "
+            class="itbms-logout flex boader border-white rounded-full px-4 py-2 cursor-pointer transition-colors text-white font-semibold hover:bg-blue-600 "
             @click="logOut">
             <span class="mr-[7px]">Log Out</span>
             <LogOut color="#ffffff" />
