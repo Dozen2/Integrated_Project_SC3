@@ -4,7 +4,9 @@ import userDataList from "@/components/UserComponent/userDataList.vue";
 import { useAuthStore } from "@/stores/auth";
 import { UserRound, UserRoundPen } from "lucide-vue-next";
 import { useAlertStore } from "@/stores/alertStore";
+import { useRouter } from "vue-router";
 
+const route = useRouter();
 const auth = useAuthStore();
 const toast = useAlertStore();
 
@@ -96,7 +98,7 @@ const editUserProfile = async () => {
       nickName: userProfile.value.nickName,
       fullName: userProfile.value.fullName,
     };
-    isEditMode.value = false;
+    changeToViewMode()
 toast.addToast(
       "The user profile has been successfully updated.",
       "Update profile successful.",
@@ -149,13 +151,23 @@ const maskBankAccount = () => {
 const cancelButton = () => {
   userProfile.value.nickName = originalProfile.value.nickName;
   userProfile.value.fullName = originalProfile.value.fullName;
-  isEditMode.value = false;
   form.nickname.isValid = false;
   form.nickname.isFirstInput = true;
   form.fullname.isValid = false;
   form.fullname.isFirstInput = true;
+  changeToViewMode()
 
 };
+
+const changeToEditMode = () => {
+  route.push({ name: "UserProfileEdit" });
+  isEditMode.value = true
+};
+
+const changeToViewMode = () => {
+  route.push({ name: "UserProfile" });
+  isEditMode.value = false;
+}
 </script>
 
 <template>
@@ -256,7 +268,7 @@ const cancelButton = () => {
       <template v-if="!isEditMode">
 
         <button
-          @click="isEditMode = true"
+          @click="changeToEditMode"
           class="itbms-profile-button bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
         >
           Edit

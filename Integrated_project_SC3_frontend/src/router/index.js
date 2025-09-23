@@ -40,7 +40,8 @@ const router = createRouter({
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
 
     //User
-    {path: '/user/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+    {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+    {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
 
     // Unknow-Path -> Home Page
     { path: '/:pathMatch(.*)*', redirect: { name: 'Home' } },
