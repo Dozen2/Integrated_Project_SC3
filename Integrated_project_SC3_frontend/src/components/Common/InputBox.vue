@@ -65,13 +65,14 @@ function togglePasswordVisibility() {
     >
 <div class="relative">
     <input
+      class="itbms-email"
       :type="inputType"
       :placeholder="placeholder"
       :value="modelValue" 
        @input="(e) => { updateValue(e); validateValue(); }"
        @blur="handleBlur"
       :class="[
-        'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2',
+        'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 itbms-email itbms-password',
         inputClass,
         isValid || isFirstInput
           ? 'border focus:ring-blue-400'

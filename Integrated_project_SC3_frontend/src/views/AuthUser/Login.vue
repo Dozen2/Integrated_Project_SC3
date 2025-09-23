@@ -4,6 +4,7 @@ import { ref, reactive, computed } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
 import { useAuthStore } from "../../stores/auth";
+import { Type } from "lucide-vue-next";
 
 
 const alertStore = useAlertStore();
@@ -112,9 +113,11 @@ const summitForm = async () => {
         <!-- Form -->
         <form class="flex flex-col gap-4" @submit.prevent="summitForm">
           <InputBox
+            class="itbms-email"
             label="Email"
             placeholder="Enter email"
             v-model="email"
+            :type = "email" 
             :isValid="form.email.isValid"
             :isFirstInput="form.email.isFirstInput"
             :errorText="form.email.errorText"
@@ -122,6 +125,7 @@ const summitForm = async () => {
           />
 
           <InputBox
+            class="itbms-password"
             label="Password"
             type="password"
             placeholder="Enter password"
@@ -135,6 +139,7 @@ const summitForm = async () => {
           <!-- Buttons -->
           <div class="flex flex-col gap-3 mt-4">
             <button
+              class="itbms-signin-button"
               type="submit"
               :disabled="loading || !isFormValid"
               :class="[
