@@ -35,7 +35,7 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
-        throw err;
+        throw "Hello123456:  "+err;
       }
     },
 
