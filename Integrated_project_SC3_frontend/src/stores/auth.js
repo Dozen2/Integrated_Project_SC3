@@ -57,8 +57,10 @@ export const useAuthStore = defineStore("auth", {
 
         return true;
       } catch (err) {
-        this.logout();
-        router.push("/login");
+        // this.logout();
+        // router.push("/login"); 
+        console.log("refresh not finis");
+        
         return false;
       }
     },
