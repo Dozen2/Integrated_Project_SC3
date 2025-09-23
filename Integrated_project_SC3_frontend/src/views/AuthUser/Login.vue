@@ -60,7 +60,12 @@ const authStore = useAuthStore();
 
 const summitForm = async () => {
   try {
-    await authStore.login(email.value, password.value);
+    if(!await authStore.login(email.value, password.value))
+  {
+    console.log("Login successful");
+    alertStore.addToast("UnVerify.", "UnVerify Eieiie", "error");
+      return
+  }
     const role = await authStore.getAuthData().authorities[authStore.getAuthData().authorities.length - 1].role;
     console.log("User role after login:", role);
     loading.value = true;

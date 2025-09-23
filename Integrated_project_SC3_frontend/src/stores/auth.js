@@ -27,6 +27,11 @@ export const useAuthStore = defineStore("auth", {
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;
+        if(accessToken === "Unverified"){
+          console.log("Unverified user cannot login");
+          this.logout();
+          return false
+        }
 
         // เก็บลง localStorage
         localStorage.setItem("accessToken", accessToken);
@@ -58,7 +63,7 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         // this.logout();
-        // router.push("/login"); 
+        // router.push("/signin"); 
         console.log("refresh not finis");
         
         return false;

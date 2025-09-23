@@ -1,4 +1,5 @@
 import router from "@/router";
+import { useAuthStore } from "@/stores/auth";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
@@ -78,7 +79,10 @@ async function loginUser(username, password) {
       credentials: "include"
     });
     console.log("Login fetch response:", res.status);
-    //Checkpoint!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if(res.status === 403){ 
+      console.log("Unverified");
+      return {accessToken:"Unverified"}
+    }
 
 
     if (!res.ok) throw new Error("Login failed");

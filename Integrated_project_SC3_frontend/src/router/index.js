@@ -36,7 +36,7 @@ const router = createRouter({
 
     // Auth
     { path: '/sale-items/register', name: 'Register', component: Register },
-    { path: '/sale-items/login', name: 'Login', component: Login },
+    { path: '/sale-items/signin', name: 'Login', component: Login },
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
 
     //User
