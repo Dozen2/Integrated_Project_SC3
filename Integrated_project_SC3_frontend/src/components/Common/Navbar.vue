@@ -13,6 +13,11 @@ const logOut = async () => {
 
 };
 
+const refresh = async () => {
+  await auth.refreshToken()
+  console.log("refresh pass");
+  
+}
 </script>
 
 <template>

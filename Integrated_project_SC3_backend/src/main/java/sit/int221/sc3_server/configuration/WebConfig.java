@@ -42,8 +42,8 @@ public class WebConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
-//                        .requestMatchers("/itb-mshop/v2/user/register","itb-mshop/v2/user/verify-email").permitAll()
-//                        .requestMatchers("itb-mshop/v2/user/login").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
+//                        .requestMatchers("/itb-mshop/v2/auth/register","itb-mshop/v2/user/verify-email").permitAll()
+//                        .requestMatchers("itb-mshop/v2/auth/login").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
 //                        .requestMatchers("itb-mshop/v2/sellers/**").hasAnyAuthority("ROLE_SELLER")
 //                        .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
 
