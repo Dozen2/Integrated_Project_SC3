@@ -25,6 +25,7 @@ import sit.int221.sc3_server.entity.Seller;
 import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.UnAuthenticateException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.saleItem.SaleItemServiceV2;
 import sit.int221.sc3_server.service.user.UserServices;
@@ -178,18 +179,38 @@ public class SaleItemControllerV2 {
     SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-//    @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
-//    public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
-//            ,@PathVariable(value="id") int sellerId
-//            ,Authentication authentication) {
+    @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
+    public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
+            ,@PathVariable(value="id") int sellerId
+            ,Authentication authentication) {
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        if(!authUserDetail.getSellerId().equals(sellerId)){
+            throw new UnAuthorizeException("request user id not matched with id in access token");
+        }
+
+        SaleItem saleItem = saleItemServiceV2.getProductBySellerId(sellerId,id);
+        if(saleItem == null){
+            throw new ItemNotFoundException("saleItem does not exist");
+        }
+        return ResponseEntity.ok().body(modelMapper.map(saleItem, SaleItemDetailFileDto.class));
+    }
+
+//    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<SaleItemDetailFileDto> updateSaleItemBySeller(@ModelAttribute SaleItemWithImageInfo info
+//            ,@PathVariable(value = "id") int sellerId,@PathVariable(value = "saleItemId") int saleItemId
+//            ,Authentication authentication){
+//
 //        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+//        if("ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+//            throw new UnAuthorizeException("Invalid token");
+//        }
 //        if(!authUserDetail.getSellerId().equals(sellerId)){
 //            throw new UnAuthorizeException("request user id not matched with id in access token");
 //        }
-//        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-//            throw new UnAuthorizeException("Invalid token");
-//        }
-//        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
+//
 //    }
 
 }

@@ -127,16 +127,28 @@ public class SaleItemServiceV2 {
 
 
 
-    public SaleItem getProductById(int id) {
-        SaleItem saleitem = saleitemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("SaleItem not found for this id :: " + id));
-        if (saleitem.getDescription() != null) {
+    public SaleItem getProductById(Integer saleItemId) {
 
-            String cleaned = saleitem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
-            saleitem.setDescription(cleaned);
+        SaleItem saleItem = saleitemRepository.findById(saleItemId).orElseThrow(()-> new ItemNotFoundException("SaleItem not found for this id :: " + saleItemId));
+        cleanDescription(saleItem);
+
+        System.out.println(saleItem);
+        return saleItem;
+    }
+    public SaleItem getProductBySellerId(Integer sellerId,Integer saleItemId){
+        boolean exist = sellerRepository.existsById(sellerId);
+        if(!exist){
+            throw new UnAuthorizeException("user not found");
         }
-        System.out.println(saleitem);
-        return saleitem;
+        SaleItem saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
+        return saleItem;
+    }
+
+    public void cleanDescription(SaleItem saleItem){
+        if(saleItem != null && saleItem.getDescription() != null){
+            String clean = saleItem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
+            saleItem.setDescription(clean);
+        }
     }
 
 
@@ -318,6 +330,23 @@ public class SaleItemServiceV2 {
 //        return saleitemRepository.saveAndFlush(saleItem);
         return saveItem;
     }
+
+//    public SaleItem getProductByIdAndSeller(Integer saleItemId,Integer sellerId) {
+//        boolean exist = sellerRepository.existsById(sellerId);
+//        if(exist){
+//            SaleItem saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
+//
+//        }
+//        SaleItem saleitem = saleitemRepository.findById(saleItemId)
+//                .orElseThrow(() -> new ItemNotFoundException("SaleItem not found for this id :: " + saleItemId));
+//        if (saleitem.getDescription() != null) {
+//
+//            String cleaned = saleitem.getDescription().replaceAll("[\\n\\r\\u00A0\\u200B]", "").trim();
+//            saleitem.setDescription(cleaned);
+//        }
+//        System.out.println(saleitem);
+//        return saleitem;
+//    }
 
 
 //    public SaleItem createSaleItemSeller(int sellerId,SaleItemCreateDTO saleItemCreateDTO,List<MultipartFile> files){

@@ -231,5 +231,6 @@ export {
   refreshToken,
   fetchUserProfile,
   logout,
-  editUserProfile
+  editUserProfile,
+  authFetch
 };
