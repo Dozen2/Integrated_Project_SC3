@@ -77,7 +77,7 @@ function handleBlur(e) {
 
     <!-- Value (View mode) -->
     <div class="col-span-8" v-else>
-      <span class="text-lg text-gray-800">
+      <span class="itbms-nickname text-lg text-gray-800">
         {{ props.modelValue }}
       </span>
     </div>

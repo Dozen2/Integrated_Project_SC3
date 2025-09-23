@@ -48,6 +48,7 @@ onMounted(async () => {
     if (auth.accessToken) {
       const userId = auth.getAuthData().id;
       userType.value = role.slice(5);
+      userType.value = userType.value.charAt(0).toUpperCase() + userType.value.slice(1).toLowerCase();
       userProfile.value = await auth.loadUserProfile(userId);
       originalProfile.value = {
         nickName: userProfile.value.nickName,
@@ -57,11 +58,11 @@ onMounted(async () => {
   } catch (err) {
     console.error("Load profile error:", err);
   }
-  if(role == 'ROLE_SELLER'){
+  if (role == 'ROLE_SELLER') {
     maskPhoneNumber();
     maskBankAccount();
   }
-  
+
   isLoading.value = false;
 });
 
@@ -99,7 +100,7 @@ const editUserProfile = async () => {
       fullName: userProfile.value.fullName,
     };
     changeToViewMode()
-toast.addToast(
+    toast.addToast(
       "The user profile has been successfully updated.",
       "Update profile successful.",
       "success",
@@ -136,7 +137,7 @@ const isFormValid = computed(() => {
 
 const maskValue = (value) => {
   const firstPart = "x".repeat(value.length - 4);
-  const middle = value.slice(-4,-1);
+  const middle = value.slice(-4, -1);
   return firstPart + middle + "x";
 };
 
@@ -178,13 +179,9 @@ const changeToViewMode = () => {
     </div>
   </div>
 
-  <div v-else
-    class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10"
-  >
+  <div v-else class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10">
     <div class="flex gap-3">
-      <RouterLink 
-      :to="{ name: 'Products' }"
-      class="itbms-home">
+      <RouterLink :to="{ name: 'Products' }" class="itbms-home">
         HOME
       </RouterLink>
       <span>></span>
@@ -193,9 +190,7 @@ const changeToViewMode = () => {
       </div>
     </div>
 
-    <div
-      class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100"
-    >
+    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100">
       <div class="p-8">
         <!-- Profile Title -->
         <h2 class="text-2xl font-semibold text-blue-800 mb-8 text-center">
@@ -205,59 +200,31 @@ const changeToViewMode = () => {
         <!-- Avatar -->
         <div class="flex justify-center mb-8">
           <div
-            class="w-32 h-32 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md hover:scale-105 transition-transform"
-          >
+            class="w-32 h-32 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md hover:scale-105 transition-transform">
             <UserRoundPen size="80px" color="white" />
           </div>
         </div>
 
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
-          <userDataList
-          class="itbms-nickname"
-          label="NickName"
-          v-model="userProfile.nickName"
-          :isEditMode="isEditMode"
-            :isValid="form.nickname.isValid"
-            :isFirstInput="form.nickname.isFirstInput"
-            :errorText="form.nickname.errorText"
-            @validateValue="validateNickname"
-          />
-          <userDataList
-          class="itbms-email" 
-          label="Email" 
-          v-model="userProfile.email" />
 
-          <userDataList
-            class="itbms-fullname"
-            label="FullName"
-            v-model="userProfile.fullName"
-            :isEditMode="isEditMode"
-            :isValid="form.fullname.isValid"
-            :isFirstInput="form.fullname.isFirstInput"
-            :errorText="form.fullname.errorText"
-            @validateValue="validateFullname"
-            />
-            <userDataList 
-              class="itbms-type"
-              label="Type" 
-              v-model="userType" />
+          <userDataList class="itbms-nickname" label="NickName" v-model="userProfile.nickName" :isEditMode="isEditMode"
+            :isValid="form.nickname.isValid" :isFirstInput="form.nickname.isFirstInput"
+            :errorText="form.nickname.errorText" @validateValue="validateNickname" />
+            
+          <userDataList class="itbms-email" label="Email" v-model="userProfile.email" />
+
+          <userDataList class="itbms-fullname" label="FullName" v-model="userProfile.fullName" :isEditMode="isEditMode"
+            :isValid="form.fullname.isValid" :isFirstInput="form.fullname.isFirstInput"
+            :errorText="form.fullname.errorText" @validateValue="validateFullname" />
+          <userDataList class="itbms-type" label="Type" v-model="userType" />
 
           <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList
-              class="itbms-mobile"
-              label="Mobile" 
-              v-model="phoneNumber" />
+            <userDataList class="itbms-mobile" label="Mobile" v-model="phoneNumber" />
 
-            <userDataList
-              class="itbms-bankAccount" 
-              label="Bank Account No" 
-              v-model="bankAccount" />
+            <userDataList class="itbms-bankAccount" label="Bank Account No" v-model="bankAccount" />
 
-            <userDataList
-              class="itbms-bankName" 
-              label="Bank Name" 
-              v-model="userProfile.bankName" />
+            <userDataList class="itbms-bankName" label="Bank Name" v-model="userProfile.bankName" />
           </div>
         </form>
       </div>
@@ -267,34 +234,25 @@ const changeToViewMode = () => {
     <div class="flex mt-6 justify-center space-x-4">
       <template v-if="!isEditMode">
 
-        <button
-          @click="changeToEditMode"
-          class="itbms-profile-button bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
-        >
+        <button @click="changeToEditMode"
+          class="itbms-profile-button bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer">
           Edit
         </button>
 
       </template>
       <template v-else>
 
-        <button
-          @click="editUserProfile"
-          :disabled="!isFormValid"
-          :class="[
-            'py-2 rounded-lg transition',
-            !isFormValid
-              ? 'bg-gray-300 hover:bg-gray-500 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-pointer',
-          ]"
-          class="itbms-save-button"
-        >
+        <button @click="editUserProfile" :disabled="!isFormValid" :class="[
+          'py-2 rounded-lg transition',
+          !isFormValid
+            ? 'bg-gray-300 hover:bg-gray-500 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-not-allowed'
+            : 'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-pointer',
+        ]" class="itbms-save-button">
           Save
         </button>
 
-        <button
-          @click="cancelButton"
-          class="itbms-cancel-button bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
-        >
+        <button @click="cancelButton"
+          class="itbms-cancel-button bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer">
           Cancel
         </button>
       </template>

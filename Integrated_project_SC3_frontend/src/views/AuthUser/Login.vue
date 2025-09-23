@@ -117,7 +117,7 @@ const summitForm = async () => {
             label="Email"
             placeholder="Enter email"
             v-model="email"
-            :type = "email" 
+            type = "email" 
             :isValid="form.email.isValid"
             :isFirstInput="form.email.isFirstInput"
             :errorText="form.email.errorText"

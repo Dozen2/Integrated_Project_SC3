@@ -78,12 +78,6 @@ async function loginUser(username, password) {
       body: JSON.stringify({ username: username, password: password }),
       credentials: "include"
     });
-    console.log("Login fetch response:", res.status);
-    if(res.status === 403){ 
-      console.log("Unverified");
-      return {accessToken:"Unverified"}
-    }
-
 
     if (!res.ok) throw new Error("Login failed");
 
@@ -91,14 +85,21 @@ async function loginUser(username, password) {
     console.log("Login response:", data);
     const accessToken = data.access_token;   // token ที่ BE ส่งกลับมา
     // const refreshToken = data.refresh_token;
+
+
     // Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true, sameSite: "Strict" });
 
+
     const decoded = jwtDecode(accessToken);
+    console.log(decoded);
+
     const authorities = decoded.authorities || [];
+
     console.log("Decoded JWT:", decoded);
     console.log("Authorities:", authorities);
 
     let role = "UNKNOWN";
+
     if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
       role = "ROLE_SELLER";
     } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
@@ -107,6 +108,7 @@ async function loginUser(username, password) {
     console.log(role);
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("role", role);
+
     return { accessToken, refreshToken, role };
   } catch (err) {
     console.error(err);

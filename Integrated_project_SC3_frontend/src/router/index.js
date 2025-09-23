@@ -35,8 +35,8 @@ const router = createRouter({
     { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
 
     // Auth
-    { path: '/sale-items/register', name: 'Register', component: Register },
-    { path: '/sale-items/signin', name: 'Login', component: Login },
+    { path: '/register', name: 'Register', component: Register },
+    { path: '/signin', name: 'Login', component: Login },
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
 
     //User
