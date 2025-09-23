@@ -109,6 +109,7 @@ onMounted(async () => {
 
 <template>
   <div class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10">
+
     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100">
       <div class="p-8">
         <!-- Profile Title -->
@@ -126,6 +127,7 @@ onMounted(async () => {
 
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
+          
           <userDataList label="NickName" v-model="userProfile.nickName" :isEditMode="isEditMode" />
           <userDataList label="FullName" v-model="userProfile.fullName" :isEditMode="isEditMode" />
           <userDataList label="Email" v-model="userProfile.email" />
