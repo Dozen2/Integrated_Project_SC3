@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode";
+import { authFetch } from "./apiAuth";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const urlV1 = `${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`;
 const urlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/sale-items`;
@@ -146,7 +147,7 @@ const  getAllSaleItemSeller = async (size, page) => {
   console.log("API Call URL:", url);
 
   try {
-    const res = await fetch(url, {
+    const res = await authFetch(url, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${accessToken}`, // ใช้ token จาก localStorage

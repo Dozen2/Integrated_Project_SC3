@@ -41,7 +41,7 @@ public class UserController {
 
     @Autowired
     private JwtUserDetailService jwtUserDetailService;
-    @Value("${app.cookie.path}")
+    @Value("${app.cookie.path:/itb-mshop/v2/auth/refresh}")
     private String cookiePath;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -87,6 +87,7 @@ public class UserController {
                     ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
                             .httpOnly(true)
                             .secure(false)
+//                            .path("/itb-mshop/v2/auth/refresh")
                             .path(cookiePath)
                             .maxAge(Duration.ofDays(1))
                             .sameSite("Lax")

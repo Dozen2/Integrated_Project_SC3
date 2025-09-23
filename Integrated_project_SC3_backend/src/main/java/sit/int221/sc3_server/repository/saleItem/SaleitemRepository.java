@@ -23,6 +23,15 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
 //    Optional<SaleItem> findByIdWithImages(@Param("id") Integer id);
     @Query("""
 select p from SaleItem p
+where (:sellerId is null or p.seller.id = :sellerId)
+and (:saleItem is null or p.id = :saleItemId)
+""")
+    SaleItem findBySellerId(
+            @Param("sellerId") Integer sellerId,
+            @Param("saleItemId") Integer saleItemId
+    );
+    @Query("""
+select p from SaleItem p
 where (p.seller.id in :sellerId)
 """)
     Page<SaleItem> findSaleItemBySellerId(
