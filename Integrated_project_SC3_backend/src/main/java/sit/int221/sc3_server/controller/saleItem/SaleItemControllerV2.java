@@ -79,7 +79,7 @@ public class SaleItemControllerV2 {
 
     @GetMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable int id) {
-        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id,null), SaleItemDetailFileDto.class));
+        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
     }
 
     @GetMapping("/sale-items/file/{filename:.+}")
@@ -191,7 +191,7 @@ public class SaleItemControllerV2 {
             throw new UnAuthorizeException("request user id not matched with id in access token");
         }
 
-        SaleItem saleItem = saleItemServiceV2.getProductById(id,sellerId);
+        SaleItem saleItem = saleItemServiceV2.getProductBySellerId(sellerId,id);
         if(saleItem == null){
             throw new ItemNotFoundException("saleItem does not exist");
         }

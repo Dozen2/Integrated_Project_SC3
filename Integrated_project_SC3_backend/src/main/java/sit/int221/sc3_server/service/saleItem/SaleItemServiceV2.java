@@ -127,17 +127,20 @@ public class SaleItemServiceV2 {
 
 
 
-    public SaleItem getProductById(Integer saleItemId,Integer sellerId) {
-        SaleItem saleItem;
-        boolean exist = sellerRepository.existsById(sellerId);
-        if(exist){
-            saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
-        }else {
-            saleItem = saleitemRepository.findById(saleItemId).orElseThrow(()-> new ItemNotFoundException("SaleItem not found for this id :: " + saleItemId));
-        }
+    public SaleItem getProductById(Integer saleItemId) {
+
+        SaleItem saleItem = saleitemRepository.findById(saleItemId).orElseThrow(()-> new ItemNotFoundException("SaleItem not found for this id :: " + saleItemId));
         cleanDescription(saleItem);
 
         System.out.println(saleItem);
+        return saleItem;
+    }
+    public SaleItem getProductBySellerId(Integer sellerId,Integer saleItemId){
+        boolean exist = sellerRepository.existsById(sellerId);
+        if(!exist){
+            throw new UnAuthorizeException("user not found");
+        }
+        SaleItem saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
         return saleItem;
     }
 
