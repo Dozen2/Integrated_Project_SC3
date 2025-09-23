@@ -16,6 +16,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sit.int221.sc3_server.exception.AuthenticationEntryPoint.JwtAccessDeniedHandler;
 import sit.int221.sc3_server.exception.AuthenticationEntryPoint.JwtAuthenticationEntryPoint;
 import sit.int221.sc3_server.filter.JwtAuthFilter;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
@@ -29,6 +30,8 @@ public class WebConfig {
     private JwtAuthFilter jwtAuthFilter;
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    @Autowired
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
@@ -51,7 +54,8 @@ public class WebConfig {
                 )
                 .authenticationProvider(authenticationProvider(jwtUserDetailService))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();

@@ -82,7 +82,11 @@ UserServices {
     }
     public Buyer findBuyerBySellerId(Integer id){
        Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
-        return seller.getBuyer();
+        Buyer buyer =  seller.getBuyer();
+        if(!buyer.getIsActive()){
+            throw new UnAuthenticateException("user is not active");
+        }
+        return buyer;
     }
 
     @Transactional
@@ -216,22 +220,38 @@ UserServices {
 //        );
 //
 //    }
-public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
-    UsernamePasswordAuthenticationToken uToken =
-            new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
-    authenticationManager.authenticate(uToken);
-    UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-    long refreshTokenAgeInMinute = 24*60 ;
+//public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
+//    UsernamePasswordAuthenticationToken uToken =
+//            new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
+//    authenticationManager.authenticate(uToken);
+//    UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
+//    long refreshTokenAgeInMinute = 24*60 ;
+//
+//    String accessToken = jwtUtils.generateToken(userDetails);
+//    String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
+//    return Map.of(
+//            "access_token",accessToken,
+//            "refresh_token",refreshToken
+//
+//    );
+//
+//}
+    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
+        UsernamePasswordAuthenticationToken uToken =
+                new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
+        authenticationManager.authenticate(uToken);
+        UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
+        long refreshTokenAgeInMinute = 24*60 ;
 
-    String accessToken = jwtUtils.generateToken(userDetails);
-    String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
-    return Map.of(
-            "access_token",accessToken,
-            "refresh_token",refreshToken
+        String accessToken = jwtUtils.generateToken(userDetails);
+        String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
+        return Map.of(
+                "access_token",accessToken,
+                "refresh_token",refreshToken
 
-    );
+        );
 
-}
+    }
 
     public Map<String, Object> refreshToken(String refreshToken){
         jwtUtils.verifyToken(refreshToken);

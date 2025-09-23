@@ -131,19 +131,16 @@ public class SaleItemControllerV2 {
             Authentication authentication
     ){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-        Buyer buyer = userServices.findBuyerBySellerId(id);
-        if(!authUserDetail.getId().equals(buyer.getId())){
-            throw new UnAuthorizeException("request user id not matched with id in access token");
+        userServices.findBuyerBySellerId(id);//check is active
+        if(!authUserDetail.getId().equals(id)){
+            throw new UnAuthenticateException("request user id not matched with id in access token");
         }
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token type");
         }
 
-        if(!buyer.getIsActive()){
-            throw new UnAuthenticateException("user is not active");
-        }
         String authUsername = authUserDetail.getUsername();
-        Integer authSellerId = authUserDetail.getSellerId();
+        Integer authSellerId = authUserDetail.getId();
         Page<SaleItem> saleItems = saleItemServiceV2.getAllProduct(authSellerId,filterBrands,filterStorages,filterPriceLower,filterPriceUpper,searchParam,page,size,sortField,sortDirection);
         PageDTO<SaleItemDetailSeller> pageDTO = listMapper.toPageDTO(saleItems, SaleItemDetailSeller.class,modelMapper);
         pageDTO.getContent().forEach(dto ->{
@@ -168,14 +165,14 @@ public class SaleItemControllerV2 {
         throw new UnAuthorizeException("Invalid token");
     }
     if(!authUserDetail.getId().equals(buyer.getId())){
-        throw new UnAuthorizeException("Seller not found");
+        throw new UnAuthenticateException("Seller not found");
     }
 
     if(!buyer.getIsActive()){
         throw new UnAuthenticateException("user is not active");
     }
 
-    SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getSellerId(), saleItemCreateDTO,images);
+    SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getId(), saleItemCreateDTO,images);
     SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -187,7 +184,7 @@ public class SaleItemControllerV2 {
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token");
         }
-        if(!authUserDetail.getSellerId().equals(sellerId)){
+        if(!authUserDetail.getId().equals(sellerId)){
             throw new UnAuthorizeException("request user id not matched with id in access token");
         }
 
