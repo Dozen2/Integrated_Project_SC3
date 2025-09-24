@@ -112,7 +112,7 @@ public class JwtUtils {
             }
             return true;
         }catch (JOSEException | ParseException p){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Verified Error, Invalid JWT", p);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Verified Error, Invalid JWT", p);
         }
     }
 
@@ -122,7 +122,7 @@ public class JwtUtils {
             SignedJWT signedJWT = SignedJWT.parse(token);
             return signedJWT.getJWTClaimsSet().getClaims();
         }catch (ParseException e){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid JWT (Can't parsed)",e);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Invalid JWT (Can't parsed)",e);
         }
     }
 

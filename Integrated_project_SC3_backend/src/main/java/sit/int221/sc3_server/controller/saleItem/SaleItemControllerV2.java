@@ -131,12 +131,12 @@ public class SaleItemControllerV2 {
             Authentication authentication
     ){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-        userServices.findBuyerBySellerId(id);//check is active
+        userServices.findSellerBySellerId(id);//check is active
         if(!authUserDetail.getId().equals(id)){
             throw new UnAuthenticateException("request user id not matched with id in access token");
         }
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new UnAuthorizeException("Invalid token type");
+            throw new UnAuthenticateException("Invalid token type");
         }
 
         String authUsername = authUserDetail.getUsername();
@@ -160,20 +160,19 @@ public class SaleItemControllerV2 {
                                                                         ,@PathVariable(value = "id") int id,
                                                                       Authentication authentication){
     AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-    Buyer buyer = userServices.findBuyerBySellerId(id);
+    userServices.findSellerBySellerId(id);//check is active
     if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-        throw new UnAuthorizeException("Invalid token");
+        throw new UnAuthenticateException("Invalid token");
     }
-    if(!authUserDetail.getId().equals(buyer.getId())){
+    if(!authUserDetail.getId().equals(id)){
         throw new UnAuthenticateException("Seller not found");
     }
 
-    if(!buyer.getIsActive()){
-        throw new UnAuthenticateException("user is not active");
-    }
 
     SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getId(), saleItemCreateDTO,images);
     SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
+//    response.getSellerDTO().setId(id);
+//    response.getSellerDTO().setUserName(authUserDetail.getUsername());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     @GetMapping("/sellers/{id}/sale-items/{saleItemId}")

@@ -284,11 +284,11 @@ public class SaleItemServiceV2 {
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new ItemNotFoundException("Brand with ID " + brandId + " not found."));
 
-        // 2. เช็ค duplicate model
-        String model = saleItemCreateDTO.getModel().trim();
-        if(saleitemRepository.existsByModelIgnoreCase(model)){
-            throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
-        }
+//        // 2. เช็ค duplicate model
+//        String model = saleItemCreateDTO.getModel().trim();
+//        if(saleitemRepository.existsByModelIgnoreCase(model)){
+//            throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
+//        }
 
         // 3. Map DTO → Entity
         SaleItem saleItem = modelMapper.map(saleItemCreateDTO, SaleItem.class);

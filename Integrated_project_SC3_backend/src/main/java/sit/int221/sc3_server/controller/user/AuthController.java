@@ -67,70 +67,72 @@ public class AuthController {
     }
 
 
-        @PostMapping("/login")//******
-    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
-
-        if (jwtAuthUser.getUsername().isBlank()){
-            throw new UnAuthorizeException("Email or Password is incorrect");
-        }
-                try {
-                    boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getUsername());
-                    if(!check){
-                        throw new UnAuthorizeException("Email or Password is incorrect");
-                    }
-                    Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
-                    ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
-                            .httpOnly(true)
-                            .secure(false)
-//                            .path("/itb-mshop/v2/auth/refresh")
-                            .path(cookiePath)
-                            .maxAge(Duration.ofDays(1))
-                            .sameSite("Lax")
-//                            .sameSite("Strict")
-                            .build();
-                    response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
-
-                    return ResponseEntity.ok(Map.of(
-                            "access_token",tokens.get("access_token")
-                    ));
-                }catch (BadCredentialsException e){
-                    return ResponseEntity.status(400).build();
-                }
-
-
-    }
-//    @PostMapping("/login")
+//        @PostMapping("/login")//******
 //    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
 //
-//        if (jwtAuthUser.getEmail().isBlank()){
+//        if (jwtAuthUser.getUsername().isBlank()){
 //            throw new UnAuthorizeException("Email or Password is incorrect");
 //        }
-//        try {
-//            boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getEmail());
-//            if(!check){
-//                throw new UnAuthorizeException("Email or Password is incorrect");
-//            }
-//            Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
-//            ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
-//                    .httpOnly(true)
-//                    .secure(false)
+//                try {
+//                    boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getUsername());
+//                    if(!check){
+//                        throw new UnAuthorizeException("Email or Password is incorrect");
+//                    }
+//                    Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
+//                    ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
+//                            .httpOnly(true)
+//                            .secure(false)
 ////                            .path("/itb-mshop/v2/auth/refresh")
-//                    .path(cookiePath)
-//                    .maxAge(Duration.ofDays(1))
-//                    .sameSite("Lax")
+//                            .path(cookiePath)
+//                            .maxAge(Duration.ofDays(1))
+//                            .sameSite("Lax")
 ////                            .sameSite("Strict")
-//                    .build();
-//            response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
+//                            .build();
+//                    response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 //
-//            return ResponseEntity.ok(Map.of(
-//                    "access_token",tokens.get("access_token")
-//            ));
-//        }catch (BadCredentialsException e){
-//            return ResponseEntity.status(400).build();
-//        }
+//                    return ResponseEntity.ok(Map.of(
+//                            "access_token",tokens.get("access_token")
+//                    ));
+//                }catch (BadCredentialsException e){
+//                    return ResponseEntity.status(400).build();
+//                }
 //
 //
 //    }
+    //********************************************************
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
+
+        if (jwtAuthUser.getEmail().isBlank()){
+            throw new UnAuthorizeException("Email or Password is incorrect");
+        }
+        try {
+            boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getEmail());
+            if(!check){
+                throw new UnAuthorizeException("Email or Password is incorrect");
+            }
+            Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
+            ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
+                    .httpOnly(true)
+                    .secure(false)
+//                            .path("/itb-mshop/v2/auth/refresh")
+                    .path(cookiePath)
+                    .maxAge(Duration.ofDays(1))
+                    .sameSite("Lax")
+//                            .sameSite("Strict")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
+
+            return ResponseEntity.ok(Map.of(
+                    "access_token",tokens.get("access_token")
+            ));
+        }catch (BadCredentialsException e){
+            return ResponseEntity.status(400).build();
+        }
+
+
+    }
+    //****************************************************
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token, HttpServletRequest request){

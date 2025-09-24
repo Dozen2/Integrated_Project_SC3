@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
+import sit.int221.sc3_server.exception.UnAuthenticateException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.utils.JwtUtils;
@@ -47,10 +48,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 jwtUtils.verifyToken(jwtToken);
                 claims = jwtUtils.getJWTClaimSet(jwtToken);
                 if(jwtUtils.isExpired(claims)){
-                    throw new UnAuthorizeException("Invalid token");
+                    throw new UnAuthenticateException("Invalid token");
                 }
                 if(!jwtUtils.isValidClaims(claims)|| !"ACCESS_TOKEN".equals(claims.get("typ"))){
-                    throw new UnAuthorizeException("Invalid token");
+                    throw new UnAuthenticateException("Invalid token");
                 }
                 Object idObj = claims.get("id");
                 userId = Integer.parseInt(idObj.toString());

@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.entity.Buyer;
+import sit.int221.sc3_server.entity.Seller;
+import sit.int221.sc3_server.exception.UnAuthenticateException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
+import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.utils.Role;
 
 import java.util.Collection;
@@ -25,11 +28,13 @@ public class JwtUserDetailService implements UserDetailsService {
 
     @Autowired
     private BuyerRepository buyerRepository;
+    @Autowired
+    private SellerRepository sellerRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Buyer buyer= buyerRepository.findByUserNameOrEmail(username)
-                .orElseThrow(()-> new UsernameNotFoundException(username));
+                .orElseThrow(()-> new UnAuthenticateException("user does not exist"));
         if(!buyer.getIsActive()){
             throw new UnAuthorizeException("User is not verify");
         }
@@ -45,7 +50,8 @@ public class JwtUserDetailService implements UserDetailsService {
     }
 
     public UserDetails loadUserById(Integer id){
-    Buyer buyer = buyerRepository.findById(id).orElseThrow(
+        Seller seller = sellerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Seller id "+ id + " does not exist"));
+        Buyer buyer = buyerRepository.findById(seller.getBuyer().getId()).orElseThrow(
             ()->new ResourceNotFoundException("User id "+ id + " does not exist"));
 //        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         Integer userId = (buyer.getSeller()!= null)? buyer.getSeller().getId():buyer.getId();
