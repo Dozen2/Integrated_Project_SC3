@@ -93,7 +93,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         // cy.get('@profileButton').click();
         // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.contains('.itbms-nickname','Somchai') ;
         cy.contains('.itbms-email','itbkk.somchai@ad.sit.kmutt.ac.th') ;

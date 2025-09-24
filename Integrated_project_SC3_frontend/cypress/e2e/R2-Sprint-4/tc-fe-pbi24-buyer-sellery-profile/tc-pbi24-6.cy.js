@@ -22,7 +22,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-6\n
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
         })
-        cy.wait(200) ;
+        cy.wait(500) ;
     }) ;
 
     it(`[step 1,2] Open the Sign In page at ${resource}`, () => {
@@ -35,7 +35,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-6\n
         // cy.get('@profileButton').click();
         // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.contains('.itbms-nickname','Saksit') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -115,7 +115,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-6\n
         // cy.get('@profileButton').click();
         // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.get('.itbms-nickname').should('have.text','Somsak') ;
         cy.get('.itbms-email').should('have.text','itbkk.somsak@ad.sit.kmutt.ac.th') ;

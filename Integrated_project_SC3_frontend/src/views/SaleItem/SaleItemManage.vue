@@ -23,7 +23,7 @@ const pendingDeleteId = ref(null);
 
 const pagination = ref({
   page: 0,
-  size: 10,
+  size: 50,
   sort: "asc",
   totalPages: 0,
   totalElements: 0,

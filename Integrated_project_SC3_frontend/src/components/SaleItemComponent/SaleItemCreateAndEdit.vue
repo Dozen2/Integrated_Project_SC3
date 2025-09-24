@@ -864,9 +864,9 @@ else {
           </label>
 
           <InputBox
-            v-model="saleItem.model"
-            placeholder="e.g. iPhone 13 Pro"
-            :inputClass="boxTextTailwindModel"
+          v-model="saleItem.model"
+          placeholder="e.g. iPhone 13 Pro"
+          :inputClass="`${boxTextTailwindModel} itbms-model`"
           />
             <p v-show="saleItem.model.length > maxLength.model" class="itbms-message mt-1 text-sm text-red-500">
               Model must be 1-60 characters long.
@@ -890,7 +890,7 @@ else {
           <InputBox 
             v-model="saleItem.price"
             placeholder="e.g. 29900"
-            :inputClass="boxTextTailwindModel"  
+            :inputClass="`${boxTextTailwindPrice} itbms-price`" 
           />
           <div class="flex-1">
             <p v-show="saleItem.price < 0" class="itbms-message mt-1 text-sm text-red-500 ml-24">
@@ -913,7 +913,7 @@ else {
             type="number"
             v-model.number="saleItem.ramGb"
             placeholder="e.g. 8"
-            :inputClass="boxTextTailwindRamGB"
+            :inputClass="`${boxTextTailwindRamGB} itbms-ramGb`"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindRamGB === boxTextTailwindError" class="itbms-message mt-1 text-sm text-red-500">
@@ -937,7 +937,7 @@ else {
             type="number"
             v-model.number="saleItem.storageGb"
             placeholder="e.g. 128"
-            :inputClass="boxTextTailwindStorageGB"
+            :inputClass="`${boxTextTailwindStorageGB} itbms-storageGb`"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindStorageGB === boxTextTailwindError"
@@ -962,7 +962,7 @@ else {
             type="number"
             v-model.number="saleItem.screenSizeInch"
             placeholder="e.g. 6.1"
-            :inputClass="boxTextTailwindScreenSizeInch"
+            :inputClass="`${boxTextTailwindScreenSizeInch} itbms-screenSizeInch`"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindScreenSizeInch === boxTextTailwindError"
@@ -988,7 +988,7 @@ else {
           <InputBox
             v-model="saleItem.color"
             placeholder="e.g. Midnight Blue"
-            :inputClass="boxTextTailwindColor"
+            :inputClass="`${boxTextTailwindColor} itbms-color`"
           />
           <div class="flex-1">
             <p v-show="(saleItem.color?.length ?? 0) > maxLength.color" class="itbms-message mt-1 text-sm text-red-500">
@@ -1013,7 +1013,7 @@ else {
             type="number"
             v-model="saleItem.quantity"
             placeholder="e.g. 10"
-            :inputClass="boxTextTailwindQuantity"
+            :inputClass="`${boxTextTailwindQuantity} itbms-quantity`"
           />
           <div class="flex-1">
             <p v-show="boxTextTailwindQuantity === boxTextTailwindError"

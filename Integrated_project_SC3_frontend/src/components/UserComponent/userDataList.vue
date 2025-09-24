@@ -23,6 +23,14 @@ const props = defineProps({
     default: false,
   },
   errorText: String,
+  classname: {
+    type: String,
+    default: "",
+  },
+    disabled: {               // 👈 เพิ่มตรงนี้
+    type: Boolean,
+    default: false,
+  }
 });
 
 
@@ -61,9 +69,11 @@ function handleBlur(e) {
       <input
         :value="props.modelValue"
         :type="type"
+        :disabled="props.disabled"
         @input="(e) => { updateValue(e); validateValue(); }"
         @blur="handleBlur"
         :class="[
+          props.classname,
           'w-full rounded-lg px-3 py-2 border transition-colors focus:outline-none focus:ring-2',
           isValid || isFirstInput
             ? 'border-blue-300 focus:ring-blue-400'
@@ -77,7 +87,7 @@ function handleBlur(e) {
 
     <!-- Value (View mode) -->
     <div class="col-span-8" v-else>
-      <span class="itbms-nickname text-lg text-gray-800">
+      <span :class="[props.classname,'text-lg text-gray-800']">
         {{ props.modelValue }}
       </span>
     </div>
