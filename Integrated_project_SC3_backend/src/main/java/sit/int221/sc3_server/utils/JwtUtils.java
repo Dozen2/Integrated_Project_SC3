@@ -34,7 +34,6 @@ public class JwtUtils {
 
     private RSAKey rsaPublicJWK;
 
-
     public JwtUtils(){
         try{
             rsaPrivateJWK = new RSAKeyGenerator(2048).keyID(KEY_ID).generate();
@@ -44,9 +43,12 @@ public class JwtUtils {
             throw new RuntimeException(e);
         }
     }
+
+
     public String generateToken(UserDetails userDetails){
         return generateToken(userDetails,MAX_TOKEN_INTERVAL, TokenType.ACCESS_TOKEN);
     }
+
 
     public String generateToken(UserDetails user,Long ageInMinute,TokenType tokenType){
         try {
@@ -76,7 +78,6 @@ public class JwtUtils {
                             .build(),
                     claimsSet
             );
-
             signedJWT.sign(signer);
             return signedJWT.serialize();
 
@@ -101,6 +102,7 @@ public class JwtUtils {
 //            throw new RuntimeException(e);
 //        }
     }
+
 
     public boolean verifyToken(String token){
         try{
@@ -127,10 +129,12 @@ public class JwtUtils {
         }
     }
 
+
     public boolean isExpired(Map<String,Object> jwtClaims){
         Date expDate = (Date)jwtClaims.get("exp");
         return expDate.before(new Date());
     }
+
 
     public boolean isValidClaims(Map<String,Object> jwtClaims){
         System.out.println(jwtClaims);
@@ -140,6 +144,7 @@ public class JwtUtils {
                 && Long.parseLong(jwtClaims.get("id").toString())>0
                 && jwtClaims.containsKey("email");
     }
+
     public String extractUsername(String token){
         verifyToken(token);
         Map<String,Object> claims = getJWTClaimSet(token);
@@ -148,5 +153,61 @@ public class JwtUtils {
         }else {
             throw new UnAuthorizeException("This user does not exist");
         }
+    }
+
+//*************************************** adding ******************************************
+
+    public String generateEmailVerifyToken(String userUuid) throws JOSEException {
+        try{
+        if (userUuid == null || userUuid.isBlank()) {
+            throw new IllegalArgumentException("userUuid cannot be null or blank");
+        }
+
+        JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
+
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(userUuid)                 // sub = UUID
+                .claim("purpose", "EMAIL_VERIFY")  // ระบุว่า token ใช้สำหรับ verify email
+                .expirationTime(new Date(System.currentTimeMillis() + 15 * 60 * 1000)) // 15 นาที
+                .issueTime(new Date())
+                .build();
+
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256)
+                        .keyID(rsaPrivateJWK.getKeyID()) // ใส่ keyID สำหรับ track key
+                        .build(),
+                claims
+        );
+
+        signedJWT.sign(signer);
+        return signedJWT.serialize(); // return เป็น JWT string
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+    public String verifyEmailToken(String token) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
+
+        if (!signedJWT.verify(verifier)) {
+            throw new RuntimeException("Invalid signature");
+        }
+
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+        // ตรวจสอบหมดอายุ
+        if (claims.getExpirationTime().before(new Date())) {
+            throw new RuntimeException("Token expired");
+        }
+
+        // ตรวจสอบว่า token ใช้สำหรับ verify email เท่านั้น
+        if (!"EMAIL_VERIFY".equals(claims.getStringClaim("purpose"))) {
+            throw new RuntimeException("Invalid token purpose");
+        }
+
+        return claims.getSubject(); // return claims เพื่อดึง userId ไปใช้
     }
 }
