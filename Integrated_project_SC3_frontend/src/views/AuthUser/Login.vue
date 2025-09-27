@@ -64,7 +64,7 @@ const summitForm = async () => {
     if(!await authStore.login(email.value, password.value))
   {
     console.log("Login successful");
-    alertStore.addToast("UnVerify.", "UnVerify Eieiie", "error");
+    alertStore.addToast("Unverify Email.", "Please verify your email", "error");
       return
   }
     const role = await authStore.getAuthData().authorities[authStore.getAuthData().authorities.length - 1].role;
