@@ -46,7 +46,7 @@ public class UserController {
         if(!isSeller){
             return ResponseEntity.ok(userServices.getBuyerById(authUserDetail.getId()));
         }else {
-           return ResponseEntity.ok(userServices.getSeller(authUserDetail.getId()));
+            return ResponseEntity.ok(userServices.getSeller(authUserDetail.getId()));
         }
 
     }

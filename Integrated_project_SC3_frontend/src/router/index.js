@@ -35,16 +35,16 @@ const router = createRouter({
     { path: '/brands/:id/edit', name: 'BrandEdit', component: BrandEdit, meta: { requiresAuth: true, roles: ['ROLE_SELLER'] } },
 
     // Auth
-    { path: '/sale-items/register', name: 'Register', component: Register },
-    { path: '/sale-items/login', name: 'Login', component: Login },
+    { path: '/register', name: 'Register', component: Register },
+    { path: '/signin', name: 'Login', component: Login },
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
 
     //User
-    {path: '/user/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+    {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
+    {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
 
     // Unknow-Path -> Home Page
-    { path: '/:pathMatch(.*)*', redirect: { name: 'Home' } },
-
+    { path: '/:pathMatch(.*)*', redirect: { name: 'Products' } },
   ],
 })
 
@@ -52,7 +52,7 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore();
   const guestOnlyRoutes = ['Login', 'Register', 'VerifyEmail'];
   if (auth.accessToken && guestOnlyRoutes.includes(to.name)) {
-    return { name: 'Home' }; // redirect ไปหน้า Home (หรือจะไปหน้า Profile ก็ได้)
+    return { name: 'Products' }; // redirect ไปหน้า Home (หรือจะไปหน้า Profile ก็ได้)
   }
 
   // ถ้าต้อง auth

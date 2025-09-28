@@ -39,8 +39,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Integer userId = null;
         String jwtToken;
         Map<String, Object> claims = null;
-        System.out.println(requestTokenHeader);
-        Collections.list(request.getHeaderNames()).forEach(System.out::println);
+//        System.out.println(requestTokenHeader);
+//        Collections.list(request.getHeaderNames()).forEach(System.out::println);
         if(requestTokenHeader != null){
             if(requestTokenHeader.startsWith("Bearer ")){
                 jwtToken = requestTokenHeader.substring(7);

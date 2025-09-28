@@ -8,7 +8,7 @@ import {
 
 // Props
 const props = defineProps({
-  modelSize: { type: Number, default: 10 },
+  modelSize: { type: Number, default: 50 },
   modelSort: { type: String, default: "createdOn" },
      modelPage: { type: Number, default: 0 },
   storageKeySize: { type: String, default: "seller_size" },

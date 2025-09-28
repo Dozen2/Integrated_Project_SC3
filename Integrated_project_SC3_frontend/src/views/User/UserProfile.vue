@@ -4,7 +4,9 @@ import userDataList from "@/components/UserComponent/userDataList.vue";
 import { useAuthStore } from "@/stores/auth";
 import { UserRound, UserRoundPen } from "lucide-vue-next";
 import { useAlertStore } from "@/stores/alertStore";
+import { useRouter } from "vue-router";
 
+const route = useRouter();
 const auth = useAuthStore();
 const toast = useAlertStore();
 
@@ -96,7 +98,7 @@ const editUserProfile = async () => {
       nickName: userProfile.value.nickName,
       fullName: userProfile.value.fullName,
     };
-    isEditMode.value = false;
+    changeToViewMode()
 toast.addToast(
       "The user profile has been successfully updated.",
       "Update profile successful.",
@@ -149,17 +151,26 @@ const maskBankAccount = () => {
 const cancelButton = () => {
   userProfile.value.nickName = originalProfile.value.nickName;
   userProfile.value.fullName = originalProfile.value.fullName;
-  isEditMode.value = false;
   form.nickname.isValid = false;
   form.nickname.isFirstInput = true;
   form.fullname.isValid = false;
   form.fullname.isFirstInput = true;
+  changeToViewMode()
 
 };
+
+const changeToEditMode = () => {
+  route.push({ name: "UserProfileEdit" });
+  isEditMode.value = true
+};
+
+const changeToViewMode = () => {
+  route.push({ name: "UserProfile" });
+  isEditMode.value = false;
+}
 </script>
 
 <template>
-
   <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
     <div class="text-blue-600 text-5xl font-semibold">
       Loading...
@@ -168,6 +179,18 @@ const cancelButton = () => {
   <div v-else
     class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10"
   >
+    <div class="flex gap-3">
+      <RouterLink 
+      :to="{ name: 'Products' }"
+      class="itbms-home">
+        HOME
+      </RouterLink>
+      <span>></span>
+      <div class="">
+        Profile
+      </div>
+    </div>
+
     <div
       class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100"
     >
@@ -189,6 +212,7 @@ const cancelButton = () => {
         <!-- User Data -->
         <form @submit.prevent="summitForm" class="space-y-4">
           <userDataList
+          class="itbms-nickname"
           label="NickName"
           v-model="userProfile.nickName"
           :isEditMode="isEditMode"
@@ -197,8 +221,13 @@ const cancelButton = () => {
             :errorText="form.nickname.errorText"
             @validateValue="validateNickname"
           />
-          <userDataList label="Email" v-model="userProfile.email" />
           <userDataList
+          class="itbms-email" 
+          label="Email" 
+          v-model="userProfile.email" />
+
+          <userDataList
+            class="itbms-fullname"
             label="FullName"
             v-model="userProfile.fullName"
             :isEditMode="isEditMode"
@@ -207,11 +236,26 @@ const cancelButton = () => {
             :errorText="form.fullname.errorText"
             @validateValue="validateFullname"
             />
-            <userDataList label="Type" v-model="userType" />
+            <userDataList 
+              class="itbms-type"
+              label="Type" 
+              v-model="userType" />
+
           <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList label="Mobile" v-model="phoneNumber" />
-            <userDataList label="Bank Account No" v-model="bankAccount" />
-            <userDataList label="Bank Name" v-model="userProfile.bankName" />
+            <userDataList
+              class="itbms-mobile"
+              label="Mobile" 
+              v-model="phoneNumber" />
+
+            <userDataList
+              class="itbms-bankAccount" 
+              label="Bank Account No" 
+              v-model="bankAccount" />
+
+            <userDataList
+              class="itbms-bankName" 
+              label="Bank Name" 
+              v-model="userProfile.bankName" />
           </div>
         </form>
       </div>
@@ -220,14 +264,17 @@ const cancelButton = () => {
     <!-- Buttons -->
     <div class="flex mt-6 justify-center space-x-4">
       <template v-if="!isEditMode">
+
         <button
-          @click="isEditMode = true"
-          class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
+          @click="changeToEditMode"
+          class="itbms-profile-button bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
         >
           Edit
         </button>
+
       </template>
       <template v-else>
+
         <button
           @click="editUserProfile"
           :disabled="!isFormValid"
@@ -237,12 +284,14 @@ const cancelButton = () => {
               ? 'bg-gray-300 hover:bg-gray-500 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-not-allowed'
               : 'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-pointer',
           ]"
+          class="itbms-save-button"
         >
           Save
         </button>
+
         <button
           @click="cancelButton"
-          class="bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
+          class="itbms-cancel-button bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer"
         >
           Cancel
         </button>

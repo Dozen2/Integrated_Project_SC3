@@ -52,6 +52,8 @@ public class AuthController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
+        System.out.println("========================== Verify Email ===========================");
+        System.out.println("Controller Verify-token: "  + token);
         boolean verify = userServices.verifyEmail(token);
         if(verify){
             return ResponseEntity.ok("Email successfully verify");
@@ -62,6 +64,8 @@ public class AuthController {
 
     @PostMapping("/refresh-email-token")
     public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
+        System.out.println("========================== Refresh Verify Email ===========================");
+        System.out.println("Controller Refresh-token: "  + token);
         userServices.emailExpired(token);
         return ResponseEntity.ok("Email successfully refresh");
     }
