@@ -57,36 +57,38 @@ UserServices {
     private AuthenticationManager authenticationManager;
 
 
-
     private Argon2PasswordEncoder passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+
     //สร้าง email กลางเอาไว้เป็นตัวที่จะส่งไปหา user ห้ามใช้ email ตัวเอง
     //ต้องไปตั้ง password ใน manage account --> security --> 2 step email verification
-    public void checkDuplication(UserDTO userDTO){
-    if(buyerRepository.existsBuyerByEmail(userDTO.getEmail())){
-        throw new DuplicteItemException("This email already exist");
+    public void checkDuplication(UserDTO userDTO) {
+        if (buyerRepository.existsBuyerByEmail(userDTO.getEmail())) {
+            throw new DuplicteItemException("This email already exist");
+        }
+        if (userDTO.getRole().equalsIgnoreCase("seller")
+                && sellerRepository.existsSellerByMobileNumber(userDTO.getMobileNumber())) {
+            throw new DuplicteItemException("This mobile number already exist");
+        }
+        if (userDTO.getRole().equalsIgnoreCase("seller") && sellerRepository.existsSellerByNationalId(userDTO.getNationalId())) {
+            throw new DuplicteItemException("This nationalID already exist");
+        }
     }
-    if(userDTO.getRole().equalsIgnoreCase("seller")
-            && sellerRepository.existsSellerByMobileNumber(userDTO.getMobileNumber())){
-        throw new DuplicteItemException("This mobile number already exist");
-    }
-    if(userDTO.getRole().equalsIgnoreCase("seller") && sellerRepository.existsSellerByNationalId(userDTO.getNationalId())){
-        throw new DuplicteItemException("This nationalID already exist");
-    }
-    }
-    public boolean checkIsActive(Integer id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->  new UnAuthorizeException("User not found"));
-        if(!buyer.getIsActive()){
+
+    public boolean checkIsActive(Integer id) {
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("User not found"));
+        if (!buyer.getIsActive()) {
             throw new UnAuthenticateException("User is not active");
         }
         return true;
     }
-    public Buyer findBuyerBySellerId(Integer id){
-       Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+
+    public Buyer findBuyerBySellerId(Integer id) {
+        Seller seller = sellerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         return seller.getBuyer();
     }
 
     @Transactional
-    public Buyer createUser(UserDTO userDTO, MultipartFile front,MultipartFile back) throws MessagingException, UnsupportedEncodingException {
+    public Buyer createUser(UserDTO userDTO, MultipartFile front, MultipartFile back) throws MessagingException, UnsupportedEncodingException {
         // ตรวจสอบข้อมูลซ้ำ (อีเมล, ชื่อเล่น ฯลฯ)
         checkDuplication(userDTO);
 
@@ -106,8 +108,7 @@ UserServices {
             // ตรวจสอบความครบถ้วนของข้อมูล Seller
             if (userDTO.getBankName() == null || userDTO.getBankAccountNumber() == null
                     || userDTO.getNationalId() == null
-)
-            {
+            ) {
                 throw new IllegalArgumentException("Seller details must not be null for seller role");
             }
             // จัดการอัพโหลดไฟล์บัตรประชาชน
@@ -131,16 +132,16 @@ UserServices {
         user.getRoles().add(Role.BUYER);
         buyerRepository.save(user);
 
-        VerifyToken verifyToken = new VerifyToken();
-        verifyToken.setVerifyToken(UUID.randomUUID().toString());
-        verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-        verifyToken.setBuyer(user);          // 🔥 สำคัญ ต้อง set User ให้ VerifyToken
-        verifyTokenRepository.save(verifyToken);
-        user.setVerifyToken(verifyToken);
+//        VerifyToken verifyToken = new VerifyToken();
+//        verifyToken.setVerifyToken(UUID.randomUUID().toString());
+//        verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
+//        verifyToken.setBuyer(user);
+//        verifyTokenRepository.save(verifyToken);
+//        user.setVerifyToken(verifyToken);
 
         buyerRepository.save(user);
 
-        emailService.sendMailVerification(user.getEmail(),verifyToken.getVerifyToken());
+        emailService.sendMailVerification(user.getEmail(), user.getEmail());
         return user;
     }
 
@@ -153,9 +154,9 @@ UserServices {
         dto.setFullName(user.getFullName());
         dto.setIsActive(user.getIsActive());
 
-        if(user.getSeller() != null){
+        if (user.getSeller() != null) {
             dto.setUserType("SELLER");
-        }else {
+        } else {
             dto.setUserType("BUYER");
         }
         return dto;
@@ -178,19 +179,15 @@ UserServices {
 
     @Transactional
     public boolean verifyEmail(String tokenStr) {
-        try{
-        System.out.println("tokenStr: " + tokenStr);
-        String verifyAccessToken = jwtUtils.verifyEmailToken(tokenStr);
-        VerifyToken token = verifyTokenRepository.findByVerifyToken(verifyAccessToken);
-        if (token.getExpiredDate().isBefore(Instant.now())) {
-            return false;
-        }
-        Buyer user = token.getBuyer();
-        user.setIsActive(true);
-        user.setVerifyToken(null);
-        verifyTokenRepository.delete(token);// ลบ token ผ่าน orphanRemoval
-        buyerRepository.save(user);
-        return true;
+        try {
+            String claimEmail = jwtUtils.verifyAndDecodeEmailToken(tokenStr);
+            System.out.println("claimEmailInVerifyEmailMethod: " + claimEmail);
+            if (claimEmail.equals("EmailExpire")) {
+                return false;
+            }
+            Buyer user = buyerRepository.findByEmailAndNonIsActive(claimEmail);
+            user.setIsActive(true);
+            return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -210,85 +207,84 @@ UserServices {
 //    }
 
 
-public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
-    UsernamePasswordAuthenticationToken uToken =
-            new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
-    authenticationManager.authenticate(uToken);
-    UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-    long refreshTokenAgeInMinute = 24*60 ;
+    public Map<String, Object> authenticateUser(JwtAuthUser jwtAuthUser) {
+        UsernamePasswordAuthenticationToken uToken =
+                new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(), jwtAuthUser.getPassword());
+        authenticationManager.authenticate(uToken);
+        UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
+        long refreshTokenAgeInMinute = 24 * 60;
 
-    String accessToken = jwtUtils.generateToken(userDetails);
-    String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
-    return Map.of(
-            "access_token",accessToken,
-            "refresh_token",refreshToken
-    );
-}
-
-
-    public Map<String, Object> refreshToken(String refreshToken){
-        jwtUtils.verifyToken(refreshToken);
-        Map<String,Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
-        jwtUtils.isExpired(claims);
-    if(!jwtUtils.isValidClaims(claims)){
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED
-                , "Invalid refresh token");
+        String accessToken = jwtUtils.generateToken(userDetails);
+        String refreshToken = jwtUtils.generateToken(userDetails, refreshTokenAgeInMinute, TokenType.refresh_token);
+        return Map.of(
+                "access_token", accessToken,
+                "refresh_token", refreshToken
+        );
     }
+
+
+    public Map<String, Object> refreshToken(String refreshToken) {
+        jwtUtils.verifyToken(refreshToken);
+        Map<String, Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
+        jwtUtils.isExpired(claims);
+        if (!jwtUtils.isValidClaims(claims)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED
+                    , "Invalid refresh token");
+        }
 //        System.out.println(claims.get("uid").toString());
         UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
-    return Map.of("access_token",jwtUtils.generateToken(userDetails));
+        return Map.of("access_token", jwtUtils.generateToken(userDetails));
     }
 
-    public boolean checkPassword(String password,String email){
+    public boolean checkPassword(String password, String email) {
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
-                ()->new UnAuthorizeException("Email or Password is Incorrect"));
-        if(!user.getIsActive()){
+                () -> new UnAuthorizeException("Email or Password is Incorrect"));
+        if (!user.getIsActive()) {
             throw new UnAuthenticateException("your account is not active");
         }
         return passwordEncoder.matches(password, user.getPasswords());
     }
 
     public void emailExpired(String tokenStr) throws MessagingException, UnsupportedEncodingException {
-        VerifyToken token = verifyTokenRepository.findByVerifyToken(tokenStr);
-        if (token == null) {
-            throw new IllegalArgumentException("Token not found: " + tokenStr);
+        try {
+            System.out.println("tokenStr: " + tokenStr);
+            String email = jwtUtils.extractEmailFromExpiredAccessToken(tokenStr);
+            emailService.sendMailVerification(email, email);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-//        token.setVerifyToken(UUID.randomUUID().toString());
-        token.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-        System.out.println(token.getVerifyToken());
-        System.out.println(token);
-        verifyTokenRepository.save(token);
-        emailService.sendMailVerification(token.getBuyer().getEmail(),token.getVerifyToken());
     }
 
-    public BuyerProfileDTO getBuyerById(int id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+
+    public BuyerProfileDTO getBuyerById(int id) {
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         return this.mapBuyerDto(buyer);
     }
 
-    public SellerProfileDTO getSeller(int id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+
+    public SellerProfileDTO getSeller(int id) {
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         return this.mapSellerDto(buyer);
 
     }
 
-    public BuyerProfileDTO updateBuyer(UserProfileRequestRTO userProfileRequestRTO,int id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+    public BuyerProfileDTO updateBuyer(UserProfileRequestRTO userProfileRequestRTO, int id) {
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         buyer.setNickName(userProfileRequestRTO.getNickName());
         buyer.setFullName(userProfileRequestRTO.getFullName());
         Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
         return this.mapBuyerDto(newBuyer);
     }
 
-    public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO,int id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+    public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO, int id) {
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         buyer.setNickName(userProfileRequestRTO.getNickName());
         buyer.setFullName(userProfileRequestRTO.getFullName());
         Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
         return this.mapSellerDto(newBuyer);
     }
-    public BuyerProfileDTO mapBuyerDto(Buyer buyer){
+
+    public BuyerProfileDTO mapBuyerDto(Buyer buyer) {
         BuyerProfileDTO dto = new BuyerProfileDTO();
         dto.setId(buyer.getId());
         dto.setFullName(buyer.getFullName());
@@ -299,7 +295,7 @@ public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
         return dto;
     }
 
-    public SellerProfileDTO mapSellerDto(Buyer buyer){
+    public SellerProfileDTO mapSellerDto(Buyer buyer) {
         SellerProfileDTO dto = new SellerProfileDTO();
         dto.setId(buyer.getId());
         dto.setEmail(buyer.getEmail());
