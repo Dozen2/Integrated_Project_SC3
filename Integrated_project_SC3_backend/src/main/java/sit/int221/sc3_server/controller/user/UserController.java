@@ -1,33 +1,17 @@
 package sit.int221.sc3_server.controller.user;
 
-import com.nimbusds.jwt.SignedJWT;
-import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
-import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
-import sit.int221.sc3_server.DTO.user.UserDTO;
-import sit.int221.sc3_server.DTO.user.UserResponseDTO;
 import sit.int221.sc3_server.DTO.user.profile.UserProfileRequestRTO;
-import sit.int221.sc3_server.entity.Buyer;
-import sit.int221.sc3_server.exception.UnAuthenticateException;
-import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.user.UserServices;
 import sit.int221.sc3_server.utils.JwtUtils;
-
-import java.io.UnsupportedEncodingException;
-import java.time.Duration;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/itb-mshop/v2/user")
@@ -51,11 +35,11 @@ public class UserController {
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
         if(!authUserDetail.getId().equals(id)){
-            throw new UnAuthenticateException("request user id not matched with id in access token");
+            throw new ForbiddenException("request user id not matched with id in access token");
         }
 
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new UnAuthenticateException("Invalid token type");
+            throw new ForbiddenException("Invalid token type");
         }
         boolean isSeller = authentication.getAuthorities()
                 .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
@@ -72,7 +56,7 @@ public class UserController {
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
 
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new UnAuthenticateException("Invalid token type");
+            throw new ForbiddenException("Invalid token type");
         }
 
         boolean isSeller = authentication.getAuthorities()

@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Getter
 @ResponseStatus(value = HttpStatus.FORBIDDEN)
-public class UnAuthenticateException extends RuntimeException {
+public class ForbiddenException extends RuntimeException {
 
-    public UnAuthenticateException(String message){
+    public ForbiddenException(String message){
         super(message);
     }
 }

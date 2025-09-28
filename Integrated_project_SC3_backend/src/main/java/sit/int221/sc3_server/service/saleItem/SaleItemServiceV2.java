@@ -278,7 +278,7 @@ public class SaleItemServiceV2 {
 
     @Transactional
     public SaleItem createSellerSaleItem(Integer sellerId,SaleItemCreateDTO saleItemCreateDTO, List<MultipartFile> images){
-        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new ForbiddenException("user not found"));
         // 1. หา brand
         int brandId = saleItemCreateDTO.getBrand().getId();
         Brand brand = brandRepository.findById(brandId)

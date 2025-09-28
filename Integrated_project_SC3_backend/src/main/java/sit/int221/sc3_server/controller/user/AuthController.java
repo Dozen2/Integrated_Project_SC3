@@ -118,8 +118,8 @@ public class AuthController {
 //                            .path("/itb-mshop/v2/auth/refresh")
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
-                    .sameSite("Lax")
-//                            .sameSite("Strict")
+//                    .sameSite("Lax")
+                    .sameSite("Strict")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 
@@ -135,15 +135,7 @@ public class AuthController {
     //****************************************************
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token, HttpServletRequest request){
-        System.out.println("======== ALL HEADERS ========");
-        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            System.out.println(headerName + ": " + request.getHeader(headerName));
-        });
-        System.out.println("============================");
-        System.out.println("========");
-        System.out.println(token);
-        System.out.println("========");
+    public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
 
         if (token == null || token.isEmpty()) {
             // ถ้าไม่มี header → return 400 Bad Request
@@ -181,12 +173,8 @@ public class AuthController {
 //    }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
-        System.out.println("======== ALL HEADERS ========");
-        request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
-            System.out.println(headerName + ": " + request.getHeader(headerName));
-        });
-        System.out.println("============================");
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+
         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .path("/")

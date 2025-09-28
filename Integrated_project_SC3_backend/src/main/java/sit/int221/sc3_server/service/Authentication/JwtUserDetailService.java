@@ -2,25 +2,22 @@ package sit.int221.sc3_server.service.Authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.entity.Seller;
-import sit.int221.sc3_server.exception.UnAuthenticateException;
+import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.utils.Role;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -34,7 +31,7 @@ public class JwtUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Buyer buyer= buyerRepository.findByUserNameOrEmail(username)
-                .orElseThrow(()-> new UnAuthenticateException("user does not exist"));
+                .orElseThrow(()-> new ForbiddenException("user does not exist"));
         if(!buyer.getIsActive()){
             throw new UnAuthorizeException("User is not verify");
         }

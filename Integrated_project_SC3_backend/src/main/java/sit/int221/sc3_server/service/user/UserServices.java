@@ -19,7 +19,7 @@ import sit.int221.sc3_server.DTO.user.profile.SellerProfileDTO;
 import sit.int221.sc3_server.DTO.user.profile.UserProfileRequestRTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
-import sit.int221.sc3_server.exception.UnAuthenticateException;
+import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
@@ -75,10 +75,13 @@ UserServices {
     }
 
     public Seller findSellerBySellerId(Integer id){
-       Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new UnAuthenticateException("user not found"));
+       Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
         Buyer buyer =  seller.getBuyer();
+        if (buyer == null) {
+            throw new ForbiddenException("seller has no buyer profile");//should not happen
+        }
         if(!buyer.getIsActive()){
-            throw new UnAuthenticateException("user is not active");
+            throw new ForbiddenException("user is not active");
         }
         return seller;
     }
@@ -256,7 +259,7 @@ UserServices {
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
                 ()->new UnAuthorizeException("Email or Password is Incorrect"));
         if(!user.getIsActive()){
-            throw new UnAuthenticateException("your account is not active");
+            throw new ForbiddenException("your account is not active");
         }
         return passwordEncoder.matches(password, user.getPasswords());
     }

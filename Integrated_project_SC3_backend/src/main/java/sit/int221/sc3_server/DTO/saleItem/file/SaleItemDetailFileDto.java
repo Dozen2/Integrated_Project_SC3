@@ -31,8 +31,8 @@ public class SaleItemDetailFileDto {
     private Integer quantity;
     private Instant createdOn;
     private Instant updatedOn;
-//    @JsonProperty("seller")
-//    private SellerDTO sellerDTO;
+    @JsonProperty("seller")
+    private SellerDTO sellerDTO;
 
 //    public List<String> getImageNames() {
 //        return saleItemImages.stream()
