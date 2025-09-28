@@ -47,18 +47,44 @@ public class JwtUserDetailService implements UserDetailsService {
     }
 
     public UserDetails loadUserById(Integer id){
-        Seller seller = sellerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Seller id "+ id + " does not exist"));
-        Buyer buyer = buyerRepository.findById(seller.getBuyer().getId()).orElseThrow(
-            ()->new ResourceNotFoundException("User id "+ id + " does not exist"));
-//        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
-        Integer userId = (buyer.getSeller()!= null)? buyer.getSeller().getId():buyer.getId();
-        return new AuthUserDetail(userId,             // id
-                buyer.getEmail(),          // username (ใช้ email)
-                buyer.getPasswords(),      // password
-                buyer.getNickName(),       // nickName
-                buyer.getEmail(),
+        Buyer buyer = buyerRepository.findById(id).orElse(null);
+        if(buyer != null){
+            if(buyer.getSeller() != null){
+                Seller seller = buyer.getSeller();;
+                return new AuthUserDetail(
+                        seller.getId(),
+                        buyer.getEmail(),
+                        buyer.getPasswords(),
+                        buyer.getNickName(),
+                        buyer.getEmail(),
+                        null,
+                        getAuthorities(buyer.getRoles())
+                );
+            }else {
+                return new AuthUserDetail(
+                        buyer.getId(),
+                        buyer.getEmail(),
+                        buyer.getPasswords(),
+                        buyer.getNickName(),
+                        buyer.getEmail(),
+                        null,
+                        getAuthorities(buyer.getRoles())
+                );
+            }
+        }
+        Seller seller = sellerRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("User id "+ id +" does not exist"));
+        Buyer sellerBuyer = seller.getBuyer();
+        return new AuthUserDetail(
+                seller.getId(),
+                sellerBuyer.getEmail(),
+                sellerBuyer.getPasswords(),
+                sellerBuyer.getNickName(),
+                sellerBuyer.getEmail(),
                 null,
-                getAuthorities(buyer.getRoles()));
+                getAuthorities(sellerBuyer.getRoles())
+        );
+
     }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {
         return roles.stream()

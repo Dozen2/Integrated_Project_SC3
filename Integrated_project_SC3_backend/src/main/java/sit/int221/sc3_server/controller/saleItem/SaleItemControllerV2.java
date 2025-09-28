@@ -128,13 +128,15 @@ public class SaleItemControllerV2 {
             Authentication authentication
     ){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-        userServices.findSellerBySellerId(id);//check is active
-        if(!authUserDetail.getId().equals(id)){
-            throw new ForbiddenException("request user id not matched with id in access token");
-        }
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new ForbiddenException("Invalid token type");
         }
+        if(!authUserDetail.getId().equals(id)){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+        userServices.findSellerBySellerId(id);//check is active
+
+
 
         String authUsername = authUserDetail.getUsername();
         Integer authSellerId = authUserDetail.getId();
@@ -157,13 +159,20 @@ public class SaleItemControllerV2 {
                                                                         ,@PathVariable(value = "id") int id,
                                                                       Authentication authentication){
     AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-    userServices.findSellerBySellerId(id);//check is active
     if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-        throw new ForbiddenException("Invalid token");
+            throw new ForbiddenException("Invalid token");
     }
     if(!authUserDetail.getId().equals(id)){
-        throw new ForbiddenException("Seller not found");
+            throw new ForbiddenException("Seller not found");
     }
+    boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(e->e.getAuthority().equals("ROLE_SELLER"));
+    if(!isSeller){
+        System.out.println("this is not seller");
+        throw new ForbiddenException("user is vot seller");
+    }
+    userServices.findSellerBySellerId(id);//check is active
+
+
 
 
     SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getId(), saleItemCreateDTO,images);
@@ -190,10 +199,16 @@ public class SaleItemControllerV2 {
         }
 
         SaleItem saleItem = saleItemServiceV2.getProductBySellerId(sellerId,id);
+        SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
         if(saleItem == null){
             throw new ItemNotFoundException("saleItem does not exist");
         }
-        return ResponseEntity.ok().body(modelMapper.map(saleItem, SaleItemDetailFileDto.class));
+        if(response.getSellerDTO() == null){
+            response.setSellerDTO(new SellerDTO());
+        }
+        response.getSellerDTO().setId(id);
+        response.getSellerDTO().setUserName(authUserDetail.getUsername());
+        return ResponseEntity.ok().body(response);
     }
 
 //    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

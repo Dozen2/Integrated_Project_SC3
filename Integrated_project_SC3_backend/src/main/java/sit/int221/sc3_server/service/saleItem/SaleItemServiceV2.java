@@ -138,7 +138,7 @@ public class SaleItemServiceV2 {
     public SaleItem getProductBySellerId(Integer sellerId,Integer saleItemId){
         boolean exist = sellerRepository.existsById(sellerId);
         if(!exist){
-            throw new UnAuthorizeException("user not found");
+            throw new ForbiddenException("user not found");
         }
         SaleItem saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
         return saleItem;
