@@ -131,6 +131,10 @@ public class SaleItemControllerV2 {
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new ForbiddenException("Invalid token type");
         }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        if(!isSeller){
+            throw new ForbiddenException("user is not seller");
+        }
         if(!authUserDetail.getId().equals(id)){
             throw new ForbiddenException("request user id not matched with id in access token");
         }
