@@ -16,6 +16,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import sit.int221.sc3_server.exception.AuthenticationEntryPoint.JwtAccessDeniedHandler;
 import sit.int221.sc3_server.exception.AuthenticationEntryPoint.JwtAuthenticationEntryPoint;
 import sit.int221.sc3_server.filter.JwtAuthFilter;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
@@ -29,6 +30,8 @@ public class WebConfig {
     private JwtAuthFilter jwtAuthFilter;
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    @Autowired
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
@@ -41,17 +44,23 @@ public class WebConfig {
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
-//                        .requestMatchers("/itb-mshop/v2/auth/register","itb-mshop/v2/user/verify-email").permitAll()
-//                        .requestMatchers("itb-mshop/v2/auth/login").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
-//                        .requestMatchers("itb-mshop/v2/sellers/**").hasAnyAuthority("ROLE_SELLER")
+//gi                        .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
+                        .requestMatchers("/itb-mshop/v2/auth/register","/itb-mshop/v2/auth/verify-email"
+                        ,"/itb-mshop/v2/auth/refresh-email-token").permitAll()
+                        .requestMatchers("/itb-mshop/v1/brands/**","/itb-mshop/v2/sale-items","/itb-mshop/v2/sale-items/file/{filename:.+}").permitAll()
+                        .requestMatchers("/itb-mshop/v2/auth/login").permitAll()
+                        .requestMatchers("/itb-mshop/v2/auth/logout"
+                        ,"/itb-mshop/v2/user/{id}","/itb-mshop/v2/user/profile/al").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
+                        .requestMatchers("/itb-mshop/v2/sellers/**").authenticated()
+
 //                        .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider(jwtUserDetailService))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();

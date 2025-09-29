@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generalErrorResponse);
     }
 
-    @ExceptionHandler(UnAuthenticateException.class)
+    @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> handleUnAuthenticateRequest(Exception e,HttpServletRequest httpServletRequest){
         GeneralErrorResponse ger = new GeneralErrorResponse(
                 HttpStatus.FORBIDDEN.value(),

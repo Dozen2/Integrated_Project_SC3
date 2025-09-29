@@ -138,7 +138,7 @@ public class SaleItemServiceV2 {
     public SaleItem getProductBySellerId(Integer sellerId,Integer saleItemId){
         boolean exist = sellerRepository.existsById(sellerId);
         if(!exist){
-            throw new UnAuthorizeException("user not found");
+            throw new ForbiddenException("user not found");
         }
         SaleItem saleItem = saleitemRepository.findBySellerId(sellerId,saleItemId);
         return saleItem;
@@ -278,17 +278,17 @@ public class SaleItemServiceV2 {
 
     @Transactional
     public SaleItem createSellerSaleItem(Integer sellerId,SaleItemCreateDTO saleItemCreateDTO, List<MultipartFile> images){
-        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->new ForbiddenException("user not found"));
         // 1. หา brand
         int brandId = saleItemCreateDTO.getBrand().getId();
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new ItemNotFoundException("Brand with ID " + brandId + " not found."));
 
-        // 2. เช็ค duplicate model
-        String model = saleItemCreateDTO.getModel().trim();
-        if(saleitemRepository.existsByModelIgnoreCase(model)){
-            throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
-        }
+//        // 2. เช็ค duplicate model
+//        String model = saleItemCreateDTO.getModel().trim();
+//        if(saleitemRepository.existsByModelIgnoreCase(model)){
+//            throw new CreateFailedException("Cannot create SaleItem: model '" + model + "' already exists.");
+//        }
 
         // 3. Map DTO → Entity
         SaleItem saleItem = modelMapper.map(saleItemCreateDTO, SaleItem.class);

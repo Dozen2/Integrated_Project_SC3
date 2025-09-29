@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import sit.int221.sc3_server.utils.JwtUtils;
 
 import java.io.UnsupportedEncodingException;
 
@@ -23,13 +24,16 @@ public class EmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @Value("${app.frontend.url.dev:http://localhost:5173}")
     private String devFrontUrl;
     @Value("${app.frontend.url.prod:http://intproj24.sit.kmutt.ac.th}")
     private String prodFrontendUrl;
     private final Environment environment;
 
-    public EmailService(Environment environment){
+    public EmailService(Environment environment) {
         this.environment = environment;
     }
 //    public void sendEmail(String to,String subject,String body) throws MessagingException {
@@ -51,8 +55,8 @@ public class EmailService {
 
 
     // ใช้สำหรับ get ชื่อ host #AKA โค้ดจากไอเหย
-    private String getHost(){
-        String[] activeProfile =  environment.getActiveProfiles();
+    private String getHost() {
+        String[] activeProfile = environment.getActiveProfiles();
         boolean isDev = activeProfile.length > 0 && activeProfile[0].equals("dev");
         return isDev ? devFrontUrl : prodFrontendUrl;
     }
@@ -60,13 +64,18 @@ public class EmailService {
     // ใช้สำหรับส่ง email verification
     //แก้ path ด้วย
     @Async
-    public void sendMailVerification(String to,String token) throws MessagingException, UnsupportedEncodingException {
+    public void sendMailVerification(String to, String token) {
+        try {
         String hostPath = getHost();
-        String link = hostPath + "/sc3/verify-email?token=" + token;
+        String verifyToken = jwtUtils.generateEmailVerifyToken(token);
+        String link = hostPath + "/sc3/verify-email?token=" + verifyToken;
         Context context = new Context();
         context.setVariable("verificationLink", link);
         String htmlContent = templateEngine.process("VerifyEmail", context);
         sendEmail(to, "Verify your email", htmlContent, true);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
