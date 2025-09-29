@@ -279,7 +279,8 @@ UserServices {
 
 
     public SellerProfileDTO getSeller(int id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Buyer buyer = seller.getBuyer();
         return this.mapSellerDto(buyer);
 
     }
