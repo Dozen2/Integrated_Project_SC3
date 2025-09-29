@@ -75,7 +75,7 @@ async function loginUser(username, password) {
     const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username, password: password }),
+      body: JSON.stringify({ email: username, password: password }),
       credentials: "include"
     });
 
@@ -180,7 +180,7 @@ async function fetchUserProfile(userId) {
   const accessToken = localStorage.getItem("accessToken")
   if (!accessToken) throw new Error("No access token")
 
-  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/user/${userId}`, {
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/${userId}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
