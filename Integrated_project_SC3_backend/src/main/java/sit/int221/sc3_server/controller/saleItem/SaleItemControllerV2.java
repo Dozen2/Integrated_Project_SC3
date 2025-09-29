@@ -129,7 +129,7 @@ public class SaleItemControllerV2 {
     ){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new ForbiddenException("Invalid token type");
+            throw new UnAuthorizeException("Invalid token type");
         }
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
         if(!isSeller){
