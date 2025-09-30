@@ -7,7 +7,8 @@ services:
       context: ./Integrated_project_SC3_frontend
       dockerfile: dockerfile
     ports:
-      - 80:80
+      - "80:80"
+      - "443:443"
     networks:
       - sc3_network
     depends_on:
