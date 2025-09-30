@@ -62,9 +62,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(userId != null && authentication == null){
             UserDetails userDetails;
-            if("ROLE_SELLER".equals(claims.get("role"))){
+            Object obj = claims.get("authorities");
+            boolean isSeller = false;
+            if(obj instanceof Iterable<?> iterable){
+                for (Object o : iterable){
+                    if(o instanceof Map<?,?> map){
+                        Object roles = map.get("role");
+                        if("ROLE_SELLER".equals(roles)){
+                            isSeller = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (isSeller) {
                 userDetails = this.jwtUserDetailService.loadSellerById(userId);
-            }else{
+            } else {
                 userDetails = this.jwtUserDetailService.loadBuyerById(userId);
             }
 //        UserDetails userDetails = this.jwtUserDetailService.loadUserById(userId);

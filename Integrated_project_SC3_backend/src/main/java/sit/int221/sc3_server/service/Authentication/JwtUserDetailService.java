@@ -18,6 +18,7 @@ import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.utils.Role;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -36,6 +37,11 @@ public class JwtUserDetailService implements UserDetailsService {
             throw new UnAuthorizeException("User is not verify");
         }
 //        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.BUYER);
+        if (buyer.getSeller() != null) {
+            roles.add(Role.SELLER);
+        }
         Integer id = (buyer.getSeller()!= null)? buyer.getSeller().getId():buyer.getId();
         return new AuthUserDetail(id,             // id
                 buyer.getEmail(),          // username (ใช้ email)
@@ -43,11 +49,13 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getNickName(),       // nickName
                 buyer.getEmail(),
                 null,
-                getAuthorities(buyer.getRoles()));
+                getAuthorities(roles));
     }
 
     public UserDetails loadBuyerById(Integer id){
         Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.BUYER);
         return new AuthUserDetail(
                 buyer.getId(),
                 buyer.getEmail(),
@@ -55,13 +63,16 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getNickName(),
                 buyer.getEmail(),
                 null,
-                getAuthorities(buyer.getRoles())
+                getAuthorities(roles)
         );
 
     }
     public UserDetails loadSellerById(Integer id){
         Seller seller = sellerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
         Buyer buyer = seller.getBuyer();
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.BUYER);
+        roles.add(Role.SELLER);
         return new AuthUserDetail(
                 seller.getId(),
                 buyer.getEmail(),
@@ -69,7 +80,7 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getNickName(),
                 buyer.getEmail(),
                 null,
-                getAuthorities(buyer.getRoles())
+                getAuthorities(roles)
         );
     }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {

@@ -23,7 +23,6 @@ import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
-import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.utils.JwtUtils;
@@ -31,8 +30,6 @@ import sit.int221.sc3_server.utils.Role;
 import sit.int221.sc3_server.utils.TokenType;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,8 +44,6 @@ UserServices {
     private FileService fileService;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private VerifyTokenRepository verifyTokenRepository;
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
@@ -248,12 +243,25 @@ UserServices {
         }
 //        System.out.println(claims.get("uid").toString());
 //        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
-        UserDetails userDetails;
-        if("ROLE_SELLER".equals(claims.get("role"))){
-             userDetails = jwtUserDetailService.loadSellerById(Integer.parseInt(claims.get("id").toString()));
-        }else {
-            userDetails = jwtUserDetailService.loadBuyerById(Integer.parseInt(claims.get("id").toString()));
+        Integer userId = Integer.parseInt(claims.get("id").toString());
+        boolean isSeller = false;
+        Object authoritiesObj = claims.get("authorities");
+        if (authoritiesObj instanceof Iterable<?> iterable) {
+            for (Object obj : iterable) {
+                if (obj instanceof Map<?, ?> map) {
+                    Object role = map.get("role");
+                    if ("ROLE_SELLER".equals(role)) {
+                        isSeller = true;
+                        break;
+                    }
+                }
+            }
         }
+
+        UserDetails userDetails = isSeller
+                ? jwtUserDetailService.loadSellerById(userId)
+                : jwtUserDetailService.loadBuyerById(userId);
+
         return Map.of("access_token", jwtUtils.generateToken(userDetails));
     }
 
