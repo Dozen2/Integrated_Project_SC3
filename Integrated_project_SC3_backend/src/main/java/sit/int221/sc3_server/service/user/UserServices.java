@@ -308,7 +308,11 @@ UserServices {
     }
 
     public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO, int id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+        Buyer buyer = seller.getBuyer();
+        if(buyer.getSeller() == null){
+            throw new ForbiddenException("user is buyer");
+        }
         buyer.setNickName(userProfileRequestRTO.getNickName());
         buyer.setFullName(userProfileRequestRTO.getFullName());
         Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
@@ -327,7 +331,11 @@ UserServices {
     }
 
     public SellerProfileDTO mapSellerDto(Buyer buyer) {
+        if (buyer.getSeller() == null) {
+            throw new ForbiddenException("This user has no seller profile");
+        }
         SellerProfileDTO dto = new SellerProfileDTO();
+
         dto.setId(buyer.getId());
         dto.setEmail(buyer.getEmail());
         dto.setFullName(buyer.getFullName());
