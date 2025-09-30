@@ -134,6 +134,7 @@ async function refreshToken() {
   const authorities = decoded.authorities || [];
 
   let decode_role = 'UNKNOWN'
+  
   if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
     decode_role = "ROLE_SELLER";
   } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
@@ -181,7 +182,7 @@ async function editUserProfile(userData) {
   formData.append("fullName", userData.fullName);
   formData.append("nickName", userData.nickName);
 
-  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/user/profile/all`, {
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/profile/all`, {
     method: "PUT",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
