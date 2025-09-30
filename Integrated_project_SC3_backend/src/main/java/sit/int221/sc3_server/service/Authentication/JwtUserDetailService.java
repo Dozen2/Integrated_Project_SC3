@@ -46,45 +46,31 @@ public class JwtUserDetailService implements UserDetailsService {
                 getAuthorities(buyer.getRoles()));
     }
 
-    public UserDetails loadUserById(Integer id){
-        Buyer buyer = buyerRepository.findById(id).orElse(null);
-        if(buyer != null){
-            if(buyer.getSeller() != null){
-                Seller seller = buyer.getSeller();;
-                return new AuthUserDetail(
-                        seller.getId(),
-                        buyer.getEmail(),
-                        buyer.getPasswords(),
-                        buyer.getNickName(),
-                        buyer.getEmail(),
-                        null,
-                        getAuthorities(buyer.getRoles())
-                );
-            }else {
-                return new AuthUserDetail(
-                        buyer.getId(),
-                        buyer.getEmail(),
-                        buyer.getPasswords(),
-                        buyer.getNickName(),
-                        buyer.getEmail(),
-                        null,
-                        getAuthorities(buyer.getRoles())
-                );
-            }
-        }
-        Seller seller = sellerRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("User id "+ id +" does not exist"));
-        Buyer sellerBuyer = seller.getBuyer();
+    public UserDetails loadBuyerById(Integer id){
+        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
         return new AuthUserDetail(
-                seller.getId(),
-                sellerBuyer.getEmail(),
-                sellerBuyer.getPasswords(),
-                sellerBuyer.getNickName(),
-                sellerBuyer.getEmail(),
+                buyer.getId(),
+                buyer.getEmail(),
+                buyer.getPasswords(),
+                buyer.getNickName(),
+                buyer.getEmail(),
                 null,
-                getAuthorities(sellerBuyer.getRoles())
+                getAuthorities(buyer.getRoles())
         );
 
+    }
+    public UserDetails loadSellerById(Integer id){
+        Seller seller = sellerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
+        Buyer buyer = seller.getBuyer();
+        return new AuthUserDetail(
+                seller.getId(),
+                buyer.getEmail(),
+                buyer.getPasswords(),
+                buyer.getNickName(),
+                buyer.getEmail(),
+                null,
+                getAuthorities(buyer.getRoles())
+        );
     }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {
         return roles.stream()

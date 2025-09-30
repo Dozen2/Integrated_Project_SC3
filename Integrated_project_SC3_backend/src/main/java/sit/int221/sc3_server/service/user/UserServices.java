@@ -247,7 +247,13 @@ UserServices {
                     , "Invalid refresh token");
         }
 //        System.out.println(claims.get("uid").toString());
-        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
+//        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
+        UserDetails userDetails;
+        if("ROLE_SELLER".equals(claims.get("role"))){
+             userDetails = jwtUserDetailService.loadSellerById(Integer.parseInt(claims.get("id").toString()));
+        }else {
+            userDetails = jwtUserDetailService.loadBuyerById(Integer.parseInt(claims.get("id").toString()));
+        }
         return Map.of("access_token", jwtUtils.generateToken(userDetails));
     }
 
