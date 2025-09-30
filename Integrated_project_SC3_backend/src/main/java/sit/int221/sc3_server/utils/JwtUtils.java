@@ -109,7 +109,9 @@ public class JwtUtils {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
             boolean pass = signedJWT.verify(verifier);
+            JWTClaimsSet TestDecode = signedJWT.getJWTClaimsSet();
             System.out.println("Token verified!!!" + pass);
+            System.out.println("TestDecode: " + TestDecode);
             if (!pass) {
                 throw new UnAuthorizeException("Verified Error, Invalid JWT");
             }

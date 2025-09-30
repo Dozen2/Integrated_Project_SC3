@@ -63,6 +63,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if(userId != null && authentication == null){
             UserDetails userDetails = this.jwtUserDetailService.loadUserById(userId);
 
+            System.out.println("userDetails: " + userDetails);
+            System.out.println("TestEqual: " + !userDetails.getUsername().equals(claims.get("email")));
+            System.out.println("userDetails.getUsername()" + userDetails.getUsername());
+            System.out.println("claims.get(\"email\"): " + claims.get("email"));
             if(userDetails == null || !userDetails.getUsername().equals(claims.get("email"))){
                 throw new AuthenticationCredentialsNotFoundException("Invalid JWT token");
             }

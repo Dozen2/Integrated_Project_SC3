@@ -134,10 +134,13 @@ const  getAllSaleItemSeller = async (size, page) => {
   const decoded = jwtDecode(accessToken);
 
   console.log("Decoded JWT in getAllSaleItemSeller:", decoded.id);
+
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
   }
-
+  
+  console.log(accessToken);
+  
   const params = new URLSearchParams();
   params.append("size", size);
   // params.append("sortField", sortField);

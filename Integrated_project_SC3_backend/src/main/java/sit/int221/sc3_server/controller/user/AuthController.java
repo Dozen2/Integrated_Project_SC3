@@ -140,8 +140,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
-        System.out.println("this is ref");
-
         if (token == null || token.isEmpty()) {
             // ถ้าไม่มี header → return 400 Bad Request
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
