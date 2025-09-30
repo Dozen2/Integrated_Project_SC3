@@ -1,6 +1,8 @@
 services:
   frontend:
     container_name: fe-server
+    volumes:
+      - ./Integrated_project_SC3_frontend/ssl:/etc/ssl
     build:
       context: ./Integrated_project_SC3_frontend
       dockerfile: dockerfile
@@ -10,6 +12,7 @@ services:
       - sc3_network
     depends_on:
       - backend
+    
 
   backend:
     container_name: be-server
@@ -49,6 +52,8 @@ services:
       timeout: 30s
       retries: 3
       start_period: 5s
+
+    
 
 networks:
   sc3_network:
