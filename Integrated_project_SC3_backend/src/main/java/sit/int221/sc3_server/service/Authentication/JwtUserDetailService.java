@@ -48,6 +48,7 @@ public class JwtUserDetailService implements UserDetailsService {
 
     public UserDetails loadUserById(Integer id){
         Buyer buyer = buyerRepository.findById(id).orElse(null);
+
         if(buyer != null){
             if(buyer.getSeller() != null){
                 Seller seller = buyer.getSeller();;

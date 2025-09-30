@@ -41,7 +41,7 @@ public class UserController {
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new ForbiddenException("Invalid token type");
         }
-        boolean isSeller = authentication.getAuthorities()
+        boolean isSeller = authUserDetail.getAuthorities()
                 .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
         if(!isSeller){
             return ResponseEntity.ok(userServices.getBuyerById(authUserDetail.getId()));

@@ -72,6 +72,8 @@ export const useAuthStore = defineStore("auth", {
 
     // ฟังก์ชัน logout
     async logout() {
+      console.log("logout");
+      
       try {
         await apiLogout();
       } catch {

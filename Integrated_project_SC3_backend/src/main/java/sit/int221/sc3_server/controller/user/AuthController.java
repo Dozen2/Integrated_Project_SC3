@@ -122,8 +122,8 @@ public class AuthController {
 //                            .path("/itb-mshop/v2/auth/refresh")
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
-//                    .sameSite("Lax")
-                    .sameSite("Strict")
+                    .sameSite("Lax")
+//                    .sameSite("Strict")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 
@@ -140,6 +140,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
+        System.out.println("this is ref");
 
         if (token == null || token.isEmpty()) {
             // ถ้าไม่มี header → return 400 Bad Request
@@ -178,7 +179,6 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-
         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .path("/")

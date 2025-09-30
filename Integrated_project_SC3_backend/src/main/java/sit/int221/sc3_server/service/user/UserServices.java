@@ -240,8 +240,11 @@ UserServices {
 
     public Map<String, Object> refreshToken(String refreshToken) {
         jwtUtils.verifyToken(refreshToken);
+        System.out.println("ttttttttt");
         Map<String, Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
+        System.out.println("xxxxxxxx");
         jwtUtils.isExpired(claims);
+        System.out.println("zzzzzzzz");
         if (!jwtUtils.isValidClaims(claims)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED
                     , "Invalid refresh token");
@@ -279,7 +282,8 @@ UserServices {
 
 
     public SellerProfileDTO getSeller(int id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Buyer buyer = seller.getBuyer();
         return this.mapSellerDto(buyer);
 
     }

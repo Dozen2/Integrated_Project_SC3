@@ -104,6 +104,7 @@ public class JwtUtils {
 
 
     public boolean verifyToken(String token) {
+        System.out.println(token);
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
