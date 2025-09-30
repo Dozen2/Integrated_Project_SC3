@@ -1,10 +1,12 @@
 package sit.int221.sc3_server.DTO.saleItem.file;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SellerDTO;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,6 +31,8 @@ public class SaleItemDetailFileDto {
     private Integer quantity;
     private Instant createdOn;
     private Instant updatedOn;
+    @JsonProperty("seller")
+    private SellerDTO sellerDTO;
 
 //    public List<String> getImageNames() {
 //        return saleItemImages.stream()

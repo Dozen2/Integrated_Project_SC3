@@ -12,18 +12,25 @@ public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
     boolean existsBuyerByEmail(String email);
 
     @Query("""
-    select p from Buyer p
-    where (p.verifyToken = :token)
-""")
+                select p from Buyer p
+                where (p.verifyToken = :token)
+            """)
     Optional<VerifyToken> findVerifyToken(
             @Param("token") String token
     );
 
     @Query("""
-    select p from Buyer p
-    where (p.fullName=:usernameOrEmail or p.email = :usernameOrEmail)
-""")
-Optional<Buyer> findByUserNameOrEmail(
-        @Param("usernameOrEmail") String usernameOrEmail);
+                select p from Buyer p
+                where (p.fullName=:usernameOrEmail or p.email = :usernameOrEmail)
+            """)
+    Optional<Buyer> findByUserNameOrEmail(
+            @Param("usernameOrEmail") String usernameOrEmail);
 
+
+    @Query("""
+                select p from Buyer p
+                where (p.email = :email and p.isActive  = false )
+            """)
+    Buyer findByEmailAndNonIsActive(
+            @Param("email") String email);
 }
