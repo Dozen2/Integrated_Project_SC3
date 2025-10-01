@@ -113,7 +113,7 @@ public class JwtUtils {
             System.out.println("Token verified!!!" + pass);
             System.out.println("TestDecode: " + TestDecode);
             if (!pass) {
-                throw new UnAuthorizeException("Verified Error, Invalid JWT");
+                throw new UnAuthorizeException("Verified Error, Invalid JWT 1111");
             }
             return true;
         }catch (JOSEException | ParseException p){

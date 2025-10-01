@@ -8,7 +8,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
 
     beforeEach(()=> {
         cy.visit(resource) ;
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.get('.itbms-email').as('email') ;
         cy.get('@email').type('itbkk.somchai@ad.sit.kmutt.ac.th') ;
@@ -16,7 +16,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         cy.get('@password').type('itProj24*SOM') ;
         cy.get('.itbms-signin-button').as('submit') ;
         cy.get('@submit').click() ;
-        cy.wait(100)
+        cy.wait(1000)
 
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
@@ -32,9 +32,9 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         should have "Edit Profile" button".\n`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(100)
+        // cy.wait(1000)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.contains('.itbms-nickname','Somchai') ;
         cy.contains('.itbms-email','itbkk.somchai@ad.sit.kmutt.ac.th') ;
@@ -51,7 +51,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         should enable the "Save" button.
         should click the "Cancel" button`,()=>{
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.get('.itbms-profile-button').should('exist').as('editProfileButton');
         cy.get('@editProfileButton').click();
@@ -84,14 +84,14 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
 
         cy.get('.itbms-cancel-button').as('cancel') ;
         cy.get('@cancel').click();
-        cy.wait(100) ;
+        cy.wait(1000) ;
     })
 
     it(`[step 6] should redirect to the profile page after canceling the edit.\n
         should not change the profile data.`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(100)
+        // cy.wait(1000)
         cy.visit('/profile') ;  
         cy.wait(500) ;
 

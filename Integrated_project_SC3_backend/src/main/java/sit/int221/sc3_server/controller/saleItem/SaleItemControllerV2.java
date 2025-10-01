@@ -113,6 +113,10 @@ public class SaleItemControllerV2 {
             return ResponseEntity.noContent().build() ;
     }
 
+
+
+//    api after login mush have accesstoken in use
+//    ====================================================================================================================
     @GetMapping("/sellers/{id}/sale-items")
     public ResponseEntity<PageDTO<SaleItemDetailSeller>> getSaleItemBySeller(
             @PathVariable int id,
@@ -189,6 +193,8 @@ public class SaleItemControllerV2 {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+
     @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
     public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
             ,@PathVariable(value="id") int sellerId
@@ -213,6 +219,8 @@ public class SaleItemControllerV2 {
         response.getSellerDTO().setUserName(authUserDetail.getUsername());
         return ResponseEntity.ok().body(response);
     }
+
+
     @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SaleItemDetailFileDto> updateSaleItembySeller(@PathVariable(value = "id") int sellerId
             ,@PathVariable(value = "saleItemId") int saleItemId,@ModelAttribute SaleItemWithImageInfo request

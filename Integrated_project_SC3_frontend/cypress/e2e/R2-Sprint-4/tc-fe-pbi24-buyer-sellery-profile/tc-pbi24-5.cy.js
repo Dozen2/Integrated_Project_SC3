@@ -8,7 +8,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
 
     beforeEach(()=> {
         cy.visit(resource) ;
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.get('.itbms-email').as('email') ;
         cy.get('@email').type('itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -16,12 +16,12 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         cy.get('@password').type('itProj24*SOM') ;
         cy.get('.itbms-signin-button').as('submit') ;
         cy.get('@submit').click() ;
-        cy.wait(100)
+        cy.wait(1000)
 
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
         })
-        cy.wait(500) ;
+        cy.wait(1000) ;
     }) ;
 
     it(`[step 1,2] Open the Sign In page at ${resource}`, () => {
@@ -32,9 +32,9 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         should have "Edit Profile" button".\n`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(100)
+        // cy.wait(1000)
         cy.visit('/profile') ;  
-        cy.wait(500) ;
+        cy.wait(1000) ;
 
         cy.contains('.itbms-nickname','Somsak') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -54,11 +54,11 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         should enable the "Save" button.
         should click the "Save" button`,()=>{
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.get('.itbms-profile-button').should('exist').as('editProfileButton');
         cy.get('@editProfileButton').click();
-        cy.wait(100) ;
+        cy.wait(1000) ;
 
         cy.get('input.itbms-nickname').should('have.value','Somsak') ;
         cy.get('input.itbms-email').should('have.value','itbkk.somsak@ad.sit.kmutt.ac.th')
@@ -105,16 +105,16 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
 
         cy.get('.itbms-save-button').as('save') ;
         cy.get('@save').click();
-        cy.wait(100) ;
+        cy.wait(1000) ;
     })
 
     it(`[step 6] should redirect to the profile page after saving the edit.\n
         should change the profile data.`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(100)
+        // cy.wait(1000)
         cy.visit('/profile') ;  
-        cy.wait(500) ;
+        cy.wait(1000) ;
 
         cy.contains('.itbms-nickname','Saksit') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;

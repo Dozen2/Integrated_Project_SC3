@@ -127,9 +127,10 @@ const getAllSaleItemV2 = async (
 };
 
 //SaleItem Seller
+//use authFetch
 //=============================================================================
 
-const  getAllSaleItemSeller = async (size, page) => {
+const getAllSaleItemSeller = async (size, page) => {
   const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
   const decoded = jwtDecode(accessToken);
 
@@ -138,9 +139,9 @@ const  getAllSaleItemSeller = async (size, page) => {
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
   }
-  
+
   console.log(accessToken);
-  
+
   const params = new URLSearchParams();
   params.append("size", size);
   // params.append("sortField", sortField);
@@ -172,6 +173,76 @@ const  getAllSaleItemSeller = async (size, page) => {
     throw new Error(`Fetch failed: ${error.message}`);
   }
 };
+
+async function createSaleItem(formData) {
+  const accessToken = localStorage.getItem("accessToken");
+  const decoded = jwtDecode(accessToken);
+
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items`;
+  console.log("API Call URL CREATE:", url);
+
+
+  const res = await authFetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to create sale item");
+  }
+
+  return res.json();
+}
+
+async function updateSaleItemSeller(id, updatedSaleItem) {
+  const accessToken = localStorage.getItem("accessToken");
+  const decoded = jwtDecode(accessToken);
+
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items/${id}`
+  console.log("API Call URL UPDATE:", url);
+
+  const res = await authFetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: updatedSaleItem,
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to create sale item");
+  }
+
+  return res.json();
+}
+
+async function deleteSaleItemSeller(id) {
+  const accessToken = localStorage.getItem("accessToken");
+  const decoded = jwtDecode(accessToken);
+
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items/${id}`
+  console.log("API Call URL DELETE:", url);
+  
+  const res = await authFetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || "Failed to create sale item");
+  }
+
+  return res.json();
+
+}
 
 //=============================================================================
 
@@ -317,4 +388,7 @@ export {
   addSaleItemV2,
   getViewStorageForSelect,
   updateSaleItemV2,
+  createSaleItem,
+  updateSaleItemSeller,
+  deleteSaleItemSeller
 };
