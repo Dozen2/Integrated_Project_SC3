@@ -12,18 +12,24 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.*;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
+import sit.int221.sc3_server.DTO.order.OrderRequest;
+import sit.int221.sc3_server.DTO.order.OrderResponse;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
+import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileNormal;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemWithImageInfo;
 import sit.int221.sc3_server.DTO.saleItem.SalesItemDetailDTO;
 import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SaleItemDetailSeller;
 import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SellerDTO;
+import sit.int221.sc3_server.entity.Buyer;
+import sit.int221.sc3_server.entity.Order;
 import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.service.FileService;
+import sit.int221.sc3_server.service.order.OrderServices;
 import sit.int221.sc3_server.service.saleItem.SaleItemServiceV2;
 import sit.int221.sc3_server.service.user.UserServices;
 import sit.int221.sc3_server.utils.ListMapper;
@@ -45,6 +51,8 @@ public class SaleItemControllerV2 {
     private FileService fileService;
     @Autowired
     private UserServices userServices;
+    @Autowired
+    private OrderServices orderServices;
 
     @GetMapping("/sale-items")//map เป็น SalesItemDetailFileDto เพื่อที่จะได้ส่งรูปไปได้
     public ResponseEntity<PageDTO<SalesItemDetailDTO>> getAllSaleItem(
@@ -75,8 +83,8 @@ public class SaleItemControllerV2 {
     }
 
     @GetMapping("/sale-items/{id}")
-    public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable int id) {
-        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileDto.class));
+    public ResponseEntity<SaleItemDetailFileNormal> getSaleItemById(@PathVariable int id) {
+        return ResponseEntity.ok().body(modelMapper.map(saleItemServiceV2.getProductById(id), SaleItemDetailFileNormal.class));
     }
 
     @GetMapping("/sale-items/file/{filename:.+}")
@@ -188,30 +196,7 @@ public class SaleItemControllerV2 {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
-    public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
-            ,@PathVariable(value="id") int sellerId
-            ,Authentication authentication) {
-        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new UnAuthorizeException("Invalid token");
-        }
-        if(!authUserDetail.getId().equals(sellerId)){
-            throw new UnAuthorizeException("request user id not matched with id in access token");
-        }
 
-        SaleItem saleItem = saleItemServiceV2.getProductBySellerId(sellerId,id);
-        SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
-        if(saleItem == null){
-            throw new ItemNotFoundException("saleItem does not exist");
-        }
-        if(response.getSellerDTO() == null){
-            response.setSellerDTO(new SellerDTO());
-        }
-        response.getSellerDTO().setId(id);
-        response.getSellerDTO().setUserName(authUserDetail.getUsername());
-        return ResponseEntity.ok().body(response);
-    }
     @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SaleItemDetailFileDto> updateSaleItembySeller(@PathVariable(value = "id") int sellerId
             ,@PathVariable(value = "saleItemId") int saleItemId,@ModelAttribute SaleItemWithImageInfo request
@@ -261,6 +246,31 @@ public class SaleItemControllerV2 {
         return ResponseEntity.noContent().build();
     }
 
+
+    @PostMapping("/orders")
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request,Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if("ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        Buyer buyer;
+        if(isSeller){
+             buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
+        }else {
+            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
+        }
+        if(!request.getBuyerId().equals(buyer.getId())){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+
+        Order order = orderServices.createOrder(request);
+        OrderResponse response = modelMapper.map(order,OrderResponse.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+
+    }
+
 //    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<SaleItemDetailFileDto> updateSaleItemBySeller(@ModelAttribute SaleItemWithImageInfo info
 //            ,@PathVariable(value = "id") int sellerId,@PathVariable(value = "saleItemId") int saleItemId
@@ -275,5 +285,7 @@ public class SaleItemControllerV2 {
 //        }
 //
 //    }
+
+
 
 }
