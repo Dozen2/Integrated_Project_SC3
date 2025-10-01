@@ -34,6 +34,7 @@ import sit.int221.sc3_server.service.saleItem.SaleItemServiceV2;
 import sit.int221.sc3_server.service.user.UserServices;
 import sit.int221.sc3_server.utils.ListMapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -248,9 +249,9 @@ public class SaleItemControllerV2 {
 
 
     @PostMapping("/orders")
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request,Authentication authentication){
+    public ResponseEntity<List<OrderResponse>> createOrder(@RequestBody List<OrderRequest> request,Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-        if("ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token");
         }
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
@@ -260,13 +261,68 @@ public class SaleItemControllerV2 {
         }else {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
-        if(!request.getBuyerId().equals(buyer.getId())){
-            throw new ForbiddenException("request user id not matched with id in access token");
+        for (OrderRequest request1 : request){
+            if(!request1.getBuyerId().equals(buyer.getId())){
+                throw new ForbiddenException("request user id not matched with id in access token");
+            }
+        }
+        List<OrderResponse> responses = new ArrayList<>();
+        for (OrderRequest request02:
+             request) {
+            Order order = orderServices.createOrder(request02);
+            OrderResponse response = orderServices.mapOrderToResponseDTO(order);
+            responses.add(response);
         }
 
-        Order order = orderServices.createOrder(request);
-        OrderResponse response = modelMapper.map(order,OrderResponse.class);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+
+
+    }
+
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable int id,Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        Order order = orderServices.getOrderById(id);
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        Buyer buyer;
+        if(isSeller){
+            buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
+        }else {
+            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
+        }
+        if(!buyer.getId().equals(order.getBuyer().getId())){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+         OrderResponse response = orderServices.mapOrderToResponseDTO(order);
+        return ResponseEntity.ok(response);
+
+
+    }
+
+    @GetMapping("/users/{id}/orders")
+    public ResponseEntity<PageDTO<OrderRequest>> getAllOrderByUserId(@PathVariable int id
+            ,@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size,Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        if(!authUserDetail.getId().equals(id)){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        Buyer buyer;
+        if(isSeller){
+            buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
+        }else {
+            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
+        }
+
+        Page<Order> order = orderServices.findAllBuyersOrder(buyer.getId(), page,size);
+        PageDTO<OrderRequest> response = listMapper.toPageDTO(order,OrderRequest.class,modelMapper);
+        return ResponseEntity.ok(response);
 
 
     }

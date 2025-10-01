@@ -57,7 +57,7 @@ public class Order {
     @Column(name = "order_note", length = 70)
     private String orderNote;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order" )
     private Set<OrderDetail> orderDetails = new LinkedHashSet<>();
 
 }

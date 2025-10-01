@@ -29,4 +29,8 @@ public class OrderDetail {
     @Column(name = "price_each_at_purchase", nullable = false)
     private Integer priceEachAtPurchase;
 
+    @NotNull
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
+
 }
