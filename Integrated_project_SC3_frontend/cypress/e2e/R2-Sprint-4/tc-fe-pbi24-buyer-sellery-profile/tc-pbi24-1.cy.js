@@ -21,7 +21,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
         })
-        cy.wait(200) ;
+        cy.wait(500) ;
     }) ;
 
     it(`[step 1,2] Open the Sign In page at ${resource}`, () => {
@@ -55,7 +55,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
 
         cy.get('.itbms-profile-button').should('exist').as('editProfileButton');
         cy.get('@editProfileButton').click();
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.get('input.itbms-nickname').should('have.value','Somchai') ;
         cy.get('input.itbms-email').should('have.value','itbkk.somchai@ad.sit.kmutt.ac.th')
@@ -93,7 +93,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-1\n
         // cy.get('@profileButton').click();
         // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.contains('.itbms-nickname','Somchai') ;
         cy.contains('.itbms-email','itbkk.somchai@ad.sit.kmutt.ac.th') ;

@@ -21,7 +21,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-4\n
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
         })
-        cy.wait(200) ;
+        cy.wait(500) ;
     }) ;
 
     it(`[step 1,2] Open the Sign In page at ${resource}`, () => {
@@ -31,7 +31,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-4\n
         should show the profile data: nickname, email, fullname and account type.\n
         should have "Edit Profile" button".\n`,()=>{
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(500) ;
 
         cy.contains('.itbms-nickname','Somsak') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -102,7 +102,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-4\n
 
         cy.get('.itbms-cancel-button').as('cancel') ;
         cy.get('@cancel').click();
-        cy.wait(100) ;
+        cy.wait(300) ;
     })
 
     it(`[step 6] should redirect to the profile page after canceling the edit.\n
@@ -111,7 +111,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-4\n
         // cy.get('@profileButton').click();
         // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(100) ;
+        cy.wait(800) ;
 
         cy.contains('.itbms-nickname','Somsak') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
