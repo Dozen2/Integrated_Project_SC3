@@ -48,8 +48,6 @@ public class Buyer {
     @Column(name = "isActive")
     private Boolean isActive;
 
-
-
     @ElementCollection(fetch = FetchType.EAGER)   // บังคับโหลด roles มาพร้อม Buyer
     @Enumerated(EnumType.STRING)                 // เก็บค่า enum เป็น String (อ่านง่าย)
     @CollectionTable(
