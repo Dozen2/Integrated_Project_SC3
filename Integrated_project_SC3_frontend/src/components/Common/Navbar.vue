@@ -1,5 +1,5 @@
 <script setup>
-import { LogOut, ShoppingCart, Smartphone, UserRound } from "lucide-vue-next";
+import { ClipboardList, LogOut, ShoppingCart, Smartphone, UserRound } from "lucide-vue-next";
 import { useAuthStore } from '@/stores/auth'
 import { RouterLink, useRouter } from "vue-router";
 import DropDownManagement from "./DropDownManagement.vue";
@@ -91,12 +91,24 @@ onMounted(() => {
           </RouterLink>
         </div>
 
-        <div class="relative">
+        <div class="relative cursor-pointer">
+          <RouterLink :to="{ name: 'Cart' }">
           <ShoppingCart color="#ffffff" />
           <span v-if="cartItemCount > 0"
             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
             {{ cartItemCount }}
           </span>
+          </RouterLink>
+        </div>
+        
+        <div class="relative cursor-pointer">
+          <RouterLink :to="{ name: 'PlaceOrder' }">
+          <ClipboardList color="#ffffff" />
+          <span v-if="orderPlaceItemCount > 0"
+            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+            {{ orderPlaceItemCount }}
+          </span>
+          </RouterLink>
         </div>
 
         <div class="relative">

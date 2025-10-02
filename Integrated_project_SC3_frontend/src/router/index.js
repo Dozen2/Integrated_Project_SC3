@@ -13,6 +13,8 @@ import Register from '@/views/AuthUser/Register.vue'
 import Login from '@/views/AuthUser/Login.vue'
 import VerifyEmail from '@/views/AuthUser/VerlfyEmail.vue'
 import UserProfile from '@/views/User/UserProfile.vue'
+import PlaceOrder from '@/views/User/PlaceOrder.vue'
+import Cart from '@/views/User/Cart.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -42,6 +44,8 @@ const router = createRouter({
     //User
     {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
     {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
+    {path: '/place-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER'] }},
+    {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER'] }},
 
     // Unknow-Path -> Home Page
     { path: '/:pathMatch(.*)*', redirect: { name: 'Products' } },
