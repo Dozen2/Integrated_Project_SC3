@@ -257,9 +257,13 @@ public class SaleItemControllerV2 {
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
         Buyer buyer;
         if(isSeller){
+
              buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
         }else {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
+        }
+        if(isSeller && request.stream().anyMatch(a->a.getSellerId().equals(authUserDetail.getId()))){
+            throw new ForbiddenException("Cannot buy saleItem belong to yourself ");
         }
         for (OrderRequest request1 : request){
             if(!request1.getBuyerId().equals(buyer.getId())){
