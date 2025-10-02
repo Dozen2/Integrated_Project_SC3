@@ -8,6 +8,7 @@ import {
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
 import ImageUploader from "@/components/Common/ImageUploader.vue";
+import { addToCart } from "@/composables/useCart";
 
 const route = useRoute();
 const router = useRouter();
@@ -86,6 +87,41 @@ const incrementQuantity = () => {
     quantity.value++;
   }
 };
+
+const addItem = () => {
+  if (!product.value || !product.value.id) return;
+
+  // เตรียมข้อมูลที่เราต้องการเก็บใน cart
+  const payload = {
+    id: product.value.id,
+    sellerId: product.value.sellerId ?? product.value.seller?.id ?? null,
+    brandName: product.value.brandName,
+    model: product.value.model,
+    price: product.value.price,
+    color: product.value.color,
+    image: product.value.fileImageOrganize?.[0] || null,
+    stock: product.value.quantity, // สต็อกจาก backend
+  };
+
+  const result = addToCart(payload, quantity.value);
+
+  if (result.success) {
+    // แจ้ง success — ใช้ alertStore ของคุณได้เลย
+    // alertStore.addToast(
+    //   `เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`,
+    //   "Add to cart",
+    //   "success"
+    // );
+    console.log("add success");
+    
+  } else {
+    // แจ้ง error / ข้อจำกัดสต็อก
+    // alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
+    console.log("add failed");
+    
+  }
+};
+
 </script>
 
 <template>
@@ -180,7 +216,7 @@ const incrementQuantity = () => {
             </div>
 
             <!-- Quantity Selector -->
-            <div class="py-4 border-b">
+            <div class="py-4 border-b flex flex-row justify-center items-center gap-5">
               <h3 class="text-sm font-medium text-gray-700">จำนวน</h3>
               <div class="mt-2 flex items-center space-x-2">
                 <button @click="decrementQuantity"
@@ -199,10 +235,19 @@ const incrementQuantity = () => {
                   </svg>
                 </button>
               </div>
+
+              <div>
+                <button 
+                class="w-[100px] h-[35px] bg-blue-600"
+                @click="addItem">
+                  add to cart
+                </button>
+              </div>
+
             </div>
 
             <!-- Action Buttons -->
-            <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <!-- <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <RouterLink :to="{ name: 'Edit', params: { id: product.id } }"
                 class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center">
                 Edit
@@ -212,7 +257,9 @@ const incrementQuantity = () => {
                 class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center">
                 Delete
               </button>
-            </div>
+            </div> -->
+
+
           </div>
         </div>
       </div>

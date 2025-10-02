@@ -3,6 +3,8 @@ import { LogOut, ShoppingCart, Smartphone, UserRound } from "lucide-vue-next";
 import { useAuthStore } from '@/stores/auth'
 import { RouterLink, useRouter } from "vue-router";
 import DropDownManagement from "./DropDownManagement.vue";
+import { ref, onMounted } from "vue";
+import { cartItemCount, updateCartCount } from "@/composables/useCart.js";
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -18,6 +20,11 @@ const refresh = async () => {
   console.log("refresh pass");
   
 }
+
+// เรียกตอน mounted เพื่อให้แสดงจำนวนตั้งแต่โหลดหน้าแรก
+onMounted(() => {
+  updateCartCount();
+});
 
 </script>
 
