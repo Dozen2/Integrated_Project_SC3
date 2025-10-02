@@ -44,8 +44,8 @@ const router = createRouter({
     //User
     {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
     {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
-    {path: '/place-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER'] }},
-    {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER'] }},
+    {path: '/place-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
+    {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
 
     // Unknow-Path -> Home Page
     { path: '/:pathMatch(.*)*', redirect: { name: 'Products' } },
