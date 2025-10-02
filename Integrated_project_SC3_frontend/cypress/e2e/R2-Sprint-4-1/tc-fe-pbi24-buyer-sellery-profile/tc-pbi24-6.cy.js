@@ -1,6 +1,7 @@
-describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n 
+describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-6\n 
     Test Scenario : normal - seller\n
                            - view and edit the profile\n
+                           - trimmed whitespace\n
                            - save the action`, () => {
 
     let resource = '/signin'
@@ -8,7 +9,7 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
 
     beforeEach(()=> {
         cy.visit(resource) ;
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
         cy.get('.itbms-email').as('email') ;
         cy.get('@email').type('itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -16,12 +17,12 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         cy.get('@password').type('itProj24*SOM') ;
         cy.get('.itbms-signin-button').as('submit') ;
         cy.get('@submit').click() ;
-        cy.wait(1000)
+        cy.wait(100)
 
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
         })
-        cy.wait(1000) ;
+        cy.wait(200) ;
     }) ;
 
     it(`[step 1,2] Open the Sign In page at ${resource}`, () => {
@@ -32,13 +33,13 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         should have "Edit Profile" button".\n`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(1000)
+        // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
-        cy.contains('.itbms-nickname','Somsak') ;
+        cy.contains('.itbms-nickname','Saksit') ;
         cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
-        cy.contains('.itbms-fullname','Somsak Saksit') ;
+        cy.contains('.itbms-fullname','Saksit Somsak') ;
         cy.contains('.itbms-type','Seller') ;
         cy.contains('.itbms-mobile','xxxxxx901x') ;
         cy.contains('.itbms-bankAccount','xxxxxx678x') ;
@@ -54,15 +55,15 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         should enable the "Save" button.
         should click the "Save" button`,()=>{
         cy.visit('/profile') ;  
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
         cy.get('.itbms-profile-button').should('exist').as('editProfileButton');
         cy.get('@editProfileButton').click();
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
-        cy.get('input.itbms-nickname').should('have.value','Somsak') ;
+        cy.get('input.itbms-nickname').should('have.value','Saksit') ;
         cy.get('input.itbms-email').should('have.value','itbkk.somsak@ad.sit.kmutt.ac.th')
-        cy.get('input.itbms-fullname').should('have.value','Somsak Saksit')   ;
+        cy.get('input.itbms-fullname').should('have.value','Saksit Somsak')   ;
         cy.get('input.itbms-mobile').should('have.value','xxxxxx901x') ; 
         cy.get('input.itbms-bankAccount').should('have.value','xxxxxx678x') ;
         cy.get('input.itbms-bankName').should('have.value','Bangkok Bank') ;
@@ -93,10 +94,10 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
         })
 
         cy.get('input.itbms-nickname').as('nicknameInput') ;
-        cy.get('@nicknameInput').clear().type('Saksit') ;
+        cy.get('@nicknameInput').clear().type('  Somsak  ') ;
 
         cy.get('input.itbms-fullname').as('fullnameInput') ;
-        cy.get('@fullnameInput').clear().type('Saksit Somsak') ;  
+        cy.get('@fullnameInput').clear().type('  Somsak Saksit  ') ;  
 
         cy.get('.itbms-save-button').as('save') ;
         cy.get('@save').should(($btn)=>{
@@ -105,24 +106,24 @@ describe(`TC-FE-PB24-BUYER-SELLER-PROFILE-5\n
 
         cy.get('.itbms-save-button').as('save') ;
         cy.get('@save').click();
-        cy.wait(1000) ;
+        cy.wait(100) ;
     })
 
     it(`[step 6] should redirect to the profile page after saving the edit.\n
         should change the profile data.`,()=>{
         // cy.get('.itbms-profile').should('exist').as('profileButton'); 
         // cy.get('@profileButton').click();
-        // cy.wait(1000)
+        // cy.wait(100)
         cy.visit('/profile') ;  
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
-        cy.contains('.itbms-nickname','Saksit') ;
-        cy.contains('.itbms-email','itbkk.somsak@ad.sit.kmutt.ac.th') ;
-        cy.contains('.itbms-fullname','Saksit Somsak') ;
-        cy.contains('.itbms-type','Seller') ;
-        cy.contains('.itbms-mobile','xxxxxx901x') ;
-        cy.contains('.itbms-bankAccount','xxxxxx678x') ;
-        cy.contains('.itbms-bankName','Bangkok Bank') ;
+        cy.get('.itbms-nickname').should('have.text','Somsak') ;
+        cy.get('.itbms-email').should('have.text','itbkk.somsak@ad.sit.kmutt.ac.th') ;
+        cy.get('.itbms-fullname').should('have.text','Somsak Saksit') ;
+        cy.get('.itbms-type').should('have.text','Seller') ;
+        cy.get('.itbms-mobile').should('have.text','xxxxxx901x') ;
+        cy.get('.itbms-bankAccount').should('have.text','xxxxxx678x') ;
+        cy.get('.itbms-bankName').should('have.text','Bangkok Bank') ;
         cy.get('.itbms-profile-button').should('exist');
     })
 })

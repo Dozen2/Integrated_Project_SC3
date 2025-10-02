@@ -8,7 +8,7 @@ describe(`TC-FE-PB26-ADD-SALE-ITEM-BY-SELLER-1\n
 
     beforeEach(()=> {
         cy.visit(resource) ;
-        cy.wait(1000) ;
+        cy.wait(100) ;
 
         cy.get('.itbms-email').as('email') ;
         cy.get('@email').type('itbkk.somsak@ad.sit.kmutt.ac.th') ;
@@ -16,7 +16,7 @@ describe(`TC-FE-PB26-ADD-SALE-ITEM-BY-SELLER-1\n
         cy.get('@password').type('itProj24*SOM') ;
         cy.get('.itbms-signin-button').as('submit') ;
         cy.get('@submit').click() ;
-        cy.wait(1000)
+        cy.wait(100)
 
         cy.on('window:alert', (text) => {
             expect(text).to.contains('The user account has been successfully logged in.')
@@ -86,7 +86,7 @@ describe(`TC-FE-PB26-ADD-SALE-ITEM-BY-SELLER-1\n
 
         cy.get('.itbms-save-button').as('save') ;
         cy.get('@save').click({force:true}) ;
-        cy.wait(1000)
+        cy.wait(100)
 
         cy.get('.itbms-message').contains('The sale item has been successfully added.')
 

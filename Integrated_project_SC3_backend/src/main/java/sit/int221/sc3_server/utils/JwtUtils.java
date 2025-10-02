@@ -104,13 +104,16 @@ public class JwtUtils {
 
 
     public boolean verifyToken(String token) {
+        System.out.println(token);
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
             boolean pass = signedJWT.verify(verifier);
+            JWTClaimsSet TestDecode = signedJWT.getJWTClaimsSet();
             System.out.println("Token verified!!!" + pass);
+            System.out.println("TestDecode: " + TestDecode);
             if (!pass) {
-                throw new UnAuthorizeException("Verified Error, Invalid JWT");
+                throw new UnAuthorizeException("Verified Error, Invalid JWT 1111");
             }
             return true;
         }catch (JOSEException | ParseException p){

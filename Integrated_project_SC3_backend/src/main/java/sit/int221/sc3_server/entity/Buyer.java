@@ -49,8 +49,6 @@ public class Buyer {
     private Boolean isActive;
 
 
-    @OneToOne(mappedBy = "buyer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private VerifyToken verifyToken; // 🔹 Buyer มี VerifyToken เดียว
 
     @ElementCollection(fetch = FetchType.EAGER)   // บังคับโหลด roles มาพร้อม Buyer
     @Enumerated(EnumType.STRING)                 // เก็บค่า enum เป็น String (อ่านง่าย)

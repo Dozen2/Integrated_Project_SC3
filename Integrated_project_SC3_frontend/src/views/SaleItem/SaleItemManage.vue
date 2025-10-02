@@ -3,7 +3,7 @@ import { onBeforeMount, onMounted, reactive, ref, watch } from "vue"; // เพ�
 import { unitPrice, nullCatching } from "@/libs/utils.js"
 import { useAlertStore } from "@/stores/alertStore.js"
 import { deleteUserById } from "@/libs/api.js";
-import { getAllSaleItemSeller} from "@/libs/callAPI/apiSaleItem.js";
+import { getAllSaleItemSeller, deleteSaleItemSeller} from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
 import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
@@ -89,7 +89,7 @@ const handlePageChange = (newPage) => {
 
 const confirmDeleteProduct = async () => {
   try {
-    await deleteUserById(`${VITE_ROOT_API_URL}/itb-mshop/v1/sale-items`, pendingDeleteId.value);
+    await deleteSaleItemSeller(pendingDeleteId.value);
     alertStore.addToast('The sale item has been deleted.', 'Delete success', 'success');
     await fetchselect(); // Refresh data after delete
   } catch (error) {
@@ -134,7 +134,8 @@ const deleteProduct = (id) => {
     <!-- Alert Message -->
     <div v-if="alertStore.message" :class="`itbms-message px-4 py-2 rounded mb-4 ${alertStore.type === 'error'
       ? 'bg-red-100 text-red-700'
-      : 'bg-blue-100 text-blue-700'}`">
+      : 'bg-blue-100 text-blue-700'}`"
+      class="itbms-message">
       {{ alertStore.message }}
     </div>
 

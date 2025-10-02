@@ -152,128 +152,226 @@ public class SaleItemServiceV2 {
     }
 
 
-    @Transactional
-    public SaleItem updateSaleItem(int id, SaleItemWithImageInfo newProduct) {
-        SaleItem existing = saleitemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
+//    @Transactional
+//    public SaleItem updateSaleItem(int id, SaleItemWithImageInfo newProduct) {
+//        SaleItem existing = saleitemRepository.findById(id)
+//                .orElseThrow(() -> new ItemNotFoundException("Sale Item Not Found by Id"));
+//
+//        Brand brand = brandRepository.findById(newProduct.getSaleItem().getBrand().getId())
+//                .orElseThrow(() -> new ItemNotFoundException("Brand not found with ID."));
+//
+//        SaleItemCreateDTO saleItem = newProduct.getSaleItem();
+//        if (saleItem.getQuantity() == null || saleItem.getQuantity() < 0) {
+//            saleItem.setQuantity(1);
+//        }
+//
+//        try {
+//            // -------- update main fields ----------
+//            existing.setModel(saleItem.getModel());
+//            existing.setBrand(brand);
+//            existing.setDescription(saleItem.getDescription());
+//            existing.setPrice(saleItem.getPrice());
+//            existing.setRamGb(saleItem.getRamGb());
+//            existing.setScreenSizeInch(saleItem.getScreenSizeInch());
+//            existing.setQuantity(saleItem.getQuantity());
+//            existing.setStorageGb(saleItem.getStorageGb());
+//            existing.setColor(saleItem.getColor());
+//
+//
+//            try {
+//                // -------- STEP 1: ลบรูปที่อยู่ใน deletedImage ----------
+//                if (newProduct.getDeletedImage() != null && !newProduct.getDeletedImage().isEmpty()) {
+//
+//                    List<String> names = newProduct.getDeletedImage();
+//                    List<SaleItemImage> images = saleItemImageRepository
+//                            .findAllBySaleItemAndFileNameIn(existing, names);
+//
+//                    for (SaleItemImage img : images) {
+//                        saleItemImageRepository.delete(img);
+//                        fileService.removeFile(img.getFileName(),"saleitem");
+//                    }
+//
+//                }
+//            }catch (Exception e){
+//                throw new DeleteFailedException("Cannot delete image because image cannot exists in both 'saleItemImage' list and 'deletedImage' list.");
+//            }
+//
+//
+//            // -------- STEP 2: จัดการรูปจาก imageInfos ----------
+//            if (newProduct.getSaleItemImages() != null) {
+//                for (SaleItemImageRequest imgReq : newProduct.getSaleItemImages()) {
+//                    if (imgReq.getImageFile() != null && !imgReq.getImageFile().isEmpty()) {
+//                        // 🔹 กรณีอัปโหลดไฟล์ใหม่
+//                        String originalName = imgReq.getImageFile().getOriginalFilename();
+//                        String fileExt = "";
+//                        int dotIndex = originalName.lastIndexOf(".");
+//                        if (dotIndex > 0) {
+//                            fileExt = originalName.substring(dotIndex);
+//                        }
+//
+//                        String newFileName = UUID.randomUUID().toString() + fileExt;
+//                        fileService.store(imgReq.getImageFile(), newFileName,"saleitem");
+//
+//                        SaleItemImage newImage = new SaleItemImage();
+//                        newImage.setSaleItem(existing);
+//                        newImage.setFileName(newFileName);
+//                        newImage.setOriginalFileName(originalName);
+//                        newImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ set order ที่ client ส่งมา
+//                        saleItemImageRepository.save(newImage);
+//
+//                    } else if (imgReq.getFileName() != null) {
+//                        // 🔹 กรณีอัปเดต order ของรูปเก่า
+//                        SaleItemImage oldImage = saleItemImageRepository
+//                                .findByFileNameAndSaleItem(imgReq.getFileName(), existing)
+//                                .orElseThrow(() -> new ItemNotFoundException("Old image not found: " + imgReq.getFileName()));
+//
+//                        if (imgReq.getImageViewOrder() != null) {
+//                            oldImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ update ค่าใหม่
+//                        }
+//                        saleItemImageRepository.save(oldImage);
+//                    }
+//                }
+//            }
+//
+//// -------- STEP 3: Normalize order ----------
+//            List<SaleItemImage> images = saleItemImageRepository.findBySaleItem(existing);
+//
+//// sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
+//            images.sort(Comparator.comparing(
+//                    img -> Optional.ofNullable(img.getImageViewOrder()).orElse(Integer.MAX_VALUE)
+//            ));
+//
+//            int order = 1;
+//            for (SaleItemImage img : images) {
+//                img.setImageViewOrder(order++); // ✅ normalize เป็น 1..n
+//            }
+//            saleItemImageRepository.saveAll(images);
+//
+//            return saleitemRepository.saveAndFlush(existing);
+//
+//        } catch (Exception e) {
+//            throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
+//        }
+//    }
+@Transactional
+public SaleItem updateSaleItem(Integer id, SaleItemWithImageInfo newProduct,Integer sellerId) {
+    SaleItem existing = this.getProductBySellerId(sellerId,id);
 
-        Brand brand = brandRepository.findById(newProduct.getSaleItem().getBrand().getId())
-                .orElseThrow(() -> new ItemNotFoundException("Brand not found with ID."));
+    Brand brand = brandRepository.findById(newProduct.getSaleItem().getBrand().getId())
+            .orElseThrow(() -> new ItemNotFoundException("Brand not found with ID."));
 
-        SaleItemCreateDTO saleItem = newProduct.getSaleItem();
-        if (saleItem.getQuantity() == null || saleItem.getQuantity() < 0) {
-            saleItem.setQuantity(1);
-        }
-
-        try {
-            // -------- update main fields ----------
-            existing.setModel(saleItem.getModel());
-            existing.setBrand(brand);
-            existing.setDescription(saleItem.getDescription());
-            existing.setPrice(saleItem.getPrice());
-            existing.setRamGb(saleItem.getRamGb());
-            existing.setScreenSizeInch(saleItem.getScreenSizeInch());
-            existing.setQuantity(saleItem.getQuantity());
-            existing.setStorageGb(saleItem.getStorageGb());
-            existing.setColor(saleItem.getColor());
-
-
-            try {
-                // -------- STEP 1: ลบรูปที่อยู่ใน deletedImage ----------
-                if (newProduct.getDeletedImage() != null && !newProduct.getDeletedImage().isEmpty()) {
-
-                    List<String> names = newProduct.getDeletedImage();
-                    List<SaleItemImage> images = saleItemImageRepository
-                            .findAllBySaleItemAndFileNameIn(existing, names);
-
-                    for (SaleItemImage img : images) {
-                        saleItemImageRepository.delete(img);
-                        fileService.removeFile(img.getFileName(),"saleitem");
-                    }
-
-                }
-            }catch (Exception e){
-                throw new DeleteFailedException("Cannot delete image because image cannot exists in both 'saleItemImage' list and 'deletedImage' list.");
-            }
-
-
-            // -------- STEP 2: จัดการรูปจาก imageInfos ----------
-            if (newProduct.getSaleItemImages() != null) {
-                for (SaleItemImageRequest imgReq : newProduct.getSaleItemImages()) {
-                    if (imgReq.getImageFile() != null && !imgReq.getImageFile().isEmpty()) {
-                        // 🔹 กรณีอัปโหลดไฟล์ใหม่
-                        String originalName = imgReq.getImageFile().getOriginalFilename();
-                        String fileExt = "";
-                        int dotIndex = originalName.lastIndexOf(".");
-                        if (dotIndex > 0) {
-                            fileExt = originalName.substring(dotIndex);
-                        }
-
-                        String newFileName = UUID.randomUUID().toString() + fileExt;
-                        fileService.store(imgReq.getImageFile(), newFileName,"saleitem");
-
-                        SaleItemImage newImage = new SaleItemImage();
-                        newImage.setSaleItem(existing);
-                        newImage.setFileName(newFileName);
-                        newImage.setOriginalFileName(originalName);
-                        newImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ set order ที่ client ส่งมา
-                        saleItemImageRepository.save(newImage);
-
-                    } else if (imgReq.getFileName() != null) {
-                        // 🔹 กรณีอัปเดต order ของรูปเก่า
-                        SaleItemImage oldImage = saleItemImageRepository
-                                .findByFileNameAndSaleItem(imgReq.getFileName(), existing)
-                                .orElseThrow(() -> new ItemNotFoundException("Old image not found: " + imgReq.getFileName()));
-
-                        if (imgReq.getImageViewOrder() != null) {
-                            oldImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ update ค่าใหม่
-                        }
-                        saleItemImageRepository.save(oldImage);
-                    }
-                }
-            }
-
-// -------- STEP 3: Normalize order ----------
-            List<SaleItemImage> images = saleItemImageRepository.findBySaleItem(existing);
-
-// sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
-            images.sort(Comparator.comparing(
-                    img -> Optional.ofNullable(img.getImageViewOrder()).orElse(Integer.MAX_VALUE)
-            ));
-
-            int order = 1;
-            for (SaleItemImage img : images) {
-                img.setImageViewOrder(order++); // ✅ normalize เป็น 1..n
-            }
-            saleItemImageRepository.saveAll(images);
-
-            return saleitemRepository.saveAndFlush(existing);
-
-        } catch (Exception e) {
-            throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
-        }
+    SaleItemCreateDTO saleItem = newProduct.getSaleItem();
+    if (saleItem.getQuantity() == null || saleItem.getQuantity() < 0) {
+        saleItem.setQuantity(1);
     }
 
+    try {
+        // -------- update main fields ----------
+        existing.setModel(saleItem.getModel());
+        existing.setBrand(brand);
+        existing.setDescription(saleItem.getDescription());
+        existing.setPrice(saleItem.getPrice());
+        existing.setRamGb(saleItem.getRamGb());
+        existing.setScreenSizeInch(saleItem.getScreenSizeInch());
+        existing.setQuantity(saleItem.getQuantity());
+        existing.setStorageGb(saleItem.getStorageGb());
+        existing.setColor(saleItem.getColor());
+
+
+        try {
+            // -------- STEP 1: ลบรูปที่อยู่ใน deletedImage ----------
+            if (newProduct.getDeletedImage() != null && !newProduct.getDeletedImage().isEmpty()) {
+
+                List<String> names = newProduct.getDeletedImage();
+                List<SaleItemImage> images = saleItemImageRepository
+                        .findAllBySaleItemAndFileNameIn(existing, names);
+
+                for (SaleItemImage img : images) {
+                    saleItemImageRepository.delete(img);
+                    fileService.removeFile(img.getFileName(),"saleitem");
+                }
+
+            }
+        }catch (Exception e){
+            throw new DeleteFailedException("Cannot delete image because image cannot exists in both 'saleItemImage' list and 'deletedImage' list.");
+        }
+
+
+        // -------- STEP 2: จัดการรูปจาก imageInfos ----------
+        if (newProduct.getSaleItemImages() != null) {
+            for (SaleItemImageRequest imgReq : newProduct.getSaleItemImages()) {
+                if (imgReq.getImageFile() != null && !imgReq.getImageFile().isEmpty()) {
+                    // 🔹 กรณีอัปโหลดไฟล์ใหม่
+                    String originalName = imgReq.getImageFile().getOriginalFilename();
+                    String fileExt = "";
+                    int dotIndex = originalName.lastIndexOf(".");
+                    if (dotIndex > 0) {
+                        fileExt = originalName.substring(dotIndex);
+                    }
+
+                    String newFileName = UUID.randomUUID().toString() + fileExt;
+                    fileService.store(imgReq.getImageFile(), newFileName,"saleitem");
+
+                    SaleItemImage newImage = new SaleItemImage();
+                    newImage.setSaleItem(existing);
+                    newImage.setFileName(newFileName);
+                    newImage.setOriginalFileName(originalName);
+                    newImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ set order ที่ client ส่งมา
+                    saleItemImageRepository.save(newImage);
+
+                } else if (imgReq.getFileName() != null) {
+                    // 🔹 กรณีอัปเดต order ของรูปเก่า
+                    SaleItemImage oldImage = saleItemImageRepository
+                            .findByFileNameAndSaleItem(imgReq.getFileName(), existing)
+                            .orElseThrow(() -> new ItemNotFoundException("Old image not found: " + imgReq.getFileName()));
+
+                    if (imgReq.getImageViewOrder() != null) {
+                        oldImage.setImageViewOrder(imgReq.getImageViewOrder()); // ✅ update ค่าใหม่
+                    }
+                    saleItemImageRepository.save(oldImage);
+                }
+            }
+        }
+
+// -------- STEP 3: Normalize order ----------
+        List<SaleItemImage> images = saleItemImageRepository.findBySaleItem(existing);
+
+// sort ตามค่าที่ client ส่งมา (ใช้ค่า imageViewOrder ใหม่ล่าสุด)
+        images.sort(Comparator.comparing(
+                img -> Optional.ofNullable(img.getImageViewOrder()).orElse(Integer.MAX_VALUE)
+        ));
+
+        int order = 1;
+        for (SaleItemImage img : images) {
+            img.setImageViewOrder(order++); // ✅ normalize เป็น 1..n
+        }
+        saleItemImageRepository.saveAll(images);
+
+        return saleitemRepository.saveAndFlush(existing);
+
+    } catch (Exception e) {
+        throw new UpdateFailedException("SaleItem " + id + " not updated: " + e.getMessage());
+    }
+}
 
 
 
-    public SaleItem deleteSaleItem(Integer id) {
-        SaleItem saleitem = saleitemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("Product ID not found"));
+
+    public void deleteSaleItem(Integer id,Integer sellerId) {
+       SaleItem saleItem = this.getProductBySellerId(sellerId,id);
 
         // ลบไฟล์รูปจาก disk
-        if(saleitem.getSaleItemImage() != null){
-            for (SaleItemImage image: saleitem.getSaleItemImage()) {
+        if(saleItem.getSaleItemImage() != null){
+            for (SaleItemImage image: saleItem.getSaleItemImage()) {
                 fileService.removeFile(image.getFileName(),"saleitem");// ลบไฟล์จาก disk
             }
         }
         // ลบ record รูปจาก DB (ถ้าไม่ได้ตั้ง orphanRemoval = true)
-        for (SaleItemImage img : saleitem.getSaleItemImage()) {
+        for (SaleItemImage img : saleItem.getSaleItemImage()) {
             saleItemImageRepository.delete(img);
         }
         // ลบ product
         saleitemRepository.deleteById(id);
-        return saleitem;
     }
 
     @Transactional

@@ -99,20 +99,24 @@ public class SaleItemControllerV2 {
     @PutMapping(value = "/sale-items/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SaleItemDetailFileDto> updateSaleItem(
             @PathVariable int id,
-            @ModelAttribute SaleItemWithImageInfo request,
-            @RequestPart(required = false) List<MultipartFile> newImages
+            @ModelAttribute SaleItemWithImageInfo request
+//            ,@RequestPart(required = false) List<MultipartFile> newImages
             ){
-        SaleItem saleItem = saleItemServiceV2.updateSaleItem(id,request);
+        SaleItem saleItem = saleItemServiceV2.updateSaleItem(id,request,null);
         SaleItemDetailFileDto response = modelMapper.map(saleItem, SaleItemDetailFileDto.class);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/sale-items/{id}")
     public ResponseEntity<SaleItemWithImageInfo> deleteSaleItem(@PathVariable int id){
-             saleItemServiceV2.deleteSaleItem(id);
+             saleItemServiceV2.deleteSaleItem(id,null);
             return ResponseEntity.noContent().build() ;
     }
 
+
+
+//    api after login mush have accesstoken in use
+//    ====================================================================================================================
     @GetMapping("/sellers/{id}/sale-items")
     public ResponseEntity<PageDTO<SaleItemDetailSeller>> getSaleItemBySeller(
             @PathVariable int id,
@@ -127,9 +131,14 @@ public class SaleItemControllerV2 {
             @RequestParam(defaultValue = "asc", required = false) String sortDirection,
             Authentication authentication
     ){
+        System.out.println("it a apple");
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-            throw new ForbiddenException("Invalid token type");
+            throw new UnAuthorizeException("Invalid token type");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        if(!isSeller){
+            throw new ForbiddenException("user is not seller");
         }
         if(!authUserDetail.getId().equals(id)){
             throw new ForbiddenException("request user id not matched with id in access token");
@@ -173,8 +182,6 @@ public class SaleItemControllerV2 {
     userServices.findSellerBySellerId(id);//check is active
 
 
-
-
     SaleItem saleItem = saleItemServiceV2.createSellerSaleItem(authUserDetail.getId(), saleItemCreateDTO,images);
     SaleItemDetailFileDto response = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
 
@@ -186,6 +193,8 @@ public class SaleItemControllerV2 {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+
     @GetMapping("/sellers/{id}/sale-items/{saleItemId}")
     public ResponseEntity<SaleItemDetailFileDto> getSaleItemById(@PathVariable(value = "saleItemId") int id
             ,@PathVariable(value="id") int sellerId
@@ -209,6 +218,56 @@ public class SaleItemControllerV2 {
         response.getSellerDTO().setId(id);
         response.getSellerDTO().setUserName(authUserDetail.getUsername());
         return ResponseEntity.ok().body(response);
+    }
+
+
+    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SaleItemDetailFileDto> updateSaleItembySeller(@PathVariable(value = "id") int sellerId
+            ,@PathVariable(value = "saleItemId") int saleItemId,@ModelAttribute SaleItemWithImageInfo request
+//            ,@RequestPart(required = false) List<MultipartFile> images
+            ,Authentication authentication)
+           {
+
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        if(!isSeller){
+            throw new ForbiddenException("user is not Seller");
+        }
+        if(!authUserDetail.getId().equals(sellerId)){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+        userServices.findSellerBySellerId(sellerId);//check isActive
+        SaleItem saleItem = saleItemServiceV2.updateSaleItem(saleItemId,request,sellerId);
+        SaleItemDetailFileDto dto = modelMapper.map(saleItem,SaleItemDetailFileDto.class);
+        if(dto.getSellerDTO() == null){
+            dto.setSellerDTO(new SellerDTO());
+        }
+        dto.getSellerDTO().setUserName(authUserDetail.getUsername());
+        dto.getSellerDTO().setId(authUserDetail.getId());
+        return ResponseEntity.ok().body(dto);
+
+    }
+
+    @DeleteMapping("/sellers/{id}/sale-items/{saleItemId}")
+    public ResponseEntity<SaleItemWithImageInfo> deleteSellerSaleItem(@PathVariable(value = "id") int sellerId
+            ,@PathVariable(value = "saleItemId") int saleItemId,Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token type");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        if(!isSeller){
+            throw new ForbiddenException("user is not seller");
+        }
+        if(!authUserDetail.getId().equals(sellerId)){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+        userServices.findSellerBySellerId(sellerId);
+        saleItemServiceV2.deleteSaleItem(saleItemId,sellerId);
+        return ResponseEntity.noContent().build();
     }
 
 //    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

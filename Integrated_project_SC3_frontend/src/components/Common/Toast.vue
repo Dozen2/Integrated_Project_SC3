@@ -108,7 +108,7 @@ const removeToast = (id) => {
             toast.type === 'warning' ? 'text-yellow-800 bg-yellow-100/90' : '',
             toast.type === 'info' ? 'text-blue-800 bg-blue-100/90' : '',
           ]">{{ toast.header }}</div>
-          <div class="text-sm drop-shadow-sm text-black mt-2">{{ toast.message }}</div>
+          <div class="itbms-message text-sm drop-shadow-sm text-black mt-2">{{ toast.message }}</div>
         </div>
       </div>
       <button 

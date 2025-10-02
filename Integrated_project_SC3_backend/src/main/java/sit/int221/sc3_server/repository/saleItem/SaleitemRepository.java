@@ -24,7 +24,7 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
     @Query("""
 select p from SaleItem p
 where (:sellerId is null or p.seller.id = :sellerId)
-and (:saleItem is null or p.id = :saleItemId)
+and (:saleItemId is null or p.id = :saleItemId)
 """)
     SaleItem findBySellerId(
             @Param("sellerId") Integer sellerId,

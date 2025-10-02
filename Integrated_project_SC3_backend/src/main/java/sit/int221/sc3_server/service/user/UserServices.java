@@ -23,7 +23,6 @@ import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
-import sit.int221.sc3_server.repository.user.VerifyTokenRepository;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.utils.JwtUtils;
@@ -31,8 +30,6 @@ import sit.int221.sc3_server.utils.Role;
 import sit.int221.sc3_server.utils.TokenType;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,8 +44,6 @@ UserServices {
     private FileService fileService;
     @Autowired
     private EmailService emailService;
-    @Autowired
-    private VerifyTokenRepository verifyTokenRepository;
     @Autowired
     private JwtUtils jwtUtils;
     @Autowired
@@ -240,14 +235,36 @@ UserServices {
 
     public Map<String, Object> refreshToken(String refreshToken) {
         jwtUtils.verifyToken(refreshToken);
+        System.out.println("ttttttttt");
         Map<String, Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
+        System.out.println("xxxxxxxx");
         jwtUtils.isExpired(claims);
+        System.out.println("zzzzzzzz");
         if (!jwtUtils.isValidClaims(claims)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED
                     , "Invalid refresh token");
         }
 //        System.out.println(claims.get("uid").toString());
-        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
+//        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
+        Integer userId = Integer.parseInt(claims.get("id").toString());
+        boolean isSeller = false;
+        Object authoritiesObj = claims.get("authorities");
+        if (authoritiesObj instanceof Iterable<?> iterable) {
+            for (Object obj : iterable) {
+                if (obj instanceof Map<?, ?> map) {
+                    Object role = map.get("role");
+                    if ("ROLE_SELLER".equals(role)) {
+                        isSeller = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        UserDetails userDetails = isSeller
+                ? jwtUserDetailService.loadSellerById(userId)
+                : jwtUserDetailService.loadBuyerById(userId);
+
         return Map.of("access_token", jwtUtils.generateToken(userDetails));
     }
 
@@ -279,7 +296,8 @@ UserServices {
 
 
     public SellerProfileDTO getSeller(int id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Buyer buyer = seller.getBuyer();
         return this.mapSellerDto(buyer);
 
     }
@@ -293,7 +311,11 @@ UserServices {
     }
 
     public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO, int id) {
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+        Buyer buyer = seller.getBuyer();
+        if(buyer.getSeller() == null){
+            throw new ForbiddenException("user is buyer");
+        }
         buyer.setNickName(userProfileRequestRTO.getNickName());
         buyer.setFullName(userProfileRequestRTO.getFullName());
         Buyer newBuyer = buyerRepository.saveAndFlush(buyer);
@@ -312,7 +334,11 @@ UserServices {
     }
 
     public SellerProfileDTO mapSellerDto(Buyer buyer) {
+        if (buyer.getSeller() == null) {
+            throw new ForbiddenException("This user has no seller profile");
+        }
         SellerProfileDTO dto = new SellerProfileDTO();
+
         dto.setId(buyer.getId());
         dto.setEmail(buyer.getEmail());
         dto.setFullName(buyer.getFullName());

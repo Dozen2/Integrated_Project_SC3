@@ -8,6 +8,10 @@ import { jwtDecode } from "jwt-decode";
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 // const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
 
+
+
+//ใช้ /auth
+//===========================================================================================================================================
 // ฟังก์ชัน register user
 async function registerUser(
   userData,
@@ -75,7 +79,7 @@ async function loginUser(username, password) {
     const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username, password: password }),
+      body: JSON.stringify({ email: username, password: password }),
       credentials: "include"
     });
 
@@ -130,6 +134,7 @@ async function refreshToken() {
   const authorities = decoded.authorities || [];
 
   let decode_role = 'UNKNOWN'
+  
   if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
     decode_role = "ROLE_SELLER";
   } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
@@ -140,47 +145,13 @@ async function refreshToken() {
   return { accessToken: data.access_token, role: decode_role};
 }
 
-async function authFetch(url, options = {}) {
-  const auth = useAuthStore();
-  let accessToken = localStorage.getItem("accessToken");
-
-  const headers = {
-    ...(options.headers || {}),
-    Authorization: `Bearer ${accessToken}`,
-  };
-
-  let res = await fetch(url, { ...options, headers, credentials: "include" });
-
-  // ถ้า token หมดอายุ → ลอง refresh
-  if (res.status === 401) {
-    const success = await auth.refreshToken();
-    console.log("do is finis!!!!");
-
-
-    if (success) {
-      accessToken = localStorage.getItem("accessToken");
-      headers.Authorization = `Bearer ${accessToken}`;
-      console.log("do is finis!!!! again");
-
-      // retry ใหม่
-      res = await fetch(url, { ...options, headers, credentials: "include" });
-    } else {
-      // refresh ไม่สำเร็จ → เด้งไป login
-      auth.logout();
-      router.push("/login");
-      throw new Error("Session expired. Please login again.");
-    }
-  }
-
-  return res;
-}
-
-
+// ใช้ /user
+//=========================================================================================================================================
 async function fetchUserProfile(userId) {
   const accessToken = localStorage.getItem("accessToken")
   if (!accessToken) throw new Error("No access token")
 
-  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/user/${userId}`, {
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/${userId}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
@@ -211,7 +182,7 @@ async function editUserProfile(userData) {
   formData.append("fullName", userData.fullName);
   formData.append("nickName", userData.nickName);
 
-  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/user/profile/all`, {
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/profile/all`, {
     method: "PUT",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
@@ -225,6 +196,45 @@ async function editUserProfile(userData) {
   }
 
   return res.json()
+}
+
+// ใช้แทน fatch ใน api ที่ต้องการใช้ access or refresh token
+//=========================================================================================================================================
+async function authFetch(url, options = {}) {
+  const auth = useAuthStore();
+  let accessToken = localStorage.getItem("accessToken");
+
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${accessToken}`,
+  };
+
+  let res = await fetch(url, { ...options, headers, credentials: "include" });
+
+  // ถ้า token หมดอายุ → ลอง refresh
+  if (res.status === 401) {
+    const success = await auth.refreshToken();
+    console.log("do is finis!!!!");
+
+
+    if (success) {
+      accessToken = localStorage.getItem("accessToken");
+      headers.Authorization = `Bearer ${accessToken}`;
+      console.log("do is finis!!!! again");
+
+      // retry ใหม่
+      res = await fetch(url, { ...options, headers, credentials: "include" });
+    } else {
+      // refresh ไม่สำเร็จ → เด้งไป login
+      // auth.logout();
+      // router.push("/login");
+      console.log("do it");
+      
+      throw new Error("Session expired. Please login again.");
+    }
+  }
+
+  return res;
 }
 
 

@@ -12,7 +12,9 @@ import {
   getSaleItemByIdV2,
   updateSaleItem,
   updateSaleItemV2,
-  getImageByImageName
+  getImageByImageName,
+  createSaleItem,
+  updateSaleItemSeller
 } from "@/libs/callAPI/apiSaleItem.js";
 import BrandDropdown from "./../BrandComponents/BrandDropdown.vue";
 import { useRoute, useRouter } from "vue-router";
@@ -710,14 +712,14 @@ if (Array.isArray(saleItem.saleItemImage)) {
 
   try {
     if (saleItem.id || prop.mode === "Edit") {
-  await updateSaleItemV2(saleItem.id, formData);
+  await updateSaleItemSeller(saleItem.id, formData);
   console.log("FormData after update:", formData);
   alertStore.addToast("The sale item has been updated.", "Update success", "success");
   router.go(-1);
 }
 else {
   // ✅ Create mode - ตรวจสอบว่ามีรูปหรือไม่
-  await addSaleItemV2(formData);
+  await createSaleItem(formData);
   setSessionStorage();      
   alertStore.addToast("The sale item has been successfully added.", "Add success", "success");
   router.go(-1);
@@ -736,6 +738,14 @@ else {
 <template>
   <div class="bg-white min-h-screen w-auto pt-1">
     <Title :label='prop.mode === "Edit" ? "Edit Phone Details" : "Add New Phone"'/>
+
+    <!-- Alert Message -->
+    <div v-if="alertStore.message" :class="`itbms-message px-4 py-2 rounded mb-4 ${alertStore.type === 'error'
+      ? 'bg-red-100 text-red-700'
+      : 'bg-blue-100 text-blue-700'}`"
+      class="itbms-message">
+      {{ alertStore.message }}
+    </div>
 
     <div class=" m-5 ml-[120px] flex flex-row justify-center ">
 
