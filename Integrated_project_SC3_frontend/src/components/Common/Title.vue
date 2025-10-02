@@ -1,4 +1,4 @@
-<!-- <script setup>
+<script setup>
 const props = defineProps({
   label: {
     type: String,
@@ -25,4 +25,4 @@ const props = defineProps({
         </span>
       </div>
     </div>
-</template> -->
+</template>
