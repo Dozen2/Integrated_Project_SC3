@@ -253,6 +253,12 @@ const incrementQuantity = () => {
         </button>
       </div>
     </div>
+
+
+
+    <div>
+      
+    </div>
   </div>
 
   <!-- Alert Message -->
