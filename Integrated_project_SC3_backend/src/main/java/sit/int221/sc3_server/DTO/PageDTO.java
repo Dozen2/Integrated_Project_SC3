@@ -2,9 +2,7 @@ package sit.int221.sc3_server.DTO;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

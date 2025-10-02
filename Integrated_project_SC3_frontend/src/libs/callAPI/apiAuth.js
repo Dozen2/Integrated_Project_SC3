@@ -75,7 +75,7 @@ async function loginUser(username, password) {
     const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: username, password: password }),
+      body: JSON.stringify({ email: username, password: password }),
       credentials: "include"
     });
 

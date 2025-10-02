@@ -22,11 +22,15 @@ public interface SaleItemImageRepository extends JpaRepository<SaleItemImage, In
             @Param("fileName") String fileName
     );
 
-    void deleteByFileNameAndSaleItem(String fileName, SaleItem saleItem);
+    @Query("""
+    select p.fileName from SaleItemImage p 
+    where (:saleItemId is null or p.saleItem.id = :saleItemId)
+    and (p.imageViewOrder = 1)
+""")
+    String findBySaleItemId(@Param("saleItemId") int id);
+
     Optional<SaleItemImage> findByFileNameAndSaleItem(String fileName, SaleItem saleItem);
 
-
-    List<SaleItemImage> findBySaleItemOrderByImageViewOrderAsc(SaleItem saleItem);
 
     List<SaleItemImage> findBySaleItem(SaleItem existing);
 

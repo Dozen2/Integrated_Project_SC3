@@ -19,4 +19,10 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             @Param("buyerId") Integer buyerId,
             Pageable pageable
     );
+
+    @Query("""
+select p from Order p 
+where (:buyerId is null or p.buyer.id = :buyerId)
+""")
+    Page<Order> findByBuyerId(@Param("buyerId") Integer buyerId,Pageable pageable);
 }

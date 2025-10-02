@@ -14,6 +14,7 @@ import sit.int221.sc3_server.DTO.*;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
 import sit.int221.sc3_server.DTO.order.OrderRequest;
 import sit.int221.sc3_server.DTO.order.OrderResponse;
+import sit.int221.sc3_server.DTO.order.OrderResponseSeller;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileNormal;
@@ -27,7 +28,6 @@ import sit.int221.sc3_server.entity.SaleItem;
 import sit.int221.sc3_server.entity.StorageGbView;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
-import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.order.OrderServices;
 import sit.int221.sc3_server.service.saleItem.SaleItemServiceV2;
@@ -257,7 +257,6 @@ public class SaleItemControllerV2 {
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
         Buyer buyer;
         if(isSeller){
-
              buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
         }else {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
@@ -306,8 +305,8 @@ public class SaleItemControllerV2 {
 
     }
 
-    @GetMapping("/users/{id}/orders")
-    public ResponseEntity<PageDTO<OrderRequest>> getAllOrderByUserId(@PathVariable int id
+    @GetMapping("/sellers/{sid}/orders")
+    public ResponseEntity<PageDTO<?>> getAllOrderBySellerId(@PathVariable(value = "sid") int id
             ,@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size,Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
@@ -324,13 +323,60 @@ public class SaleItemControllerV2 {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
 
-        Page<Order> order = orderServices.findAllBuyersOrder(buyer.getId(), page,size);
-        PageDTO<OrderRequest> response = listMapper.toPageDTO(order,OrderRequest.class,modelMapper);
+        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+        PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
+                .content(order.getContent())
+                .number(order.getNumber())
+                .size(order.getSize())
+                .totalElements((int) order.getTotalElements())
+                .totalPages(order.getTotalPages())
+                .first(order.isFirst())
+                .last(order.isLast())
+                .sort(order.getSort().toString())
+                .build();
         return ResponseEntity.ok(response);
 
 
     }
 
+    @GetMapping("/user/{id}/orders")
+    public ResponseEntity<PageDTO<?>> getAllOrderByUserId(@PathVariable(value = "id") int id
+            ,@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "10") int size,Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        if(!authUserDetail.getId().equals(id)){
+            throw new ForbiddenException("request user id not matched with id in access token");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        Buyer buyer;
+        if(isSeller){
+            buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
+        }else {
+            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
+        }
+
+        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+        PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
+                .content(order.getContent())
+                .number(order.getNumber())
+                .size(order.getSize())
+                .totalElements((int) order.getTotalElements())
+                .totalPages(order.getTotalPages())
+                .first(order.isFirst())
+                .last(order.isLast())
+                .sort(order.getSort().toString())
+                .build();
+        return ResponseEntity.ok(response);
+
+
+    }
+
+
+
+//    @PutMapping("/orders/cancel")
+//     public ResponseEntity<>
 //    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<SaleItemDetailFileDto> updateSaleItemBySeller(@ModelAttribute SaleItemWithImageInfo info
 //            ,@PathVariable(value = "id") int sellerId,@PathVariable(value = "saleItemId") int saleItemId

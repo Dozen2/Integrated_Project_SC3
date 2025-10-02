@@ -19,8 +19,7 @@ public interface SaleitemRepository extends JpaRepository<SaleItem, Integer> {
     Page<SaleItem> findByBrand_NameIn(List<String> brandNames, Pageable pageable);
     boolean existsByModelIgnoreCase(String model);
 
-//    @Query("SELECT s FROM SaleItem s LEFT JOIN FETCH s.saleItemImages WHERE s.id = :id")
-//    Optional<SaleItem> findByIdWithImages(@Param("id") Integer id);
+
     @Query("""
 select p from SaleItem p
 where (:sellerId is null or p.seller.id = :sellerId)
@@ -121,14 +120,5 @@ Page<SaleItem> findFilteredProduct(
             Pageable pageable
     );
 
-//    @Query("""
-//    select p from Saleitem p
-//    where (:brandName is null or p.brand.name in :brandName)
-//    and (:storageGb is null or p.storageGb in :storageGb)
-//""")
-//    Page<Saleitem> findFilterProductNoPrice(
-//            @Param("brandName") List<String> brandNames,
-//            @Param("storageGb") List<Integer> storageGb,
-//            Pageable pageable
-//    );
+
 }
