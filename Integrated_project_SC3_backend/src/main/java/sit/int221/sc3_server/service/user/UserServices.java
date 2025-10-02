@@ -82,6 +82,14 @@ UserServices {
         return seller;
 
     }
+    public Buyer findBuyerByBuyerId(Integer id){
+        return buyerRepository.findById(id).orElseThrow(()-> new UnAuthorizeException("user not found"));
+    }
+
+    public Buyer findBuyerBySellerId(Integer id){
+        Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+        return seller.getBuyer();
+    }
 
 
 

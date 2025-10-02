@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import sit.int221.sc3_server.exception.crudException.CreateFailedException;
-import sit.int221.sc3_server.exception.crudException.DeleteFailedException;
-import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
-import sit.int221.sc3_server.exception.crudException.UpdateFailedException;
+import sit.int221.sc3_server.exception.crudException.*;
 
 
 @RestControllerAdvice
@@ -98,5 +95,17 @@ public class GlobalExceptionHandler {
                 httpServletRequest.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ger);
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<Object> handleOutOFStockException(Exception e,HttpServletRequest request){
+        GeneralErrorResponse ger = new GeneralErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Conflict request",
+                e.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ger);
     }
 }
