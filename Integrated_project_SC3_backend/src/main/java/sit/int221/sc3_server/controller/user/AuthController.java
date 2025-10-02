@@ -122,8 +122,8 @@ public class AuthController {
 //                            .path("/itb-mshop/v2/auth/refresh")
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
-//                    .sameSite("Lax")
-                    .sameSite("Strict")
+                    .sameSite("Lax")
+//                    .sameSite("Strict")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 
