@@ -32,6 +32,7 @@ public class SalesItemDetailDTO {
     @NotNull(message = "Quantity is required")
     private Integer quantity;
     private String fileName;
+    private Integer sellerId;
     private Instant createdOn;
     private Instant updatedOn;
 //    // 🔹 เอาเฉพาะชื่อไฟล์รูปหลัก (imageViewOrder = 1)

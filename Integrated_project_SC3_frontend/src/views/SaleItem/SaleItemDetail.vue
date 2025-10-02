@@ -54,12 +54,14 @@ onMounted(async () => {
     if (data == undefined) {
       product.value = "404_not_found";
       console.log("product.value: " + product.value);
+      console.log("product.value: " + product.value.sellerId);
       setTimeout(() => {
         router.push("/sale-items");
       }, 2000);
     } else {
       product.value = data;
       console.log(product.value);
+      console.log(product.value.sellerId);
       console.log(data);
     }
   } catch (error) {
@@ -117,7 +119,7 @@ const addItem = () => {
   } else {
     // แจ้ง error / ข้อจำกัดสต็อก
     // alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
-    console.log("add failed");
+    console.log("add failed ");
     
   }
 };
