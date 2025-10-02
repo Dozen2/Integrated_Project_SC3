@@ -53,8 +53,8 @@ public class OrderServices {
         order.setOrderStatus(orderRequest.getOrderStatus());
         order.setPaymentStatus("PENDING");
         order.setOrderNote(orderRequest.getOrderNote());
-        order.setOrderDate(orderRequest.getOrderDate());
-//        order.setOrderDate(Instant.now());
+//        order.setOrderDate(orderRequest.getOrderDate());
+        order.setOrderDate(Instant.now());
 
         order = orderRepository.save(order);
         Set<OrderDetail> orderDetails = new LinkedHashSet<>();

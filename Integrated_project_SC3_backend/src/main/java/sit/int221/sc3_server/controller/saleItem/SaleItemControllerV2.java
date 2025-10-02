@@ -247,6 +247,7 @@ public class SaleItemControllerV2 {
         return ResponseEntity.noContent().build();
     }
 
+    //===========================================================================
 
     @PostMapping("/orders")
     public ResponseEntity<List<OrderResponse>> createOrder(@RequestBody List<OrderRequest> request,Authentication authentication){
@@ -327,8 +328,6 @@ public class SaleItemControllerV2 {
         Page<Order> order = orderServices.findAllBuyersOrder(buyer.getId(), page,size);
         PageDTO<OrderRequest> response = listMapper.toPageDTO(order,OrderRequest.class,modelMapper);
         return ResponseEntity.ok(response);
-
-
     }
 
 //    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
