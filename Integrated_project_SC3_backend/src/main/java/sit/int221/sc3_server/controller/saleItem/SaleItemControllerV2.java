@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.*;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
-import sit.int221.sc3_server.DTO.order.OrderRequest;
-import sit.int221.sc3_server.DTO.order.OrderResponse;
-import sit.int221.sc3_server.DTO.order.OrderResponseSeller;
+import sit.int221.sc3_server.DTO.order.*;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileNormal;
@@ -283,7 +281,7 @@ public class SaleItemControllerV2 {
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable int id,Authentication authentication){
+    public ResponseEntity<OrderResponseMoreSeller> getOrderById(@PathVariable int id, Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token");
@@ -297,9 +295,9 @@ public class SaleItemControllerV2 {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
         if(!buyer.getId().equals(order.getBuyer().getId())){
-            throw new ForbiddenException("request user id not matched with id in access token");
+            throw new ForbiddenException("request user id not matched with id in order");
         }
-         OrderResponse response = orderServices.mapOrderToResponseDTO(order);
+         OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
         return ResponseEntity.ok(response);
 
 
@@ -316,14 +314,13 @@ public class SaleItemControllerV2 {
             throw new ForbiddenException("request user id not matched with id in access token");
         }
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
-        Buyer buyer;
-        if(isSeller){
-            buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
-        }else {
-            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
-        }
+       if(!isSeller){
+           throw new ForbiddenException("user has no authority");
+       }
 
-        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+
+
+        Page<OrderResponseSeller> order = orderServices.findAllOrderOfSeller(id, page,size);
         PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
                 .content(order.getContent())
                 .number(order.getNumber())
@@ -357,8 +354,8 @@ public class SaleItemControllerV2 {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
 
-        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
-        PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
+        Page<OrderResponseBuyer> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+        PageDTO<OrderResponseBuyer> response = PageDTO.<OrderResponseBuyer>builder()
                 .content(order.getContent())
                 .number(order.getNumber())
                 .size(order.getSize())
@@ -372,6 +369,10 @@ public class SaleItemControllerV2 {
 
 
     }
+
+
+//    @PutMapping("/orders/pay")
+//    public ResponseEntity<>
 
 
 
