@@ -9,4 +9,5 @@ public class OrderItems {
     private Integer price;
     private Integer quantity;
     private String description;
+    private String mainImageFileName;
 }

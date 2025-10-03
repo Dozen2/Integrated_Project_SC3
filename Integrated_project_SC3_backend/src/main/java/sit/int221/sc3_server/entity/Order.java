@@ -57,7 +57,12 @@ public class Order {
     @Column(name = "order_note", length = 70)
     private String orderNote;
 
+    @Column(name = "payment_date")
+    private Instant paymentDate;
+
     @OneToMany(mappedBy = "order" )
     private Set<OrderDetail> orderDetails = new LinkedHashSet<>();
+
+
 
 }

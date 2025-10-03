@@ -6,22 +6,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import sit.int221.sc3_server.DTO.order.OrderItems;
-import sit.int221.sc3_server.DTO.order.OrderRequest;
-import sit.int221.sc3_server.DTO.order.OrderResponse;
-import sit.int221.sc3_server.DTO.order.SellerResponseOrder;
+import sit.int221.sc3_server.DTO.order.*;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
+import sit.int221.sc3_server.exception.crudException.OutOfStockException;
+import sit.int221.sc3_server.exception.crudException.UpdateFailedException;
 import sit.int221.sc3_server.repository.order.OrderDetailRepository;
 import sit.int221.sc3_server.repository.order.OrderRepository;
+import sit.int221.sc3_server.repository.saleItem.SaleItemImageRepository;
 import sit.int221.sc3_server.repository.saleItem.SaleitemRepository;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.utils.Role;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -40,6 +39,8 @@ public class OrderServices {
     private BuyerRepository buyerRepository;
     @Autowired
     private SellerRepository sellerRepository;
+    @Autowired
+    private SaleItemImageRepository saleItemImageRepository;
 
     @Transactional
     public Order createOrder(OrderRequest orderRequest){
@@ -55,6 +56,7 @@ public class OrderServices {
         order.setOrderNote(orderRequest.getOrderNote());
 //        order.setOrderDate(orderRequest.getOrderDate());
         order.setOrderDate(Instant.now());
+        order.setPaymentDate(null);
 
         order = orderRepository.save(order);
         Set<OrderDetail> orderDetails = new LinkedHashSet<>();
@@ -66,10 +68,10 @@ public class OrderServices {
                 throw new ForbiddenException("Order cannot contain other seller's saleItem");
             }
             if(itemRequest.getQuantity() <= 0){
-                throw new RuntimeException("Quantity must no equal or lower than 0");
+                throw new OutOfStockException("Quantity must no equal or lower than 0");
             }
             if (saleItem.getQuantity() < itemRequest.getQuantity()){
-                throw new RuntimeException("Not enough stock for " + saleItem.getModel());
+                throw new OutOfStockException("Not enough stock for " + saleItem.getModel());
             }
             saleItem.setQuantity(saleItem.getQuantity() - itemRequest.getQuantity());
             saleitemRepository.save(saleItem);
@@ -78,6 +80,7 @@ public class OrderServices {
             orderDetail.setSaleItem(saleItem);
             orderDetail.setPriceEachAtPurchase(saleItem.getPrice());
             orderDetail.setQuantity(itemRequest.getQuantity()); // จำนวนที่ user สั่ง\
+            orderDetail.setDescription(itemRequest.getDescription());
             orderDetailRepository.save(orderDetail);
 
             BigDecimal subTotal = BigDecimal.valueOf(saleItem.getPrice()).multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
@@ -118,19 +121,83 @@ public class OrderServices {
 
       List<OrderItems> items = new ArrayList<>();
       int no = 1;
+
         for (OrderDetail detail:
              order.getOrderDetails()) {
+            String image = saleItemImageRepository.findBySaleItemId(detail.getSaleItem().getId());
             OrderItems orderItems = new OrderItems();
             orderItems.setNo(no++);
             orderItems.setSaleItemId(detail.getSaleItem().getId());
             orderItems.setPrice(detail.getPriceEachAtPurchase());
             orderItems.setQuantity(detail.getQuantity());
-            orderItems.setDescription(detail.getSaleItem().getDescription());
+            orderItems.setDescription(detail.getDescription());
+            orderItems.setMainImageFileName(image);
             items.add(orderItems);
         }
         dto.setOrderItems(items);
         return dto;
 
+
+    }
+
+//    public Page<OrderResponseBuyer> mapSellerOrder(Order order){
+//
+//    }
+
+    public Order payOrder(Integer orderId){
+        Order order = orderRepository.findById(orderId).orElseThrow(()-> new ItemNotFoundException("order does not exist"));
+        if(order.getPaymentDate() != null || order.getOrderStatus().equals("PAID")){
+            throw new UpdateFailedException("user already paid");
+        }
+
+        order.setPaymentDate(Instant.now());
+        order.setPaymentStatus("PAID");
+         return order;
+    }
+
+    public Page<OrderResponseSeller> findAllBuyersOrderResponse(Integer buyerId, int page, int size) {
+        Page<Order> orders = orderRepository.findByBuyerId(buyerId, PageRequest.of(page, size));
+
+        // map order -> response
+        return orders.map(this::mapOrderToResponse);
+    }
+
+    private OrderResponseSeller mapOrderToResponse(Order order) {
+        OrderResponseSeller response = new OrderResponseSeller();
+
+        response.setId(order.getId());
+
+        // map buyer
+        BuyerDTO buyerDTO = new BuyerDTO();
+        buyerDTO.setId(order.getBuyer().getId());
+        buyerDTO.setUsername(order.getBuyer().getEmail());
+        response.setBuyerDTO(buyerDTO);
+
+        // map field ตรงๆ
+        response.setOrderDate(order.getOrderDate());
+        response.setPaymentDate(order.getPaymentDate());
+        response.setShippingAddress(order.getShippingAddress());
+        response.setOrderNote(order.getOrderNote());
+        response.setOrderStatus(order.getOrderStatus());
+
+        // map order items
+        List<OrderItems> items = order.getOrderDetails()
+                .stream()
+                .map(item -> {
+                    OrderItems orderItem = new OrderItems();
+                    orderItem.setNo(item.getId());
+                    orderItem.setSaleItemId(item.getSaleItem().getId());
+                    orderItem.setPrice(item.getPriceEachAtPurchase());
+                    orderItem.setQuantity(item.getQuantity());
+                    orderItem.setDescription(item.getDescription());
+                    return orderItem;
+                }).toList();
+
+        response.setOrderItems(items);
+
+        return response;
+    }
+    public void set(){
 
     }
 
