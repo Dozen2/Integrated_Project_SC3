@@ -14,6 +14,7 @@ import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
 import Search from "@/components/Common/Query/Search.vue";
 import { ChevronDown, Funnel, Smartphone } from "lucide-vue-next";
+import Loading from "@/components/Common/Loading.vue";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -427,7 +428,9 @@ const hasActiveFilters = (filters) => {
 
 // ======================== Lifecycle ========================
 const imageUrl = ref([]);
+const isLoading = ref(false);
 onBeforeMount(async () => {
+  isLoading.value = true;
   await loadBrands();
   await loadStroage();
 
@@ -446,6 +449,7 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
+  isLoading.value = false;
 });
 
 onBeforeUnmount(() => {
@@ -454,7 +458,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div
+  <div v-if="isLoading" class="flex items-center justify-center h-screen">
+    <Loading/>
+  </div>
+  <div v-else
     class="flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
   >
     <!-- Alert Message -->

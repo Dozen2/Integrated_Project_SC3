@@ -9,26 +9,31 @@ const props = defineProps({
   }
 });
 </script>
-
 <template>
-  <nav class="flex items-center space-x-2 text-gray-600 text-sm">
+  <nav
+  >
     <template v-for="(bc, index) in props.pathForBreadcrumb" :key="bc.name">
       <RouterLink
         v-if="index !== props.pathForBreadcrumb.length - 1"
         :to="{ name: bc.name }"
-        class="hover:underline"
+        class="hover:text-blue-800 text-2xl transition duration-200"
       >
         {{ bc.text }}
       </RouterLink>
 
       <span
         v-else
-        class="font-semibold text-gray-900"
+        class="text-blue-900 font-bold text-2xl"
       >
         {{ bc.text }}
       </span>
 
-      <span v-if="index !== props.pathForBreadcrumb.length - 1">›</span>
+      <span
+        v-if="index !== props.pathForBreadcrumb.length - 1"
+        class="text-blue-400 text-2xl px-1"
+      >
+        ›
+      </span>
     </template>
   </nav>
 </template>

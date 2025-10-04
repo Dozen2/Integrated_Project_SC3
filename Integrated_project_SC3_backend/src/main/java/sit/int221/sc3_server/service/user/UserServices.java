@@ -243,7 +243,6 @@ UserServices {
 
     public Map<String, Object> refreshToken(String refreshToken) {
         jwtUtils.verifyToken(refreshToken);
-        System.out.println("ttttttttt");
         Map<String, Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
         if (jwtUtils.isExpired(claims)) {
             throw new UnAuthorizeException("token expired");

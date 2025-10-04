@@ -26,6 +26,7 @@ onMounted(async () => {
   //     );
   //   }
   // }
+  console.log("Image URLs loaded:", props.imageUrl);
 
   if (alertStore.message) {
     setTimeout(() => {

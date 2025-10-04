@@ -5,6 +5,8 @@ import { useAuthStore } from "@/stores/auth";
 import { UserRound, UserRoundPen } from "lucide-vue-next";
 import { useAlertStore } from "@/stores/alertStore";
 import { useRouter } from "vue-router";
+import Breadcrumb from "@/components/Common/Breadcrumb.vue";
+import Loading from "@/components/Common/Loading.vue";
 
 const route = useRouter();
 const auth = useAuthStore();
@@ -173,23 +175,18 @@ const changeToViewMode = () => {
 
 <template>
   <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
-    <div class="text-blue-600 text-5xl font-semibold">
-      Loading...
-    </div>
+    <Loading/>  
   </div>
   <div v-else
-    class="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen py-10"
+    class=" max-w-2xl mx-auto min-h-screen py-10"
   >
-    <div class="flex gap-3">
-      <RouterLink :to="{ name: 'Products' }" class="itbms-home">
-        HOME
-      </RouterLink>
-      <span>></span>
-      <div class="">
-        Profile
-      </div>
-    </div>
-
+  <Breadcrumb
+  :class="'mb-6'"
+  :pathForBreadcrumb="[
+    { text: 'Home', name: 'Home' },
+    { text: 'SaleItem', name: 'Products' },
+    { text: 'Profile', name: 'UserProfile' }
+  ]" />
     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100">
       <div class="p-8">
         <!-- Profile Title -->
