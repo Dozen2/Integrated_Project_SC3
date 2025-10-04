@@ -12,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.*;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
-import sit.int221.sc3_server.DTO.order.OrderRequest;
-import sit.int221.sc3_server.DTO.order.OrderResponse;
-import sit.int221.sc3_server.DTO.order.OrderResponseSeller;
+import sit.int221.sc3_server.DTO.order.*;
 import sit.int221.sc3_server.DTO.saleItem.SaleItemCreateDTO;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileDto;
 import sit.int221.sc3_server.DTO.saleItem.file.SaleItemDetailFileNormal;
@@ -204,6 +202,7 @@ public class SaleItemControllerV2 {
 //            ,@RequestPart(required = false) List<MultipartFile> images
             ,Authentication authentication)
            {
+
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token");
@@ -224,8 +223,8 @@ public class SaleItemControllerV2 {
         dto.getSellerDTO().setUserName(authUserDetail.getUsername());
         dto.getSellerDTO().setId(authUserDetail.getId());
         return ResponseEntity.ok().body(dto);
-    }
 
+    }
 
     @DeleteMapping("/sellers/{id}/sale-items/{saleItemId}")
     public ResponseEntity<SaleItemWithImageInfo> deleteSellerSaleItem(@PathVariable(value = "id") int sellerId
@@ -246,7 +245,6 @@ public class SaleItemControllerV2 {
         return ResponseEntity.noContent().build();
     }
 
-    //===========================================================================
 
     @PostMapping("/orders")
     public ResponseEntity<List<OrderResponse>> createOrder(@RequestBody List<OrderRequest> request,Authentication authentication){
@@ -276,12 +274,14 @@ public class SaleItemControllerV2 {
             OrderResponse response = orderServices.mapOrderToResponseDTO(order);
             responses.add(response);
         }
+
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
+
+
     }
 
-
     @GetMapping("/orders/{id}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable int id,Authentication authentication){
+    public ResponseEntity<OrderResponseMoreSeller> getOrderById(@PathVariable int id, Authentication authentication){
         AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
         if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
             throw new UnAuthorizeException("Invalid token");
@@ -295,12 +295,13 @@ public class SaleItemControllerV2 {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
         if(!buyer.getId().equals(order.getBuyer().getId())){
-            throw new ForbiddenException("request user id not matched with id in access token");
+            throw new ForbiddenException("request user id not matched with id in order");
         }
-         OrderResponse response = orderServices.mapOrderToResponseDTO(order);
+         OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
         return ResponseEntity.ok(response);
-    }
 
+
+    }
 
     @GetMapping("/sellers/{sid}/orders")
     public ResponseEntity<PageDTO<?>> getAllOrderBySellerId(@PathVariable(value = "sid") int id
@@ -313,13 +314,13 @@ public class SaleItemControllerV2 {
             throw new ForbiddenException("request user id not matched with id in access token");
         }
         boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
-        Buyer buyer;
-        if(isSeller){
-            buyer = userServices.findBuyerBySellerId(authUserDetail.getId());
-        }else {
-            buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
-        }
-        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+       if(!isSeller){
+           throw new ForbiddenException("user has no authority");
+       }
+
+
+
+        Page<OrderResponseSeller> order = orderServices.findAllOrderOfSeller(id, page,size);
         PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
                 .content(order.getContent())
                 .number(order.getNumber())
@@ -331,8 +332,9 @@ public class SaleItemControllerV2 {
                 .sort(order.getSort().toString())
                 .build();
         return ResponseEntity.ok(response);
-    }
 
+
+    }
 
     @GetMapping("/user/{id}/orders")
     public ResponseEntity<PageDTO<?>> getAllOrderByUserId(@PathVariable(value = "id") int id
@@ -351,8 +353,9 @@ public class SaleItemControllerV2 {
         }else {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
-        Page<OrderResponseSeller> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
-        PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
+
+        Page<OrderResponseBuyer> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+        PageDTO<OrderResponseBuyer> response = PageDTO.<OrderResponseBuyer>builder()
                 .content(order.getContent())
                 .number(order.getNumber())
                 .size(order.getSize())
@@ -363,7 +366,14 @@ public class SaleItemControllerV2 {
                 .sort(order.getSort().toString())
                 .build();
         return ResponseEntity.ok(response);
+
+
     }
+
+
+//    @PutMapping("/orders/pay")
+//    public ResponseEntity<>
+
 
 
 //    @PutMapping("/orders/cancel")
@@ -380,5 +390,9 @@ public class SaleItemControllerV2 {
 //        if(!authUserDetail.getSellerId().equals(sellerId)){
 //            throw new UnAuthorizeException("request user id not matched with id in access token");
 //        }
+//
 //    }
+
+
+
 }

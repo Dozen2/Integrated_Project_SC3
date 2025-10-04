@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sit.int221.sc3_server.DTO.order.*;
+import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SellerDTO;
 import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.crudException.ItemNotFoundException;
@@ -99,9 +100,9 @@ public class OrderServices {
         return orderRepository.findById(id).orElseThrow(()->new ItemNotFoundException("order not found"));
     }
 
-    public Page<Order> findAllBuyersOrder(Integer userId,Integer page,Integer size){
-        return orderRepository.findAllOrderByBuyerId(userId, PageRequest.of(page,size, Sort.by("orderDate").descending()));
-    }
+//    public Page<Order> findAllBuyersOrder(Integer userId,Integer page,Integer size){
+//        return orderRepository.findAllOrderByBuyerId(userId, PageRequest.of(page,size, Sort.by("orderDate").descending()));
+//    }
 
     public OrderResponse mapOrderToResponseDTO(Order order){
         OrderResponse dto = new OrderResponse();
@@ -111,19 +112,52 @@ public class OrderServices {
         dto.setId(order.getId());
         dto.setOrderNote(order.getOrderNote());
 
-        SellerResponseOrder sellerDto = new SellerResponseOrder();
-        sellerDto.setId(order.getSeller().getId());
-        sellerDto.setEmail(order.getSeller().getBuyer().getEmail());
-        sellerDto.setFullName(order.getSeller().getBuyer().getFullName());
-        sellerDto.setNickName(order.getSeller().getBuyer().getNickName());
-        sellerDto.setUserType(Role.SELLER.name());
-        dto.setSeller(sellerDto);
-
+        SellerDTO sellerDTO = new SellerDTO();
+        sellerDTO.setId(order.getSeller().getId());
+        sellerDTO.setUserName(order.getSeller().getBuyer().getEmail());
+        dto.setSellerDTO(sellerDTO);
       List<OrderItems> items = new ArrayList<>();
       int no = 1;
 
         for (OrderDetail detail:
              order.getOrderDetails()) {
+            String image = saleItemImageRepository.findBySaleItemId(detail.getSaleItem().getId());
+            OrderItems orderItems = new OrderItems();
+            orderItems.setNo(no++);
+            orderItems.setSaleItemId(detail.getSaleItem().getId());
+            orderItems.setPrice(detail.getPriceEachAtPurchase());
+            orderItems.setQuantity(detail.getQuantity());
+            orderItems.setDescription(detail.getDescription());
+            orderItems.setMainImageFileName(image);
+            items.add(orderItems);
+        }
+        dto.setOrderItems(items);
+        return dto;
+
+
+    }
+
+
+    public OrderResponseMoreSeller mapOrderToResponseMoreSellerDTO(Order order){
+        OrderResponseMoreSeller dto = new OrderResponseMoreSeller();
+        dto.setOrderDate(order.getOrderDate());
+        dto.setOrderStatus(order.getOrderStatus());
+        dto.setBuyerId(order.getBuyer().getId());
+        dto.setId(order.getId());
+        dto.setOrderNote(order.getOrderNote());
+
+        SellerResponseOrder sellerResponseOrder = new SellerResponseOrder();
+        sellerResponseOrder.setId(order.getSeller().getId());
+        sellerResponseOrder.setEmail(order.getSeller().getBuyer().getEmail());
+        sellerResponseOrder.setUserType(Role.SELLER.name());
+        sellerResponseOrder.setFullName(order.getSeller().getBuyer().getFullName());
+        sellerResponseOrder.setNickName(order.getSeller().getBuyer().getNickName());
+        dto.setSellerResponseOrder(sellerResponseOrder);
+        List<OrderItems> items = new ArrayList<>();
+        int no = 1;
+
+        for (OrderDetail detail:
+                order.getOrderDetails()) {
             String image = saleItemImageRepository.findBySaleItemId(detail.getSaleItem().getId());
             OrderItems orderItems = new OrderItems();
             orderItems.setNo(no++);
@@ -155,12 +189,55 @@ public class OrderServices {
          return order;
     }
 
-    public Page<OrderResponseSeller> findAllBuyersOrderResponse(Integer buyerId, int page, int size) {
-        Page<Order> orders = orderRepository.findByBuyerId(buyerId, PageRequest.of(page, size));
-
-        // map order -> response
+    public Page<OrderResponseSeller> findAllOrderOfSeller(Integer sellerId,Integer page,Integer size){
+        Page<Order> orders = orderRepository.findOrderBySellerId(sellerId,PageRequest.of(page,size,Sort.by("orderDate").descending()));
         return orders.map(this::mapOrderToResponse);
     }
+
+    public Page<OrderResponseBuyer> findAllBuyersOrderResponse(Integer buyerId, Integer page, Integer size) {
+        Page<Order> orders = orderRepository.findByBuyerId(buyerId, PageRequest.of(page, size,Sort.by("orderDate").descending()));
+
+        // map order -> response
+        return orders.map(this::mapOrderToResponseBuyer);
+    }
+
+    private OrderResponseBuyer mapOrderToResponseBuyer(Order order) {
+        OrderResponseBuyer response = new OrderResponseBuyer();
+
+        response.setId(order.getId());
+
+        // map buyer
+        response.setBuyerId(order.getBuyer().getId());
+        SellerDTO dto = new SellerDTO();
+        dto.setId(order.getSeller().getId());
+        dto.setUserName(order.getSeller().getBuyer().getEmail());
+        response.setSellerDTO(dto);
+
+        // map field ตรงๆ
+        response.setOrderDate(order.getOrderDate());
+        response.setShippingAddress(order.getShippingAddress());
+        response.setOrderNote(order.getOrderNote());
+        response.setOrderStatus(order.getOrderStatus());
+
+        // map order items
+        List<OrderItems> items = order.getOrderDetails()
+                .stream()
+                .map(item -> {
+                    OrderItems orderItem = new OrderItems();
+                    orderItem.setNo(item.getId());
+                    orderItem.setSaleItemId(item.getSaleItem().getId());
+                    orderItem.setPrice(item.getPriceEachAtPurchase());
+                    orderItem.setQuantity(item.getQuantity());
+                    orderItem.setDescription(item.getDescription());
+                    return orderItem;
+                }).toList();
+
+        response.setOrderItems(items);
+
+        return response;
+    }
+
+
 
     private OrderResponseSeller mapOrderToResponse(Order order) {
         OrderResponseSeller response = new OrderResponseSeller();
