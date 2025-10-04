@@ -53,11 +53,11 @@ public class OrderServices {
         order.setSeller(seller);
         order.setShippingAddress(orderRequest.getShippingAddress());
         order.setOrderStatus(orderRequest.getOrderStatus());
-        order.setPaymentStatus("PENDING");
+        order.setPaymentStatus("Paid");
         order.setOrderNote(orderRequest.getOrderNote());
 //        order.setOrderDate(orderRequest.getOrderDate());
         order.setOrderDate(Instant.now());
-        order.setPaymentDate(null);
+        order.setPaymentDate(Instant.now());
 
         order = orderRepository.save(order);
         Set<OrderDetail> orderDetails = new LinkedHashSet<>();
@@ -115,7 +115,7 @@ public class OrderServices {
 
         SellerDTO sellerDTO = new SellerDTO();
         sellerDTO.setId(order.getSeller().getId());
-        sellerDTO.setUserName(order.getSeller().getBuyer().getEmail());
+        sellerDTO.setUserName(order.getSeller().getBuyer().getNickName());
         dto.setSellerDTO(sellerDTO);
       List<OrderItems> items = new ArrayList<>();
       int no = 1;
@@ -212,7 +212,7 @@ public class OrderServices {
         response.setBuyerId(order.getBuyer().getId());
         SellerDTO dto = new SellerDTO();
         dto.setId(order.getSeller().getId());
-        dto.setUserName(order.getSeller().getBuyer().getEmail());
+        dto.setUserName(order.getSeller().getBuyer().getNickName());
         response.setSellerDTO(dto);
 
         // map field ตรงๆ
@@ -233,9 +233,11 @@ public class OrderServices {
                     orderItem.setDescription(item.getDescription());
                     String mainImageFileName = item.getSaleItem().getSaleItemImage()
                             .stream()
+                            .filter(img -> img.getImageViewOrder() != null && img.getImageViewOrder() == 1)
                             .map(SaleItemImage::getFileName)
                             .findFirst()
                             .orElse(null);
+
 
                     orderItem.setMainImageFileName(mainImageFileName);
                     return orderItem;
@@ -256,7 +258,7 @@ public class OrderServices {
         // map buyer
         BuyerDTO buyerDTO = new BuyerDTO();
         buyerDTO.setId(order.getBuyer().getId());
-        buyerDTO.setUsername(order.getBuyer().getEmail());
+        buyerDTO.setUsername(order.getBuyer().getNickName());
         response.setBuyerDTO(buyerDTO);
 
         // map field ตรงๆ
