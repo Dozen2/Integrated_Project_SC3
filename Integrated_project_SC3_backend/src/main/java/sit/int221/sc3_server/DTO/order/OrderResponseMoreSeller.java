@@ -12,6 +12,7 @@ public class OrderResponseMoreSeller {
     private Integer buyerId;
     private SellerResponseOrder sellerResponseOrder;
     private Instant orderDate;
+    private Instant paymentDate;
     private String shippingAddress;
     private String orderNote;
     private List<OrderItems> orderItems;

@@ -360,8 +360,8 @@ public class SaleItemControllerV2 {
 
 
 
-        Page<OrderResponseBuyer> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
-        PageDTO<OrderResponseBuyer> response = PageDTO.<OrderResponseBuyer>builder()
+        Page<OrderResponse> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
+        PageDTO<OrderResponse> response = PageDTO.<OrderResponse>builder()
                 .content(order.getContent())
                 .number(order.getNumber())
                 .size(order.getSize())
