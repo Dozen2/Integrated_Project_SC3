@@ -16,4 +16,10 @@ onMounted(async () => {
 
 <template>
   <div class="p-6 text-center text-lg font-semibold text-blue-700">Hello 👋 Order ID: {{ orderParam }}</div>
+  <div v-for=" item in orders.orderItems" :key="item.id" class="p-4 border-b">
+    <div class="font-bold">{{ item.productName }}</div>
+    <div>Price: {{ item.price }}</div>
+    <div>Quantity: {{ item.quantity }}</div>
+
+  </div>
 </template>
