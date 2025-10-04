@@ -13,7 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query("""
     select o from Order o
-    where (:sellerId is null or o.seller.id = :sellerId)
+    where (o.seller.id = :sellerId)
 """)
     Page<Order> findOrderBySellerId(
             @Param("sellerId") Integer sellerId,
@@ -22,7 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query("""
 select p from Order p 
-where (:buyerId is null or p.buyer.id = :buyerId)
+where (p.buyer.id = :buyerId)
 """)
     Page<Order> findByBuyerId(@Param("buyerId") Integer buyerId,Pageable pageable);
 }
