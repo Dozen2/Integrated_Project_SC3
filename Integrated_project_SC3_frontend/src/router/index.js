@@ -16,6 +16,7 @@ import UserProfile from '@/views/User/UserProfile.vue'
 import PlaceOrder from '@/views/User/PlaceOrder.vue'
 import PlaceOrderDetail from '@/views/User/PlaceOrderDetail.vue'
 import Cart from '@/views/User/Cart.vue'
+import PageNotFound from '@/views/PageNotFound.vue'
 import { useAuthStore } from '@/stores/auth'
 
 
@@ -49,8 +50,11 @@ const router = createRouter({
     {path: '/your-order/:id', name: 'PlaceOrderId', component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
     {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
 
+    // Page Not Found
+    {path: '/404', name: 'PageNotFound', component: PageNotFound},
+
     // Unknow-Path -> Home Page
-    { path: '/:pathMatch(.*)*', redirect: { name: 'Products' } },
+    { path: '/:pathMatch(.*)*', redirect: { name: 'PageNotFound' } },
   ],
 })
 
