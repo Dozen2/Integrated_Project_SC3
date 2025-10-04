@@ -319,7 +319,6 @@ public class SaleItemControllerV2 {
        }
 
 
-
         Page<OrderResponseSeller> order = orderServices.findAllOrderOfSeller(id, page,size);
         PageDTO<OrderResponseSeller> response = PageDTO.<OrderResponseSeller>builder()
                 .content(order.getContent())

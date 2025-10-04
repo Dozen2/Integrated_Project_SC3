@@ -142,6 +142,7 @@ public class OrderServices {
         OrderResponseMoreSeller dto = new OrderResponseMoreSeller();
         dto.setOrderDate(order.getOrderDate());
         dto.setOrderStatus(order.getOrderStatus());
+        dto.setShippingAddress(order.getShippingAddress());
         dto.setBuyerId(order.getBuyer().getId());
         dto.setId(order.getId());
         dto.setOrderNote(order.getOrderNote());
