@@ -109,6 +109,7 @@ public class OrderServices {
         dto.setOrderDate(order.getOrderDate());
         dto.setOrderStatus(order.getOrderStatus());
         dto.setBuyerId(order.getBuyer().getId());
+        dto.setShippingAddress(order.getShippingAddress());
         dto.setId(order.getId());
         dto.setOrderNote(order.getOrderNote());
 
@@ -230,6 +231,13 @@ public class OrderServices {
                     orderItem.setPrice(item.getPriceEachAtPurchase());
                     orderItem.setQuantity(item.getQuantity());
                     orderItem.setDescription(item.getDescription());
+                    String mainImageFileName = item.getSaleItem().getSaleItemImage()
+                            .stream()
+                            .map(SaleItemImage::getFileName)
+                            .findFirst()
+                            .orElse(null);
+
+                    orderItem.setMainImageFileName(mainImageFileName);
                     return orderItem;
                 }).toList();
 

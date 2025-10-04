@@ -67,6 +67,7 @@ public class JwtUtils {
                     .claim("nickname", authUser.getNickName())   // หรือ getNickName() ถ้ามี
                     .claim("id", authUser.getId())
                     .claim("email", authUser.getUsername())
+                    .claim("sellerId",authUser.getSellerId())
                     .claim("authorities", user.getAuthorities())
                     .claim("typ", tokenType.toString())
                     .build();

@@ -46,7 +46,7 @@ public class UserController {
         if(!isSeller){
             return ResponseEntity.ok(userServices.getBuyerById(authUserDetail.getId()));
         }else {
-            return ResponseEntity.ok(userServices.getSeller(authUserDetail.getId()));
+            return ResponseEntity.ok(userServices.getSeller(authUserDetail.getSellerId()));
         }
 
     }
@@ -63,7 +63,7 @@ public class UserController {
                 .stream().anyMatch(auth ->auth.getAuthority().equals("ROLE_SELLER"));
 
         if(isSeller){
-            return ResponseEntity.ok().body(userServices.updateSeller(userProfileRequestRTO,authUserDetail.getId()));
+            return ResponseEntity.ok().body(userServices.updateSeller(userProfileRequestRTO,authUserDetail.getSellerId()));
         }else{
             return ResponseEntity.ok().body(userServices.updateBuyer(userProfileRequestRTO,authUserDetail.getId()));
         }
