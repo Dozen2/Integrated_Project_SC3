@@ -174,11 +174,11 @@ const changeToViewMode = () => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
+  <div v-if="isLoading" class="flex items-center justify-center min-h-[calc(100vh-80px)]">
     <Loading/>  
   </div>
   <div v-else
-    class=" max-w-2xl mx-auto min-h-screen py-10"
+    class=" max-w-2xl mx-auto min-h-[calc(100vh-80px)] py-10"
   >
   <Breadcrumb
   :class="'mb-6'"

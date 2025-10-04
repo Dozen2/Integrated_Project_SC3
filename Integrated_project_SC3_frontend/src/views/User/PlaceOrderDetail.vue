@@ -60,11 +60,11 @@ const formatDate = (isoString) => {
 };
 </script>
 <template>
-  <div v-if="isLoading" class="flex items-center justify-center h-screen bg-gradient-to-b from-blue-50 to-white">
+  <div v-if="isLoading" class="flex items-center justify-center min-h-[calc(100vh-80px)] bg-gradient-to-b from-blue-50 to-white">
     <Loading />
   </div>
 
-  <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8 text-gray-800">
+  <div v-else class="font-sans max-w-7xl mx-auto min-h-[calc(100vh-80px)] p-8 text-gray-800">
     <Breadcrumb
       :class="'mb-6'"
       :pathForBreadcrumb="[

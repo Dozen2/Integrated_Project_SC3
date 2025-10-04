@@ -462,7 +462,7 @@ onBeforeUnmount(() => {
     <Loading/>
   </div>
   <div v-else
-    class="flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
+    class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200"
   >
     <!-- Alert Message -->
     <div v-if="alertStore.message">
