@@ -29,7 +29,7 @@ onMounted(async () => {
   console.log("currentTotalPrice.value: ", currentTotalPrice.value);
   console.log("totalPrice.value: ", totalPrice.value);
   await loadImageUrl();
-  console.log("imageUrl.value: ", imageUrl.value);
+  console.log("imageMap.value: ", imageMap.value);
 
   isLoading.value = false;
 });
@@ -45,26 +45,30 @@ const formatCurrency = (value) => {
     .replace("฿", ""); // ตัดสัญลักษณ์ ฿ ออกเพื่อให้เหมือนในรูป
 };
 
-const imageUrl= ref([]);
+const imageMap = ref([]);
 const loadImageUrl = async () => {
-  imageUrl.value = [];
-  const allMainImages = orders.value.content
-  .flatMap(order => order.orderItems)
-  .map(item => item.mainImageFileName)
-  console.log("Loading image URLs for order items...", allMainImages);
-  for (const item of orders.value.content.flatMap(order => order.orderItems)) {
-    if (item.mainImageFileName) {
-      const image = await getImageByImageName(item.mainImageFileName);
-      imageUrl.value.push(image);
-    } else {
-      imageUrl.value.push(
-        "https://cdn-icons-png.freepik.com/512/9280/9280762.png"
-      );
+  imageMap.value = {};
+  for (const order of orders.value.content) {
+    for (const item of order.orderItems) {
+      if (item.mainImageFileName) {
+        const image = await getImageByImageName(item.mainImageFileName);
+        imageMap.value[item.no] = image;
+      } else {
+        imageMap.value[item.no] = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
+      }
     }
   }
-  console.log("Image URLs loaded:", imageUrl.value);
 };
 
+const formatDate = (isoString) => {
+  if (!isoString) return "-"; // กันค่า null หรือ undefined
+  const date = new Date(isoString);
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+};
 </script>
 <template>
   <div v-if="isLoading" class="flex items-center justify-center h-screen bg-blue-50">
@@ -94,7 +98,7 @@ const loadImageUrl = async () => {
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
         <div>
           <div class="flex items-center mb-2">
-            <span class="font-bold text-blue-700 text-base">{{ userData.nickname }}</span>
+            <span class="font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
           </div>
           <p>
             <strong class="text-gray-500">Order No:</strong>
@@ -108,14 +112,14 @@ const loadImageUrl = async () => {
           </p>
         </div>
         <div>
-          <p><strong class="text-gray-500">Order Date:</strong><br />{{ order.orderDate || "-" }}</p>
+          <p><strong class="text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
         </div>
         <div>
-          <p><strong class="text-gray-500">Payment Date:</strong><br />{{ order.paymentDate || "-" }}</p>
+          <p><strong class="text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
         </div>
         <div class="md:text-right">
           <p class="text-gray-500">Total:</p>
-          <p class="text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }}</p>
+          <p class="text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
         </div>
       </div>
       <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
@@ -124,14 +128,14 @@ const loadImageUrl = async () => {
       </div>
       <hr class="my-4" />
       <div class="space-y-4">
-        <div v-for="(item,index) in order.orderItems" :key="item.id" class="flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-          <img :src="imageUrl[index]" :alt="item.productName" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+        <div v-for="(item, index) in order.orderItems" :key="item.id" class="flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+          <img :src="imageMap[item.no]" :alt="item.productName"  class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
           <div class="flex-grow">
             <p class="font-semibold text-gray-800">{{ item.productName }}</p>
             <p class="text-gray-500">Qty {{ item.quantity }}</p>
           </div>
           <div class="text-right font-bold text-blue-700 w-28">
-            {{ formatCurrency(item.price * item.quantity) }}
+            {{ formatCurrency(item.price * item.quantity) }} Bath
           </div>
         </div>
       </div>
