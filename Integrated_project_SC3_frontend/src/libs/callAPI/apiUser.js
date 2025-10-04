@@ -17,7 +17,7 @@ async function getAllOrderByUserId(size=10,page=0) {
   params.append("size", size);
   params.append("page", page);
 
-  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/users/${decoded.id}/orders?${params.toString()}`, {
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/${decoded.id}/orders?${params.toString()}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
@@ -28,4 +28,20 @@ async function getAllOrderByUserId(size=10,page=0) {
   return res.json();
 }
 
-export { getAllOrderByUserId };
+
+async function getOrderById(id) {
+  const accessToken = localStorage.getItem("accessToken")
+  if (!accessToken) throw new Error("No access token")
+
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/orders/${id}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
+    },
+  })
+  if (!res.ok) throw new Error("Failed to fetch profile")
+
+  return res.json();
+}
+
+export { getAllOrderByUserId , getOrderById};

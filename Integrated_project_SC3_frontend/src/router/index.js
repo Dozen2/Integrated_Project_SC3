@@ -14,6 +14,7 @@ import Login from '@/views/AuthUser/Login.vue'
 import VerifyEmail from '@/views/AuthUser/VerlfyEmail.vue'
 import UserProfile from '@/views/User/UserProfile.vue'
 import PlaceOrder from '@/views/User/PlaceOrder.vue'
+import PlaceOrderDetail from '@/views/User/PlaceOrderDetail.vue'
 import Cart from '@/views/User/Cart.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -44,7 +45,8 @@ const router = createRouter({
     //User
     {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
     {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
-    {path: '/place-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
+    {path: '/your-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
+    {path: '/your-order/:id', name: 'PlaceOrderId', component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
     {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
 
     // Unknow-Path -> Home Page

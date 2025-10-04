@@ -220,7 +220,6 @@ async function authFetch(url, options = {}) {
     if (success) {
       accessToken = localStorage.getItem("accessToken");
       headers.Authorization = `Bearer ${accessToken}`;
-      console.log("do is finis!!!! again");
 
       // retry ใหม่
       res = await fetch(url, { ...options, headers, credentials: "include" });
@@ -228,8 +227,6 @@ async function authFetch(url, options = {}) {
       // refresh ไม่สำเร็จ → เด้งไป login
       // auth.logout();
       // router.push("/login");
-      console.log("do it");
-      
       throw new Error("Session expired. Please login again.");
     }
   }

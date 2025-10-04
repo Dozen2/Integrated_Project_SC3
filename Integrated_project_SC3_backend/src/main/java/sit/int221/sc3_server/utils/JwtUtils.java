@@ -118,7 +118,6 @@ public class JwtUtils {
             return true;
         }catch (JOSEException | ParseException p){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Verified Error, Invalid JWT", p);
-
         }
     }
 
