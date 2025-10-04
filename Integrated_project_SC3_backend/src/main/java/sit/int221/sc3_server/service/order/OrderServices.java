@@ -109,6 +109,7 @@ public class OrderServices {
         dto.setOrderDate(order.getOrderDate());
         dto.setOrderStatus(order.getOrderStatus());
         dto.setBuyerId(order.getBuyer().getId());
+        dto.setPaymentDate(order.getPaymentDate());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setId(order.getId());
         dto.setOrderNote(order.getOrderNote());
@@ -142,6 +143,7 @@ public class OrderServices {
     public OrderResponseMoreSeller mapOrderToResponseMoreSellerDTO(Order order){
         OrderResponseMoreSeller dto = new OrderResponseMoreSeller();
         dto.setOrderDate(order.getOrderDate());
+        dto.setPaymentDate(order.getPaymentDate());
         dto.setOrderStatus(order.getOrderStatus());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setBuyerId(order.getBuyer().getId());
@@ -196,15 +198,15 @@ public class OrderServices {
         return orders.map(this::mapOrderToResponse);
     }
 
-    public Page<OrderResponseBuyer> findAllBuyersOrderResponse(Integer buyerId, Integer page, Integer size) {
+    public Page<OrderResponse> findAllBuyersOrderResponse(Integer buyerId, Integer page, Integer size) {
         Page<Order> orders = orderRepository.findByBuyerId(buyerId, PageRequest.of(page, size,Sort.by("orderDate").descending()));
 
         // map order -> response
         return orders.map(this::mapOrderToResponseBuyer);
     }
 
-    private OrderResponseBuyer mapOrderToResponseBuyer(Order order) {
-        OrderResponseBuyer response = new OrderResponseBuyer();
+    private OrderResponse mapOrderToResponseBuyer(Order order) {
+        OrderResponse response = new OrderResponse();
 
         response.setId(order.getId());
 
@@ -220,6 +222,8 @@ public class OrderServices {
         response.setShippingAddress(order.getShippingAddress());
         response.setOrderNote(order.getOrderNote());
         response.setOrderStatus(order.getOrderStatus());
+        response.setPaymentDate(order.getPaymentDate());
+
 
         // map order items
         List<OrderItems> items = order.getOrderDetails()
