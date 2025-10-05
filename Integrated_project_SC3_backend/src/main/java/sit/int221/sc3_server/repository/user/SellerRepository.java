@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import sit.int221.sc3_server.entity.Seller;
 
+import java.util.List;
+
 public interface SellerRepository extends JpaRepository<Seller, Integer> {
     @Query("""
     select p.nationalIdPhotoBack,p.nationalIdPhotoFront from Seller p
@@ -13,6 +15,12 @@ public interface SellerRepository extends JpaRepository<Seller, Integer> {
     String findFileName(
             @Param("frontName") String frontName
     );
+
+    @Query("""
+    select s from Seller s
+    where (s.id in :sellerId)
+""")
+    List<Seller> findAllSeller(@Param("sellerId") List<Integer> sellerId);
 
     boolean existsSellerByMobileNumber(String mobileNumber);
 

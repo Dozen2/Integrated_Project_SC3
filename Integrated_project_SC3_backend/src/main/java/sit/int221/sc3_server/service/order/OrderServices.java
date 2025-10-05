@@ -289,9 +289,23 @@ public class OrderServices {
 
         return response;
     }
-    public void set(){
+    public List<SellerDTO> getSellerName(List<Integer> sellerId){
+        List<Seller> seller = sellerRepository.findAllSeller(sellerId);
+        return seller.stream().map(s->{
+                SellerDTO sellerDTO = new SellerDTO();
+                sellerDTO.setId(s.getId());
+                sellerDTO.setUserName(s.getBuyer().getNickName());
+                return sellerDTO;
+        }).toList();
 
     }
+
+//    public SellerDTO mapSellerDTO(Seller seller){
+//        SellerDTO dto = new SellerDTO();
+//        dto.setId(seller.getId());
+//        dto.setUserName(seller.getBuyer().getNickName());
+//        return dto;
+//    }
 
 //    public Page<OrderRequest> MapAllOrder(Order order){
 //
