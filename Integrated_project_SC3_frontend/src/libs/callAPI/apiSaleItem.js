@@ -228,7 +228,7 @@ async function deleteSaleItemSeller(id) {
 
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items/${id}`
   console.log("API Call URL DELETE:", url);
-  
+
   const res = await authFetch(url, {
     method: "DELETE",
     headers: {
@@ -375,6 +375,63 @@ const deleteSaleItemByIdV2 = async (id) => {
   return res.status === 204;
 };
 
+//------------------------ API cart & Order ----------------------------------
+const fetchSellers = async (ids) => {
+  try {
+    const idsParam = ids.join(','); // เช่น "1,2,3"
+    const token = localStorage.getItem('accessToken');
+    console.log(token);
+    if (!token) throw new Error('No access token found');
+
+    const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/cart/sellers/${idsParam}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch sellers: ' + res.status);
+    }
+
+    const data = await res.json();
+    console.log('Sellers:', data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+const createOrder = async (orders) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) throw new Error("No access token found");
+
+    const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+      },
+      body: JSON.stringify(orders),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create order: " + res.status);
+    }
+
+    const data = await res.json();
+    console.log("Order Response:", data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+
+
+
 export {
   getAllSaleItemV1,
   getAllSaleItemV2,
@@ -391,5 +448,7 @@ export {
   updateSaleItemV2,
   createSaleItem,
   updateSaleItemSeller,
-  deleteSaleItemSeller
+  deleteSaleItemSeller,
+  fetchSellers,
+  createOrder,
 };

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { getSaleItemByIdV2, deleteSaleItemByIdV2 } from "@/libs/callAPI/apiSaleItem.js";
+import { getSaleItemByIdV2, deleteSaleItemByIdV2, createOrder } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
 import ImageUploader from "@/components/Common/ImageUploader.vue";
 import Loading from "@/components/Common/Loading.vue";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
+import { useCartStore } from "@/stores/cartStore";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,6 +17,7 @@ const quantity = ref(1);
 const alertStore = useAlertStore();
 const showDeleteModal = ref(false);
 const pendingDeleteId = ref(null);
+const cartStore = useCartStore();
 
 const confirmDeleteProduct = async () => {
   try {
@@ -44,12 +46,15 @@ onMounted(async () => {
     if (data == undefined) {
       product.value = "404_not_found";
       console.log("product.value: " + product.value);
+      console.log("product.value: " + product.value.sellerId);
       setTimeout(() => {
         router.push("/sale-items");
       }, 2000);
     } else {
       product.value = data;
       console.log(product.value);
+      console.log(product.value.sellerId);
+      console.log(product.value.storageGb);
       console.log(data);
     }
   } catch (error) {
@@ -77,6 +82,57 @@ const incrementQuantity = () => {
     quantity.value++;
   }
 };
+
+const addItem = async () => {
+  if (!product.value || !product.value.id) return;
+
+  // let allImages = [];
+  // if (product.value.saleItemImage && product.value.saleItemImage.length > 0) {
+  //   const sortedImages = [...product.value.saleItemImage].sort(
+  //     (a, b) => a.imageViewOrder - b.imageViewOrder
+  //   );
+
+  //   allImages = await Promise.all(
+  //     sortedImages.map(img => getImageByImageName(img.fileName))
+  //   );
+  // }
+
+  // console.log(allImages); // จะได้ URL ของแต่ละรูป
+
+  // เตรียมข้อมูลที่เราต้องการเก็บใน cart
+  const payload = {
+    id: product.value.id,
+    sellerId: product.value.sellerId,
+    brandName: product.value.brandName,
+    model: product.value.model,
+    price: product.value.price,
+    color: product.value.color,
+    images: product.value.saleItemImage,
+    stock: product.value.quantity, // สต็อกจาก backend
+    storageGb: product.value.storageGb,
+  };
+  console.log(payload);
+  
+
+  const result = cartStore.addToCart(payload, quantity.value);
+
+  if (result.success) {
+    // แจ้ง success — ใช้ alertStore ของคุณได้เลย
+    alertStore.addToast(
+      `เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`,
+      "Add to cart",
+      "success"
+    );
+    console.log("add success");
+
+  } else {
+    // แจ้ง error / ข้อจำกัดสต็อก
+    alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
+    console.log("add failed ");
+
+  }
+};
+
 </script>
 
 <template>
@@ -158,7 +214,7 @@ const incrementQuantity = () => {
             </div>
 
             <!-- Quantity Selector -->
-            <div class="py-4 border-b">
+            <div class="py-4 border-b flex flex-row justify-center items-center gap-5">
               <h3 class="text-sm font-medium text-gray-700">จำนวน</h3>
               <div class="mt-2 flex items-center space-x-2">
                 <button @click="decrementQuantity" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" :disabled="quantity <= 1">
@@ -173,6 +229,13 @@ const incrementQuantity = () => {
                   </svg>
                 </button>
               </div>
+
+              <div>
+                <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">
+                  add to cart
+                </button>
+              </div>
+
             </div>
 
             <!-- Action Buttons -->
@@ -190,7 +253,9 @@ const incrementQuantity = () => {
               >
                 Delete
               </button>
-            </div>
+            </div> -->
+
+
           </div>
         </div>
       </div>
