@@ -449,6 +449,7 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
+  console.log(" product.value.content: ", product.value.content);
   isLoading.value = false;
 });
 
