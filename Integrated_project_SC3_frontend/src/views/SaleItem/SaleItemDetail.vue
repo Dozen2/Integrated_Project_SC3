@@ -8,6 +8,7 @@ import ImageUploader from "@/components/Common/ImageUploader.vue";
 import Loading from "@/components/Common/Loading.vue";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 import { useCartStore } from "@/stores/cartStore";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +19,7 @@ const alertStore = useAlertStore();
 const showDeleteModal = ref(false);
 const pendingDeleteId = ref(null);
 const cartStore = useCartStore();
+const auth = useAuthStore()
 
 const confirmDeleteProduct = async () => {
   try {
@@ -85,6 +87,15 @@ const incrementQuantity = () => {
 
 const addItem = async () => {
   if (!product.value || !product.value.id) return;
+
+  const accSellerId = auth.getAuthData().sellerId
+  console.log(accSellerId);
+  if (product.value.sellerId === accSellerId) {
+    alertStore.addToast("ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
+    return;
+  }
+  
+
 
   // let allImages = [];
   // if (product.value.saleItemImage && product.value.saleItemImage.length > 0) {
@@ -253,7 +264,7 @@ const addItem = async () => {
               >
                 Delete
               </button>
-            </div> -->
+            </div> 
 
 
           </div>

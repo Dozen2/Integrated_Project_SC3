@@ -194,6 +194,7 @@ const loadProductsDefault = async () => {
   try {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
+    console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -235,6 +236,7 @@ const loadProductsWithFilters = async (filters) => {
       filters.search
     );
     product.value = data;
+    console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -455,53 +457,41 @@ onBeforeMount(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener("storage", onStorageChange);
 });
+
 </script>
 
 <template>
   <div v-if="isLoading" class="flex items-center justify-center h-screen">
-    <Loading/>
+    <Loading />
   </div>
   <div v-else
-    class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200"
-  >
+    class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200">
     <!-- Alert Message -->
     <div v-if="alertStore.message">
-      <div
-        :class="`itbms-message px-4 py-2 rounded ${
-          alertStore.type === 'error'
-            ? 'bg-red-100 text-red-700'
-            : 'bg-green-100 text-green-700'
-        }`"
-      >
+      <div :class="`itbms-message px-4 py-2 rounded ${alertStore.type === 'error'
+        ? 'bg-red-100 text-red-700'
+        : 'bg-green-100 text-green-700'
+        }`">
         {{ alertStore.message }}
       </div>
     </div>
 
     <div class="flex justify-between items-center gap-6">
       <div class="flex items-center">
-        <h1 class="text-6xl text-blue-500 flex"><Smartphone size=60 color="#478eff" />ITBMS SHOP SC3</h1>
+        <h1 class="text-6xl text-blue-500 flex">
+          <Smartphone size=60 color="#478eff" />ITBMS SHOP SC3
+        </h1>
       </div>
 
       <div class="flex flex-col items-end gap-5">
         <div>
-          <Search
-            :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
-            :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
-            @search="handleSearch"
-          />
+          <Search :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
+            :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')" @search="handleSearch" />
         </div>
         <div>
-          <SizeAndSort
-            :initialSize="
-              getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)
-            "
-            :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
-            :initialSortDirection="
-              getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')
-            "
-            @sizeChanged="handleSizeChange"
-            @sortChanged="handleSortChange"
-          />
+          <SizeAndSort :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)
+            " :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')" :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')
+              " @sizeChanged="handleSizeChange" @sortChanged="handleSortChange" />
         </div>
       </div>
     </div>
@@ -510,43 +500,18 @@ onBeforeUnmount(() => {
     <div class="flex gap-6">
       <!-- Filters -->
       <div class="w-1/7 flex flex-col gap-4 mt-5">
-        <Filter
-          :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
-          :options="brand"
-          label="Brands"
-          placeholder="Fitler ฺBrands"
-          :sessionKey="SESSION_KEYS.BRAND"
-          valueField="name"
-          displayField="name"
-          mode="brand"
-          @filterChanged="handleBrandFilter"
-        />
+        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)" :options="brand" label="Brands"
+          placeholder="Fitler ฺBrands" :sessionKey="SESSION_KEYS.BRAND" valueField="name" displayField="name"
+          mode="brand" @filterChanged="handleBrandFilter" />
 
-        <Filter
-          :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
-          :options="STORAGE_OPTIONS"
-          label="Storages"
-          placeholder="Fitler StoragesGB"
-          :sessionKey="SESSION_KEYS.STORAGE"
-          valueField="name"
-          displayField="name"
-          mode="Storages"
-          @filterChanged="handleStorageFilter"
-        />
+        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)" :options="STORAGE_OPTIONS" label="Storages"
+          placeholder="Fitler StoragesGB" :sessionKey="SESSION_KEYS.STORAGE" valueField="name" displayField="name"
+          mode="Storages" @filterChanged="handleStorageFilter" />
 
         <!-- Price Filter -->
-        <Filter
-          :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
-          :options="priceOption"
-          label="Price"
-          placeholder="Fitler PriceRange"
-          :sessionKey="SESSION_KEYS.PRICE"
-          valueField="value"
-          displayField="name"
-          :enableCustomPriceInput="true"
-          mode="price"
-          @filterChanged="handlePriceFilter"
-        >
+        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)" :options="priceOption" label="Price"
+          placeholder="Fitler PriceRange" :sessionKey="SESSION_KEYS.PRICE" valueField="value" displayField="name"
+          :enableCustomPriceInput="true" mode="price" @filterChanged="handlePriceFilter">
           <template #InputPrice>
             <div class="items-center px-4 py-3 border-t border-gray-100 gap-2">
               <div class="mb-[7px] text-gray-800 font-semibold">
@@ -554,22 +519,13 @@ onBeforeUnmount(() => {
               </div>
               <div class="flex mb-[8px]">
                 <span class="mx-1">Min</span>
-                <input
-                  type="number"
-                  class="border rounded px-2 py-1 flex-1 min-w-0"
-                  placeholder="Min"
-                  v-model.number="min_price"
-                />
+                <input type="number" class="border rounded px-2 py-1 flex-1 min-w-0" placeholder="Min"
+                  v-model.number="min_price" />
               </div>
               <div class="flex mb-[8px]">
                 <span class="mx-1">Max</span>
-                <input
-                  :disabled="min_price === null"
-                  type="number"
-                  class="border rounded px-2 py-1 flex-1 min-w-0"
-                  placeholder="Max"
-                  v-model.number="max_price"
-                />
+                <input :disabled="min_price === null" type="number" class="border rounded px-2 py-1 flex-1 min-w-0"
+                  placeholder="Max" v-model.number="max_price" />
               </div>
               <div v-if="min_price > max_price && max_price != 0">
                 <p class="text-red-500 text-sm">
@@ -577,10 +533,8 @@ onBeforeUnmount(() => {
                 </p>
               </div>
               <div class="flex justify-end">
-                <button
-                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
-                  @click="applyCustomPrice"
-                >
+                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
+                  @click="applyCustomPrice">
                   Apply
                 </button>
               </div>
@@ -590,40 +544,33 @@ onBeforeUnmount(() => {
 
         <!-- Clear Button -->
         <div class="flex">
-          <ClearButton
-            :sessionKeys="[
-              SESSION_KEYS.BRAND,
-              SESSION_KEYS.STORAGE,
-              SESSION_KEYS.PRICE,
-              SESSION_KEYS.CUSTOM_PRICE_MIN,
-              SESSION_KEYS.CUSTOM_PRICE_MAX,
-              SESSION_KEYS.PAGE,
-              SESSION_KEYS.SEARCH,
-            ]"
-            @cleared="handleClear"
-          />
+          <ClearButton :sessionKeys="[
+            SESSION_KEYS.BRAND,
+            SESSION_KEYS.STORAGE,
+            SESSION_KEYS.PRICE,
+            SESSION_KEYS.CUSTOM_PRICE_MIN,
+            SESSION_KEYS.CUSTOM_PRICE_MAX,
+            SESSION_KEYS.PAGE,
+            SESSION_KEYS.SEARCH,
+          ]" @cleared="handleClear" />
         </div>
       </div>
 
       <!-- Product Gallery -->
       <div class="flex-1">
-        <SelectAllSaleItemGallery
-          v-if="product?.content"
-          :product="product.content"
-          :imageUrl="imageUrl"
-        />
+        <SelectAllSaleItemGallery 
+        v-if="product?.content" 
+        :product="product.content" 
+        :imageUrl="imageUrl">
+        </SelectAllSaleItemGallery>
       </div>
+
     </div>
 
     <!-- 🔹 Pagination ด้านล่าง -->
     <div class="mt-4">
-      <Pagination
-        :initialTotalPages="totalPages"
-        :initialPage="
-          getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1
-        "
-        @pageChanged="handlePageChange"
-      />
+      <Pagination :initialTotalPages="totalPages" :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1
+        " @pageChanged="handlePageChange" />
     </div>
   </div>
 </template>

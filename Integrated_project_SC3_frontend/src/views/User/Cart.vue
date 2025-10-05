@@ -114,11 +114,14 @@ const getDescription = (item) => {
 
 
 // -------------------- order --------------------
-const PlaceOrder = () => {
+const PlaceOrder = async () => {
      if (selectedItems.value.length === 0) {
           alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
           return;
      }
+     const buyerId = auth.getAuthData().id
+     console.log(buyerId);
+     
 
      // หา sellerId ของสินค้าที่ถูกเลือก
      const sellerIds = [...new Set(
@@ -144,22 +147,27 @@ const PlaceOrder = () => {
           }));
 
           const order = {
-               id: Math.floor(Math.random() * 100000),
-               buyerId: auth.user?.id || 6,
-               sellerDTO: {
-                    id: sellerId,
-                    userName: sellerMap.value[sellerId] || "Unknown Seller"
-               },
+               buyerId: buyerId,
+               sellerId: sellerId,
                orderDate: new Date().toISOString(),
                shippingAddress: address.value,
                orderNote: note.value,
-               orderItems
+               orderItems,
+               orderStatus: "PENDING"
           };
 
           orders.push(order);
      }
 
      console.log("📦 Orders Created:", orders);
+
+     const result = await createOrder(orders);
+     if (result) {
+          alert("สั่งซื้อเรียบร้อยแล้ว!");
+          cartStore.clearCart(); // ล้างตะกร้า
+          selectedItems.value = [];
+          selectedSellers.value = [];
+     }
 };
 
 
@@ -181,6 +189,8 @@ onMounted(async () => {
      //img
      console.log(cartStore.cart);
      for (const img of cartStore.cart) {
+
+          
           const sorted = [...img.images].sort(
                (a, b) => a.imageViewOrder - b.imageViewOrder
           );
