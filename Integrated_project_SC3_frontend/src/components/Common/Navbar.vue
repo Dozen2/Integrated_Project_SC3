@@ -3,11 +3,14 @@ import { ClipboardList, LogOut, ShoppingCart, Smartphone, UserRound } from "luci
 import { useAuthStore } from '@/stores/auth'
 import { RouterLink, useRouter } from "vue-router";
 import DropDownManagement from "./DropDownManagement.vue";
-import { ref, onMounted } from "vue";
-import { cartItemCount, updateCartCount } from "@/composables/useCart.js";
+import { ref, onMounted, computed  } from "vue";
+import { useCartStore } from "@/stores/cartStore";
+// import { cartItemCount, updateCartCount } from "@/composables/useCart.js";
+
 
 const router = useRouter();
 const auth = useAuthStore();
+const cartStore = useCartStore();
 
 const logOut = async () => {
   await auth.logout();
@@ -21,9 +24,12 @@ const refresh = async () => {
   
 }
 
+const cartCount = computed(() => cartStore.cartItemCount);
+
 // เรียกตอน mounted เพื่อให้แสดงจำนวนตั้งแต่โหลดหน้าแรก
 onMounted(() => {
-  updateCartCount();
+  cartStore.loadCart();
+  cartStore.updateQuantity();
 });
 
 </script>
@@ -94,9 +100,9 @@ onMounted(() => {
         <div class="relative cursor-pointer">
           <RouterLink :to="{ name: 'Cart' }">
           <ShoppingCart color="#ffffff" />
-          <span v-if="cartItemCount > 0"
+          <span v-if="cartCount > 0"
             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-            {{ cartItemCount }}
+            {{ cartCount }}
           </span>
           </RouterLink>
         </div>

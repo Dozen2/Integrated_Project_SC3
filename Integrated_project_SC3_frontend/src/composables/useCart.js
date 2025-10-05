@@ -77,7 +77,7 @@ function addToCart(itemPayload, qty = 1) {
       price: itemPayload.price ?? 0,
       quantity: toAdd,
       color: itemPayload.color ?? null,
-      image: itemPayload.image ?? null,
+      images: itemPayload.images ?? [],
       stock: stock,
     });
     saveCart();

@@ -1,0 +1,124 @@
+import { defineStore } from "pinia";
+
+const CART_KEY = "cart";
+
+export const useCartStore = defineStore("cart", {
+  state: () => ({
+    cart: [],
+  }),
+
+  getters: {
+    cartItemCount: (state) =>
+      state.cart.reduce((sum, it) => sum + Number(it.quantity || 0), 0),
+  },
+
+  actions: {
+    loadCart() {
+      try {
+        const raw = localStorage.getItem(CART_KEY);
+        this.cart = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        this.cart = [];
+      }
+    },
+
+    saveCart() {
+      try {
+        localStorage.setItem(CART_KEY, JSON.stringify(this.cart));
+      } catch (e) {
+        console.error("saveCart error", e);
+      }
+    },
+
+    findIndex(id, sellerId) {
+      return this.cart.findIndex(
+        (i) =>
+          String(i.id) === String(id) && String(i.sellerId) === String(sellerId)
+      );
+    },
+
+    addToCart(itemPayload, qty = 1) {
+      qty = Number(qty) || 1;
+      if (!itemPayload || !itemPayload.id) {
+        return { success: false, message: "Invalid item" };
+      }
+
+      const idx = this.findIndex(itemPayload.id, itemPayload.sellerId);
+      const stock = Number(itemPayload.stock ?? itemPayload.quantity ?? Infinity);
+
+      if (idx !== -1) {
+        const current = Number(this.cart[idx].quantity || 0);
+        const willBe = current + qty;
+        if (willBe > stock) {
+          const available = stock - current;
+          if (available <= 0) {
+            return { success: false, message: "สินค้าเกินสต็อก" };
+          }
+          this.cart[idx].quantity = current + available;
+          this.saveCart();
+          return {
+            success: true,
+            added: available,
+            message: `เพิ่มได้เพียง ${available} เนื่องจากจำกัดสต็อก`,
+          };
+        } else {
+          this.cart[idx].quantity = willBe;
+          this.saveCart();
+          return { success: true, added: qty };
+        }
+      } else {
+        const toAdd = Math.min(qty, stock);
+        if (toAdd <= 0) return { success: false, message: "สินค้าหมดสต็อก" };
+
+        this.cart.push({
+          id: itemPayload.id,
+          sellerId: itemPayload.sellerId,
+          brandName: itemPayload.brandName ?? null,
+          model: itemPayload.model ?? null,
+          price: itemPayload.price ?? 0,
+          quantity: toAdd,
+          color: itemPayload.color ?? null,
+          images: itemPayload.images.map(img => ({
+            fileName: img.fileName,
+            imageViewOrder: img.imageViewOrder,
+          })),
+          stock: stock,
+          storageGb: itemPayload.storageGb
+        });
+        this.saveCart();
+        return { success: true, added: toAdd };
+      }
+    },
+
+    removeFromCart(id, sellerId) {
+      const idx = this.findIndex(id, sellerId);
+      if (idx !== -1) {
+        this.cart.splice(idx, 1);
+        this.saveCart();
+        return true;
+      }
+      return false;
+    },
+
+    updateQuantity(id, sellerId, newQty) {
+      newQty = Number(newQty);
+      const idx = this.findIndex(id, sellerId);
+      if (idx === -1) return { success: false, message: "item not found" };
+      const stock = Number(this.cart[idx].stock ?? Infinity);
+      if (newQty <= 0) {
+        this.cart.splice(idx, 1);
+        this.saveCart();
+        return { success: true, removed: true };
+      }
+      const finalQty = Math.min(newQty, stock);
+      this.cart[idx].quantity = finalQty;
+      this.saveCart();
+      return { success: true, quantity: finalQty };
+    },
+
+    clearCart() {
+      this.cart = [];
+      this.saveCart();
+    },
+  },
+});

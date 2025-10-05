@@ -4,11 +4,13 @@ import { useRoute, useRouter } from "vue-router";
 import {
   getSaleItemByIdV2,
   deleteSaleItemByIdV2,
+  getImageByImageName,
 } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
 import ImageUploader from "@/components/Common/ImageUploader.vue";
-import { addToCart } from "@/composables/useCart";
+import { useCartStore } from "@/stores/cartStore";
+// import { addToCart } from "@/composables/useCart";
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +20,7 @@ const quantity = ref(1);
 const alertStore = useAlertStore();
 const showDeleteModal = ref(false);
 const pendingDeleteId = ref(null);
+const cartStore = useCartStore();
 
 const confirmDeleteProduct = async () => {
   try {
@@ -62,6 +65,7 @@ onMounted(async () => {
       product.value = data;
       console.log(product.value);
       console.log(product.value.sellerId);
+      console.log(product.value.storageGb);
       console.log(data);
     }
   } catch (error) {
@@ -90,37 +94,53 @@ const incrementQuantity = () => {
   }
 };
 
-const addItem = () => {
+const addItem = async () => {
   if (!product.value || !product.value.id) return;
+
+  // let allImages = [];
+  // if (product.value.saleItemImage && product.value.saleItemImage.length > 0) {
+  //   const sortedImages = [...product.value.saleItemImage].sort(
+  //     (a, b) => a.imageViewOrder - b.imageViewOrder
+  //   );
+
+  //   allImages = await Promise.all(
+  //     sortedImages.map(img => getImageByImageName(img.fileName))
+  //   );
+  // }
+
+  // console.log(allImages); // จะได้ URL ของแต่ละรูป
 
   // เตรียมข้อมูลที่เราต้องการเก็บใน cart
   const payload = {
     id: product.value.id,
-    sellerId: product.value.sellerId ?? product.value.seller?.id ?? null,
+    sellerId: product.value.sellerId,
     brandName: product.value.brandName,
     model: product.value.model,
     price: product.value.price,
     color: product.value.color,
-    image: product.value.fileImageOrganize?.[0] || null,
+    images: product.value.saleItemImage,
     stock: product.value.quantity, // สต็อกจาก backend
+    storageGb: product.value.storageGb,
   };
+  console.log(payload);
+  
 
-  const result = addToCart(payload, quantity.value);
+  const result = cartStore.addToCart(payload, quantity.value);
 
   if (result.success) {
     // แจ้ง success — ใช้ alertStore ของคุณได้เลย
-    // alertStore.addToast(
-    //   `เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`,
-    //   "Add to cart",
-    //   "success"
-    // );
+    alertStore.addToast(
+      `เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`,
+      "Add to cart",
+      "success"
+    );
     console.log("add success");
-    
+
   } else {
     // แจ้ง error / ข้อจำกัดสต็อก
-    // alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
+    alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
     console.log("add failed ");
-    
+
   }
 };
 
@@ -239,9 +259,7 @@ const addItem = () => {
               </div>
 
               <div>
-                <button 
-                class="w-[100px] h-[35px] bg-blue-600"
-                @click="addItem">
+                <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">
                   add to cart
                 </button>
               </div>
