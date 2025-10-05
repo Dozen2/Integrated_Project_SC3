@@ -2,11 +2,12 @@
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cartStore";
-import { getImageByImageName } from "@/libs/callAPI/apiSaleItem";
+import { fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 
 const imagesMap = ref({});
 const address = ref("");
 const note = ref("");
+const description = ref("")
 // -------------------- store --------------------
 const auth = useAuthStore();
 const cartStore = useCartStore();
@@ -29,19 +30,6 @@ const decrement = (item) => {
           cartStore.updateQuantity(item.id, item.sellerId, item.quantity - 1);
      }
 };
-
-// -------------------- โหลดชื่อ seller --------------------
-// const loadSellerName = async (sellerId) => {
-//      if (!sellerMap.value[sellerId]) {
-//           try {
-//                const profile = await auth.loadUserProfile(sellerId);
-//                sellerMap.value[sellerId] = profile.nickName || "Unknown Seller";
-//           } catch (err) {
-//                console.error("โหลด seller ไม่ได้:", err);
-//                sellerMap.value[sellerId] = "Unknown Seller";
-//           }
-//      }
-// };
 
 // -------------------- select item --------------------
 const selectedItems = ref([]);
@@ -101,22 +89,29 @@ const isSellerSelected = (sellerId) => {
      return items.every(it => selectedItems.value.includes(it.id + "-" + it.sellerId));
 };
 // -------------------- mock seller --------------------
-const sellerMap = ref({
-     1: "Somsuan",
-     2: "Somsuk",
-     3: "Somsak"
-});
+const sellerMap = ref({});
+// const sellerMap = ref({
+//      1: "Somsuan",
+//      2: "Somsuk",
+//      3: "Somsak"
+// });
 
-const groupedCart = computed(() => {
-     const groups = {};
-     for (const item of cartItems.value) {
-          if (!groups[item.sellerId]) {
-               groups[item.sellerId] = [];
-          }
-          groups[item.sellerId].push(item);
-     }
-     return groups;
-});
+// const groupedCart = computed(() => {
+//      const groups = {};
+//      for (const item of cartItems.value) {
+//           if (!groups[item.sellerId]) {
+//                groups[item.sellerId] = [];
+//           }
+//           groups[item.sellerId].push(item);
+//      }
+//      return groups;
+// });
+
+// -------------------- order description --------------------
+const getDescription = (item) => {
+     return `${item.brandName} ${item.model} (${item.storageGb}GB, ${item.color})`;
+};
+
 
 // -------------------- order --------------------
 const PlaceOrder = () => {
@@ -125,10 +120,14 @@ const PlaceOrder = () => {
           return;
      }
 
+     // หา sellerId ของสินค้าที่ถูกเลือก
+     const sellerIds = [...new Set(
+          selectedItems.value.map(key => key.split("-")[1])
+     )];
+
      const orders = [];
 
-     // วน loop ตาม seller ที่ถูกเลือก
-     for (const sellerId of selectedSellers.value) {
+     for (const sellerId of sellerIds) {
           const itemsOfSeller = groupedCart.value[sellerId].filter(item =>
                selectedItems.value.includes(item.id + "-" + item.sellerId)
           );
@@ -140,12 +139,12 @@ const PlaceOrder = () => {
                saleItemId: item.id,
                price: item.price,
                quantity: item.quantity,
-               description: item.description,
+               description: getDescription(item),
                mainImageFileName: item.images?.length ? item.images[0].fileName : null
           }));
 
           const order = {
-               id: Math.floor(Math.random() * 100000), // mock id
+               id: Math.floor(Math.random() * 100000),
                buyerId: auth.user?.id || 6,
                sellerDTO: {
                     id: sellerId,
@@ -161,22 +160,20 @@ const PlaceOrder = () => {
      }
 
      console.log("📦 Orders Created:", orders);
-
-     // ส่งไป BE ทีละ order
-     // for (const order of orders) {
-     //    await apiCreateOrder(order);
-     // }
 };
+
 
 
 // -------------------- onMounted --------------------
 onMounted(async () => {
      cartStore.loadCart();
-     // โหลดชื่อ seller สำหรับสินค้าทั้งหมดในตะกร้า
-     // for (const item of cartStore.cart) {
-     //      await loadSellerName(item.sellerId);
-     // }
-     // อัปเดตจำนวนสินค้าใน cartStore (optional ถ้า store มี persist)
+     //get seller
+     const sellerIds = [...new Set(cartStore.cart.map(item => item.sellerId))];
+     const sellersData = await fetchSellers(sellerIds);
+     sellersData.forEach(s => {
+          sellerMap.value[s.sellerId] = s.name;
+     });
+
      cartStore.updateQuantity();
      //img
      console.log(cartStore.cart);
@@ -236,7 +233,7 @@ onMounted(async () => {
 
                               <div>
                                    <p class="font-semibold">
-                                        {{ item.brandName }} {{ item.model }} ({{ item.storageGb }}GB, {{ item.color }})
+                                        {{ getDescription(item) }}
                                    </p>
                                    <p class="text-sm text-gray-500">฿{{ item.price }}</p>
                               </div>
