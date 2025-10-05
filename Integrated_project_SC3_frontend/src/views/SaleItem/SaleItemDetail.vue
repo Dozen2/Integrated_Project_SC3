@@ -62,7 +62,6 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-
   if (alertStore.message) {
     setTimeout(() => {
       alertStore.clearMessage();
@@ -70,7 +69,6 @@ onMounted(async () => {
   }
 });
 
-// gen มา
 const decrementQuantity = () => {
   if (quantity.value > 1) {
     quantity.value--;
@@ -85,21 +83,6 @@ const incrementQuantity = () => {
 
 const addItem = async () => {
   if (!product.value || !product.value.id) return;
-
-  // let allImages = [];
-  // if (product.value.saleItemImage && product.value.saleItemImage.length > 0) {
-  //   const sortedImages = [...product.value.saleItemImage].sort(
-  //     (a, b) => a.imageViewOrder - b.imageViewOrder
-  //   );
-
-  //   allImages = await Promise.all(
-  //     sortedImages.map(img => getImageByImageName(img.fileName))
-  //   );
-  // }
-
-  // console.log(allImages); // จะได้ URL ของแต่ละรูป
-
-  // เตรียมข้อมูลที่เราต้องการเก็บใน cart
   const payload = {
     id: product.value.id,
     sellerId: product.value.sellerId,
@@ -108,31 +91,21 @@ const addItem = async () => {
     price: product.value.price,
     color: product.value.color,
     images: product.value.saleItemImage,
-    stock: product.value.quantity, // สต็อกจาก backend
+    stock: product.value.quantity,
     storageGb: product.value.storageGb,
   };
   console.log(payload);
-  
-
   const result = cartStore.addToCart(payload, quantity.value);
-
   if (result.success) {
     // แจ้ง success — ใช้ alertStore ของคุณได้เลย
-    alertStore.addToast(
-      `เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`,
-      "Add to cart",
-      "success"
-    );
+    alertStore.addToast(`เพิ่มสินค้าในตะกร้า (${result.added} ชิ้น)`, "Add to cart", "success");
     console.log("add success");
-
   } else {
     // แจ้ง error / ข้อจำกัดสต็อก
     alertStore.addToast(result.message || "ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
     console.log("add failed ");
-
   }
 };
-
 </script>
 
 <template>
@@ -148,14 +121,12 @@ const addItem = async () => {
       <img src="https://static.thenounproject.com/png/4019366-200.png" alt="404 Icon" class="w-24 h-24 mx-auto opacity-80" />
 
       <!-- Error Message -->
-      <!-- <h1 class="itbms-message text-2xl font-bold text-gray-800 mt-6">ไม่พบสินค้าที่ค้นหา</h1> -->
       <p class="itbms-message text-gray-600 mt-2">The requested sale item does not exist.</p>
     </div>
   </div>
 
   <!-- Product Detail Page -->
   <div v-else class="itbms-row bg-gray-50 min-h-screen pb-12">
-    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <Breadcrumb
         :class="'mb-6'"
@@ -231,36 +202,12 @@ const addItem = async () => {
               </div>
 
               <div>
-                <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">
-                  add to cart
-                </button>
+                <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">add to cart</button>
               </div>
-
             </div>
-
-            <!-- Action Buttons -->
-            <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-              <RouterLink
-                :to="{ name: 'Edit', params: { id: product.id } }"
-                class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center"
-              >
-                Edit
-              </RouterLink>
-
-              <button
-                @click="deleteProduct(product.id)"
-                class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center"
-              >
-                Delete
-              </button>
-            </div> -->
-
-
           </div>
         </div>
       </div>
-
-      <!------------------------------------------------------------------------------------------------------------------------ -->
 
       <!-- Back Button -->
       <div class="mt-8 flex justify-between items-center">
@@ -287,20 +234,4 @@ const addItem = async () => {
       </div>
     </div>
   </div>
-
-  <!-- Alert Message -->
-  <!-- <div
-    v-if="alertStore.message"
-    :class="`itbms-message px-4 py-2 rounded mb-4 ${
-      alertStore.type === 'error'
-        ? 'bg-red-100 text-red-700'
-        : 'bg-green-100 text-green-700'
-    }`"
-  >
-    {{ alertStore.message }}
-  </div> -->
 </template>
-
-<style scoped>
-/* Additional custom styles can be added here */
-</style>
