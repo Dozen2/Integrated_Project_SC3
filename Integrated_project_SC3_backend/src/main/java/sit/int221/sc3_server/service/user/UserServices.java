@@ -243,38 +243,28 @@ UserServices {
 
     public Map<String, Object> refreshToken(String refreshToken) {
         jwtUtils.verifyToken(refreshToken);
-        System.out.println("ttttttttt");
         Map<String, Object> claims = jwtUtils.getJWTClaimSet(refreshToken);
-        System.out.println("xxxxxxxx");
-        jwtUtils.isExpired(claims);
-        System.out.println("zzzzzzzz");
+        if (jwtUtils.isExpired(claims)) {
+            throw new UnAuthorizeException("token expired");
+        }
         if (!jwtUtils.isValidClaims(claims)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED
-                    , "Invalid refresh token");
-        }
-//        System.out.println(claims.get("uid").toString());
-//        UserDetails userDetails = jwtUserDetailService.loadUserById(Integer.parseInt(claims.get("id").toString()));
-        Integer userId = Integer.parseInt(claims.get("id").toString());
-        boolean isSeller = false;
-        Object authoritiesObj = claims.get("authorities");
-        if (authoritiesObj instanceof Iterable<?> iterable) {
-            for (Object obj : iterable) {
-                if (obj instanceof Map<?, ?> map) {
-                    Object role = map.get("role");
-                    if ("ROLE_SELLER".equals(role)) {
-                        isSeller = true;
-                        break;
-                    }
-                }
-            }
+            throw new UnAuthorizeException("Invalid token");
         }
 
-        UserDetails userDetails = isSeller
-                ? jwtUserDetailService.loadSellerById(userId)
-                : jwtUserDetailService.loadBuyerById(userId);
+        Object idObj = claims.get("id");
+        if (idObj == null) {
+            throw new UnAuthorizeException("dont have id in token");
+        }
 
-        return Map.of("access_token", jwtUtils.generateToken(userDetails));
+        Integer buyerId = Integer.parseInt(idObj.toString());
+        UserDetails userDetails = jwtUserDetailService.loadUserByBuyerId(buyerId);
+
+        String newAccessToken = jwtUtils.generateToken(userDetails);
+
+        return Map.of("access_token", newAccessToken);
     }
+
+
 
     public boolean checkPassword(String password, String email) {
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(

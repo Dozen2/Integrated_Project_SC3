@@ -134,7 +134,8 @@ const getAllSaleItemSeller = async (size, page) => {
   const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
   const decoded = jwtDecode(accessToken);
 
-  console.log("Decoded JWT in getAllSaleItemSeller:", decoded.id);
+  console.log("Decoded JWT in :", decoded);
+  console.log("Decoded JWT in getAllSaleItemSeller:", decoded.sellerId);
 
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
@@ -147,7 +148,7 @@ const getAllSaleItemSeller = async (size, page) => {
   // params.append("sortField", sortField);
   params.append("page", page);
 
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items?${params.toString()}`;
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items?${params.toString()}`;
 
   console.log("API Call URL:", url);
 
@@ -178,7 +179,7 @@ async function createSaleItem(formData) {
   const accessToken = localStorage.getItem("accessToken");
   const decoded = jwtDecode(accessToken);
 
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items`;
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items`;
   console.log("API Call URL CREATE:", url);
 
 
@@ -202,7 +203,7 @@ async function updateSaleItemSeller(id, updatedSaleItem) {
   const accessToken = localStorage.getItem("accessToken");
   const decoded = jwtDecode(accessToken);
 
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items/${id}`
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items/${id}`
   console.log("API Call URL UPDATE:", url);
 
   const res = await authFetch(url, {
@@ -225,7 +226,7 @@ async function deleteSaleItemSeller(id) {
   const accessToken = localStorage.getItem("accessToken");
   const decoded = jwtDecode(accessToken);
 
-  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.id}/sale-items/${id}`
+  const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items/${id}`
   console.log("API Call URL DELETE:", url);
   
   const res = await authFetch(url, {

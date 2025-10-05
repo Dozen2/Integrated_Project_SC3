@@ -7,11 +7,12 @@ import java.time.Instant;
 import java.util.List;
 
 @Data
-public class OrderResponseBuyer {
+public class OrderResponseMoreSeller {
     private Integer id;
     private Integer buyerId;
-    private SellerDTO sellerDTO;
+    private SellerResponseOrder sellerResponseOrder;
     private Instant orderDate;
+    private Instant paymentDate;
     private String shippingAddress;
     private String orderNote;
     private List<OrderItems> orderItems;

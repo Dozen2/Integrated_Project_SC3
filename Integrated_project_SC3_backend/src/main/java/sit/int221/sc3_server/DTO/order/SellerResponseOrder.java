@@ -9,4 +9,5 @@ public class SellerResponseOrder {
     private String fullName;
     private String userType;
     private String nickName;
+
 }

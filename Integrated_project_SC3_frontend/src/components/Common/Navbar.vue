@@ -62,11 +62,11 @@ onMounted(() => {
 
         <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between gap-4">
           <DropDownManagement />
-          <div>
+          <!-- <div>
             <button @click="refresh">
               refresh token
             </button>
-          </div>
+          </div> -->
 
 
           <!-- <div>
