@@ -39,51 +39,49 @@ public class JwtUserDetailService implements UserDetailsService {
 //        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         Set<Role> roles = new HashSet<>();
         roles.add(Role.BUYER);
+        Integer sellerId = null;
         if (buyer.getSeller() != null) {
             roles.add(Role.SELLER);
+            sellerId = buyer.getSeller().getId();
         }
-        Integer id = (buyer.getSeller()!= null)? buyer.getSeller().getId():buyer.getId();
-        return new AuthUserDetail(id,             // id
+
+
+        return new AuthUserDetail(buyer.getId(),             // id
                 buyer.getEmail(),          // username (ใช้ email)
                 buyer.getPasswords(),      // password
                 buyer.getNickName(),       // nickName
                 buyer.getEmail(),
+                sellerId,
                 null,
                 getAuthorities(roles));
     }
 
-    public UserDetails loadBuyerById(Integer id){
-        Buyer buyer = buyerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
+    public UserDetails loadUserByBuyerId(Integer buyerId) {
+        Buyer buyer = buyerRepository.findById(buyerId)
+                .orElseThrow(() -> new ResourceNotFoundException("User id " + buyerId + " does not exist"));
+
         Set<Role> roles = new HashSet<>();
         roles.add(Role.BUYER);
+
+        Integer sellerId = null;
+        if(buyer.getSeller() != null){
+            roles.add(Role.SELLER);
+            sellerId = buyer.getSeller().getId();
+        }
+
         return new AuthUserDetail(
-                buyer.getId(),
+                buyer.getId(),       // always buyerId
                 buyer.getEmail(),
                 buyer.getPasswords(),
                 buyer.getNickName(),
                 buyer.getEmail(),
-                null,
+                sellerId,           // if has seller
+                null,               // tokenType, ใส่เมื่อ generate token
                 getAuthorities(roles)
         );
 
     }
-    public UserDetails loadSellerById(Integer id){
-        Seller seller = sellerRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("user id "+ id+"does not exist"));
-        Buyer buyer = seller.getBuyer();
-        Set<Role> roles = new HashSet<>();
-        roles.add(Role.BUYER);
-        roles.add(Role.SELLER);
-        return new AuthUserDetail(
-                seller.getId(),
-                buyer.getEmail(),
-                buyer.getPasswords(),
-                buyer.getNickName(),
-                buyer.getEmail(),
-                null,
-                getAuthorities(roles)
-        );
 
-    }
     private static Collection<? extends GrantedAuthority> getAuthorities(Set<Role> roles) {
         return roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))

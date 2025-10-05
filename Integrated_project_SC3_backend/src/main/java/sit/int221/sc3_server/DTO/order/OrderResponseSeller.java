@@ -1,18 +1,14 @@
 package sit.int221.sc3_server.DTO.order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import sit.int221.sc3_server.DTO.saleItem.sellerSaleItem.SellerDTO;
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
-public class OrderResponse {
+public class OrderResponseSeller {
     private Integer id;
-    private Integer buyerId;
-    @JsonProperty("seller")
-    private SellerDTO sellerDTO;
+    private BuyerDTO buyerDTO;
     private Instant orderDate;
     private Instant paymentDate;
     private String shippingAddress;

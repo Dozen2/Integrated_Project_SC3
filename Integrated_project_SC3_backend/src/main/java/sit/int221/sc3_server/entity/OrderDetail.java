@@ -2,6 +2,7 @@ package sit.int221.sc3_server.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,5 +33,9 @@ public class OrderDetail {
     @NotNull
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
+
+    @Size(max = 150)
+    @Column(name = "description", length = 150)
+    private String description;
 
 }

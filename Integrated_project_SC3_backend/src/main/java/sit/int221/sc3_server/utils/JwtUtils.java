@@ -67,6 +67,7 @@ public class JwtUtils {
                     .claim("nickname", authUser.getNickName())   // หรือ getNickName() ถ้ามี
                     .claim("id", authUser.getId())
                     .claim("email", authUser.getUsername())
+                    .claim("sellerId",authUser.getSellerId())
                     .claim("authorities", user.getAuthorities())
                     .claim("typ", tokenType.toString())
                     .build();
@@ -118,7 +119,6 @@ public class JwtUtils {
             return true;
         }catch (JOSEException | ParseException p){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Verified Error, Invalid JWT", p);
-
         }
     }
 
