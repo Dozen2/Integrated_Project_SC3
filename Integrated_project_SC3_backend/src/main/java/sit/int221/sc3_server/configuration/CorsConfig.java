@@ -11,7 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
-
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
@@ -24,17 +23,26 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         if (corsEnabled) {
+            System.out.println("✅ [CorsConfig] addCorsMappings enabled");
+            System.out.println("✅ [CorsConfig] Allowed Origins from addCorsMappings: " + Arrays.toString(allowedOrigins));
+
             registry.addMapping("/**")
                     .allowedOrigins(allowedOrigins)
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
                     .allowCredentials(true)
                     .maxAge(3600);
+        } else {
+            System.out.println("⚠️ [CorsConfig] CORS disabled in application.properties");
         }
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        System.out.println("✅ [CorsConfig] Creating CorsConfigurationSource bean...");
+        System.out.println("✅ [CorsConfig] CORS Enabled: " + corsEnabled);
+        System.out.println("✅ [CorsConfig] Allowed Origins: " + Arrays.toString(allowedOrigins));
+
         CorsConfiguration configuration = new CorsConfiguration();
 
         if (corsEnabled) {
