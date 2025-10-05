@@ -376,6 +376,18 @@ public class SaleItemControllerV2 {
 
     }
 
+    @GetMapping("/cart/sellers/{id}")
+    public ResponseEntity<List<SellerDTO>> getSaleItemsSeller(@PathVariable List<Integer> id, Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        userServices.findBuyerByBuyerId(authUserDetail.getId());
+
+        return ResponseEntity.ok().body(orderServices.getSellerName(id));
+    }
+
+
 
 //    @PutMapping("/orders/pay")
 //    public ResponseEntity<>
