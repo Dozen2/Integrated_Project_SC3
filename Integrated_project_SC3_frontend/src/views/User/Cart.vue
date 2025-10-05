@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cartStore";
-import { fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
+import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 
 const imagesMap = ref({});
 const address = ref("");
@@ -96,16 +96,16 @@ const sellerMap = ref({});
 //      3: "Somsak"
 // });
 
-// const groupedCart = computed(() => {
-//      const groups = {};
-//      for (const item of cartItems.value) {
-//           if (!groups[item.sellerId]) {
-//                groups[item.sellerId] = [];
-//           }
-//           groups[item.sellerId].push(item);
-//      }
-//      return groups;
-// });
+const groupedCart = computed(() => {
+     const groups = {};
+     for (const item of cartItems.value) {
+          if (!groups[item.sellerId]) {
+               groups[item.sellerId] = [];
+          }
+          groups[item.sellerId].push(item);
+     }
+     return groups;
+});
 
 // -------------------- order description --------------------
 const getDescription = (item) => {
@@ -171,7 +171,10 @@ onMounted(async () => {
      const sellerIds = [...new Set(cartStore.cart.map(item => item.sellerId))];
      const sellersData = await fetchSellers(sellerIds);
      sellersData.forEach(s => {
-          sellerMap.value[s.sellerId] = s.name;
+          sellerMap.value = {
+               ...sellerMap.value,
+               [s.id]: s.userName
+          };
      });
 
      cartStore.updateQuantity();
@@ -216,7 +219,7 @@ onMounted(async () => {
                     <div class="flex items-center gap-2 mb-2">
                          <input type="checkbox" :checked="isSellerSelected(sellerId)"
                               @change="toggleSeller(sellerId)" />
-                         <label class="font-bold">🏪 {{ sellerMap[sellerId] || "Unknown Seller" }}</label>
+                         <label class="font-bold">🏪 {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}</label>
                     </div>
 
                     <!-- รายการสินค้า -->

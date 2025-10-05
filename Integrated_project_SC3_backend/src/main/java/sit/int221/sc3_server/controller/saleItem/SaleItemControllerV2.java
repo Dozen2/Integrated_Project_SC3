@@ -277,7 +277,6 @@ public class SaleItemControllerV2 {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(responses);
 
-
     }
 
     @GetMapping("/orders/{id}")

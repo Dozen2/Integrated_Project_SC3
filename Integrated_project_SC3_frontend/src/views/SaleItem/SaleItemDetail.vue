@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { getSaleItemByIdV2, deleteSaleItemByIdV2 } from "@/libs/callAPI/apiSaleItem.js";
+import { getSaleItemByIdV2, deleteSaleItemByIdV2, createOrder } from "@/libs/callAPI/apiSaleItem.js";
 import { unitPrice, nullCatching } from "@/libs/utils.js";
 import { useAlertStore } from "@/stores/alertStore.js";
 import ImageUploader from "@/components/Common/ImageUploader.vue";
 import Loading from "@/components/Common/Loading.vue";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
+import { useCartStore } from "@/stores/cartStore";
 
 const route = useRoute();
 const router = useRouter();

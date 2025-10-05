@@ -380,9 +380,10 @@ const fetchSellers = async (ids) => {
   try {
     const idsParam = ids.join(','); // เช่น "1,2,3"
     const token = localStorage.getItem('accessToken');
+    console.log(token);
     if (!token) throw new Error('No access token found');
 
-    const res = await fetch(`${urlV2}/cart/sellers/${idsParam}`, {
+    const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/cart/sellers/${idsParam}`, {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer ' + token
@@ -401,6 +402,33 @@ const fetchSellers = async (ids) => {
     return [];
   }
 };
+
+const createOrder = async (orders) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) throw new Error("No access token found");
+
+    const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token,
+      },
+      body: JSON.stringify(orders),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to create order: " + res.status);
+    }
+
+    const data = await res.json();
+    console.log("Order Response:", data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 
 
 
@@ -422,4 +450,5 @@ export {
   updateSaleItemSeller,
   deleteSaleItemSeller,
   fetchSellers,
+  createOrder,
 };
