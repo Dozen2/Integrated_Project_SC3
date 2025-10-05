@@ -7,6 +7,8 @@ import { RouterLink } from "vue-router";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 import Loading from "@/components/Common/Loading.vue";
 import { getImageByImageName } from "@/libs/callAPI/apiSaleItem";
+import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
+import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
 
 const auth = useAuthStore();
 const orders = ref([]);
@@ -14,38 +16,59 @@ const userData = auth.getAuthData();
 const isLoading = ref(false);
 const totalPrice = ref([]);
 const currentTotalPrice = ref(0);
-
-onMounted(async () => {
-  isLoading.value = true;
-  console.log("userData: ", userData.nickname);
-  orders.value = await getAllOrderByUserId();
-  console.log("ordersById: ", orders.value.content);
-
-  orders.value.content.forEach((order) => {
-    const orderTotal = order.orderItems.map((item) => item.price * item.quantity).reduce((a, b) => a + b, 0);
-    totalPrice.value.push(orderTotal);
-  });
-  currentTotalPrice.value = totalPrice.value.reduce((a, b) => a + b, 0);
-  console.log("currentTotalPrice.value: ", currentTotalPrice.value);
-  console.log("totalPrice.value: ", totalPrice.value);
-  await loadImageUrl();
-  console.log("imageMap.value: ", imageMap.value);
-
-  isLoading.value = false;
+const imageMap = ref([]);
+const pagination = ref({
+  page: 0,
+  size: 50,
+  sort: "asc",
+  totalPages: 0,
+  totalElements: 0,
 });
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat("th-TH", {
-    style: "currency",
-    currency: "THB",
-    minimumFractionDigits: 0, // ไม่แสดงทศนิยม
-    maximumFractionDigits: 0,
-  })
-    .format(value)
-    .replace("฿", ""); // ตัดสัญลักษณ์ ฿ ออกเพื่อให้เหมือนในรูป
+const fetchselect = async () => {
+  try {
+    isLoading.value = true;
+    // reset Image Map and totalPrice
+    imageMap.value = {};
+    totalPrice.value = [];
+
+    const page = parseInt(sessionStorage.getItem("order_pagination") ?? "0", 10);
+    let size = sessionStorage.getItem("order_size") ? parseInt(sessionStorage.getItem("order_size"), 10) : 10;
+    console.log("Fetching page:", page);
+    console.log("Fetching size:", size);
+    pagination.value.page = page;
+    pagination.value.size = size;
+    const ordersData = await getAllOrderByUserId(size, page);
+    orders.value = ordersData;
+    console.log("Fetched order:", ordersData);
+    pagination.value = {
+      page: ordersData.page,
+      size: ordersData.size,
+      totalPages: ordersData.totalPages,
+      totalElements: ordersData.totalElements,
+    };
+    sessionStorage.setItem("order_pagination", ordersData.page);
+    sessionStorage.setItem("order_size", ordersData.size);
+
+    //------------------------- Price Calculation -------------------------
+    orders.value.content.forEach((order) => {
+      const orderTotal = order.orderItems.map((item) => item.price * item.quantity).reduce((a, b) => a + b, 0);
+      totalPrice.value.push(orderTotal);
+    });
+    currentTotalPrice.value = totalPrice.value.reduce((a, b) => a + b, 0);
+    console.log("currentTotalPrice.value: ", currentTotalPrice.value);
+    console.log("totalPrice.value: ", totalPrice.value);
+    //------------------------- Image Showing -------------------------
+    await loadImageUrl();
+    console.log("imageMap.value mounted: ", imageMap.value);
+    console.log("imageMap.value page changed: ", imageMap.value);
+    isLoading.value = false;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
 };
 
-const imageMap = ref([]);
+
 const loadImageUrl = async () => {
   imageMap.value = {};
   for (const order of orders.value.content) {
@@ -58,6 +81,28 @@ const loadImageUrl = async () => {
       }
     }
   }
+};
+
+const handlePageChange = (newPage) => {
+  pagination.value.page = newPage;
+  fetchselect();
+};
+
+onMounted(async () => {
+  isLoading.value = true;
+  await fetchselect();
+  isLoading.value = false;
+});
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("th-TH", {
+    style: "currency",
+    currency: "THB",
+    minimumFractionDigits: 0, // ไม่แสดงทศนิยม
+    maximumFractionDigits: 0,
+  })
+    .format(value)
+    .replace("฿", ""); // ตัดสัญลักษณ์ ฿ ออกเพื่อให้เหมือนในรูป
 };
 
 const formatDate = (isoString) => {
@@ -129,16 +174,26 @@ const formatDate = (isoString) => {
       <hr class="my-4" />
       <div class="space-y-4">
         <div v-for="(item, index) in order.orderItems" :key="item.id" class="flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-          <img :src="imageMap[item.no]" :alt="item.productName"  class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+          <img :src="imageMap[item.no]" :alt="item.productName" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
           <div class="flex-grow">
             <p class="font-semibold text-gray-800">{{ item.productName }}</p>
             <p class="text-gray-500">Qty {{ item.quantity }}</p>
           </div>
-          <div class="text-right font-bold text-blue-700 w-28">
-            {{ formatCurrency(item.price * item.quantity) }} Bath
-          </div>
+          <div class="text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
         </div>
       </div>
     </RouterLink>
+  </div>
+  <div class="flex gap-4 justify-center pb-10">
+    <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination" @update:modelValue="fetchselect" />
+    <SizeAndSortSeller
+      v-model:modelSize="pagination.size"
+      v-model:modelSort="pagination.sort"
+      v-model:modelPage="pagination.page"
+      storage-key-size="order_size"
+      storage-key-sort="order_sort"
+      reset-storage="order_pagination"
+      @update:modelPage="handlePageChange"
+    />
   </div>
 </template>
