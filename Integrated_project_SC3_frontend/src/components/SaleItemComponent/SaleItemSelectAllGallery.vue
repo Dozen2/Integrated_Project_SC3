@@ -51,7 +51,8 @@ const addItem = (item) => {
   if (!checkRole) {
     router.push({ name: 'Login' });
   }
-
+  console.log(auth.getAuthData());
+  
   const accSellerId = auth.getAuthData().sellerId
   console.log(accSellerId);
   if (item.sellerId === accSellerId) {
