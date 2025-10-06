@@ -14,7 +14,7 @@ const cartStore = useCartStore();
 
 const logOut = async () => {
   await auth.logout();
-  router.push({ name: 'Home' });
+  router.push({ name: 'Products' });
 
 };
 
@@ -101,7 +101,7 @@ onMounted(() => {
           <RouterLink :to="{ name: 'Cart' }">
           <ShoppingCart color="#ffffff" />
           <span v-if="cartCount > 0"
-            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+            class="itbms-cart-quantity absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
             {{ cartCount }}
           </span>
           </RouterLink>

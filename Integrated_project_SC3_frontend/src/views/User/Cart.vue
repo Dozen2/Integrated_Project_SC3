@@ -13,6 +13,7 @@ const note = ref("");
 const auth = useAuthStore();
 const cartStore = useCartStore();
 const alertStore = useAlertStore()
+const placeholder = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
 
 // -------------------- reactive --------------------
 // const sellerMap = ref({});
@@ -113,14 +114,21 @@ const groupedCart = computed(() => {
 const getDescription = (item) => {
      return `${item.brandName} ${item.model} (${item.storageGb}GB, ${item.color})`;
 };
+// -------------------- varidate placeorder --------------------
+const isValid = computed(() => {
+     return (
+          selectedItems.value.length > 0 &&
+          address.value.trim() !== ""
+     )
+})
 
 
 // -------------------- order --------------------
 const PlaceOrder = async () => {
-     if (selectedItems.value.length === 0) {
-          alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
-          return;
-     }
+     // if (selectedItems.value.length === 0) {
+     //      alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
+     //      return;
+     // }
      const buyerId = auth.getAuthData().id
      console.log(buyerId);
 
@@ -170,10 +178,11 @@ const PlaceOrder = async () => {
           cartStore.clearCart(); // ล้างตะกร้า
           selectedItems.value = [];
           selectedSellers.value = [];
+          address.value = ""
      }
 };
 
-const placeholder = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
+
 
 // -------------------- onMounted --------------------
 onMounted(async () => {
@@ -238,25 +247,25 @@ onMounted(async () => {
                          <!-- ปุ่มเลือกทั้งหมด -->
                          <div class="flex items-center gap-2 mb-6 text-blue-700">
                               <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll"
-                                   class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
-                              <label class="font-semibold text-lg">เลือกทั้งหมด</label>
+                                   class="itbms-select-all w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
+                              <label class="font-semibold text-lg">Select All</label>
                          </div>
 
                          <!-- Seller Group -->
-                         <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="mb-10">
+                         <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="itbms-row mb-10">
                               <!-- Checkbox Seller -->
                               <div class="flex items-center gap-2 mb-4">
                                    <input type="checkbox" :checked="isSellerSelected(sellerId)"
                                         @change="toggleSeller(sellerId)"
-                                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
-                                   <label class="font-bold text-xl text-blue-800 drop-shadow-sm">
-                                        🏪 {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}
+                                        class="itbms-select-nickname w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
+                                   <label class="itbms-nickname font-bold text-xl text-blue-800 drop-shadow-sm">
+                                        {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}
                                    </label>
                               </div>
 
                               <!-- รายการสินค้า -->
                               <div v-for="item in items" :key="item.id + '-' + item.sellerId"
-                                   class="group flex items-center justify-between bg-white/80 backdrop-blur-md border border-blue-100 p-5 rounded-2xl mb-5 shadow-md hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out">
+                                   class="itbms-item-row group flex items-center justify-between bg-white/80 backdrop-blur-md border border-blue-100 p-5 rounded-2xl mb-5 shadow-md hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out">
 
                                    <!-- ✅ Product Info -->
                                    <div class="flex items-center gap-4 flex-1">
@@ -272,7 +281,7 @@ onMounted(async () => {
 
                                         <div>
                                              <p
-                                                  class="font-semibold text-gray-900 text-lg group-hover:text-blue-700 transition">
+                                                  class="itbms-item-description font-semibold text-gray-900 text-lg group-hover:text-blue-700 transition">
                                                   {{ getDescription(item) }}
                                              </p>
                                              <p class="text-sm text-gray-500">฿{{ item.price }}</p>
@@ -282,12 +291,14 @@ onMounted(async () => {
                                    <!-- ✅ Quantity -->
                                    <div class="flex items-center gap-3">
                                         <button @click="decrement(item)"
-                                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-blue-600 font-bold hover:bg-blue-100 hover:scale-110 transition">
+                                             class="itbms-dec-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-blue-600 font-bold hover:bg-blue-100 hover:scale-110 transition">
                                              -
                                         </button>
-                                        <span class="w-6 text-center font-medium">{{ item.quantity }}</span>
+                                        
+                                        <span class="itbms-item-quantity w-6 text-center font-medium">{{ item.quantity }}</span>
+
                                         <button @click="increment(item)"
-                                             class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition">
+                                             class="itbms-inc-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition">
                                              +
                                         </button>
                                    </div>
@@ -295,7 +306,7 @@ onMounted(async () => {
                                    <!-- ✅ Price -->
                                    <div class="min-w-[120px] text-right">
                                         <span
-                                             class="inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 font-bold px-4 py-2 rounded-xl shadow-sm">
+                                             class="itbms-item-total-price inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 font-bold px-4 py-2 rounded-xl shadow-sm">
                                              ฿{{ item.price * item.quantity }}
                                         </span>
                                    </div>
@@ -312,32 +323,35 @@ onMounted(async () => {
                     <div class="mb-4">
                          <label class="block text-sm font-medium text-gray-600 mb-1">Address</label>
                          <input type="text" v-model="address" placeholder="กรอกที่อยู่"
-                              class="w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+                              class="itbms-shipping-address w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
                     </div>
 
                     <!-- Note -->
                     <div class="mb-4">
                          <label class="block text-sm font-medium text-gray-600 mb-1">Note</label>
                          <input type="text" v-model="note" placeholder="หมายเหตุ"
-                              class="w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+                              class="itbms-order-note w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
                     </div>
 
                     <!-- Summary -->
                     <div class="border-t pt-4 text-gray-700 space-y-2">
-                         <p>จำนวนสินค้าที่เลือก: <span class="font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
+                         <p>Total items: <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
                          </p>
 
-                         <p class="font-bold text-xl text-blue-700">ยอดที่ต้องชำระ: ฿{{ selectedSummary.totalPrice }}
+                         <p class="itbms-total-total-price font-bold text-xl text-blue-700">Total price: {{ selectedSummary.totalPrice }}
                          </p>
                     </div>
 
                     <!-- ปุ่มสั่งซื้อ -->
                     <div class="mt-6">
-                         <button @click="PlaceOrder()"
-                              class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02] transition">
+                         <button @click="PlaceOrder()" :disabled="!isValid"
+                              class="itbms-place-order-button w-full px-6 py-3 text-white font-bold rounded-lg shadow-lg transition" :class="isValid
+                                   ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02]'
+                                   : 'bg-blue-300 cursor-not-allowed opacity-60'">
                               Place Order
                          </button>
                     </div>
+
                </div>
           </div>
      </div>

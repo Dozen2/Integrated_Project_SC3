@@ -121,79 +121,74 @@ const formatDate = (isoString) => {
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb
-      :class="'mb-6'"
-      :pathForBreadcrumb="[
-        { text: 'Home', name: 'Home' },
-        { text: 'SaleItem', name: 'Products' },
-        { text: 'PlaceOrder', name: 'PlaceOrder' },
-      ]"
-    />
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
+      { text: 'Home', name: 'Home' },
+      { text: 'SaleItem', name: 'Products' },
+      { text: 'PlaceOrder', name: 'PlaceOrder' },
+    ]" />
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
-        <span class="mr-2"><PackageOpen size="50" color="#6678ff" /></span>YOUR ORDERS
+        <span class="mr-2">
+          <PackageOpen size="50" color="#6678ff" />
+        </span>YOUR ORDERS
       </h1>
     </div>
-    <RouterLink
-      v-for="(order, index) in orders.content"
-      :key="order.orderNo"
+    <RouterLink v-for="(order, index) in orders.content" :key="order.orderNo"
       :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
-      class="block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer"
-    >
+      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
         <div>
           <div class="flex items-center mb-2">
-            <span class="font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
+            <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
           </div>
           <p>
             <strong class="text-gray-500">Order No:</strong>
-            <span class="text-gray-800 ml-1">{{ order.id }}</span>
+            <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
           </p>
           <p>
             <strong class="text-gray-500">Status:</strong>
-            <span class="font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
+              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
               {{ order.orderStatus }}
             </span>
           </p>
         </div>
         <div>
-          <p><strong class="text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
+          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
         </div>
         <div>
-          <p><strong class="text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
         </div>
         <div class="md:text-right">
           <p class="text-gray-500">Total:</p>
-          <p class="text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
+          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
         </div>
       </div>
       <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-        <p><strong class="text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-        <p v-if="order.orderNote"><strong class="text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+        <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
+        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
       </div>
       <hr class="my-4" />
       <div class="space-y-4">
-        <div v-for="(item, index) in order.orderItems" :key="item.id" class="flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-          <img :src="imageMap[item.no]" :alt="item.productName" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+        <div v-for="(item, index) in order.orderItems" :key="item.id"
+          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+          <img :src="imageMap[item.no]" :alt="item.productName"
+            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
           <div class="flex-grow">
-            <p class="font-semibold text-gray-800">{{ item.productName }}</p>
-            <p class="text-gray-500">Qty {{ item.quantity }}</p>
+            <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName }}</p>
+            <p class="itbms-item-quantity text-gray-500">Qty {{ item.quantity }}</p>
           </div>
-          <div class="text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
+          <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath
+          </div>
         </div>
       </div>
     </RouterLink>
   </div>
   <div class="flex gap-4 justify-center pb-10">
-    <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination" @update:modelValue="fetchselect" />
-    <SizeAndSortSeller
-      v-model:modelSize="pagination.size"
-      v-model:modelSort="pagination.sort"
-      v-model:modelPage="pagination.page"
-      storage-key-size="order_size"
-      storage-key-sort="order_sort"
-      reset-storage="order_pagination"
-      @update:modelPage="handlePageChange"
-    />
+    <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination"
+      @update:modelValue="fetchselect" />
+    <SizeAndSortSeller v-model:modelSize="pagination.size" v-model:modelSort="pagination.sort"
+      v-model:modelPage="pagination.page" storage-key-size="order_size" storage-key-sort="order_sort"
+      reset-storage="order_pagination" @update:modelPage="handlePageChange" />
   </div>
 </template>

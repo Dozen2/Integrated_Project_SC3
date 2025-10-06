@@ -86,13 +86,23 @@ const incrementQuantity = () => {
 const addItem = async () => {
   if (!product.value || !product.value.id) return;
 
+  const checkRole = localStorage.getItem("role")
+  console.log(checkRole);
+  if (!checkRole) {
+    router.push({ name: 'Login' });
+  }
+
   const accSellerId = auth.getAuthData().sellerId
   console.log(accSellerId);
   if (product.value.sellerId === accSellerId) {
     alertStore.addToast("ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
     return;
   }
-  
+
+
+
+
+
 
 
   // let allImages = [];
@@ -141,10 +151,12 @@ const addItem = async () => {
   </div>
 
   <!-- 404 Error Page -->
-  <div v-else-if="product == '404_not_found'" class="flex flex-col items-center justify-center text-center py-20 space-y-8 min-h-[60vh] bg-gray-50">
+  <div v-else-if="product == '404_not_found'"
+    class="flex flex-col items-center justify-center text-center py-20 space-y-8 min-h-[60vh] bg-gray-50">
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
       <!-- 404 Icon -->
-      <img src="https://static.thenounproject.com/png/4019366-200.png" alt="404 Icon" class="w-24 h-24 mx-auto opacity-80" />
+      <img src="https://static.thenounproject.com/png/4019366-200.png" alt="404 Icon"
+        class="w-24 h-24 mx-auto opacity-80" />
 
       <!-- Error Message -->
       <p class="itbms-message text-gray-600 mt-2">The requested sale item does not exist.</p>
@@ -154,14 +166,11 @@ const addItem = async () => {
   <!-- Product Detail Page -->
   <div v-else class="itbms-row bg-gray-50 min-h-screen pb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <Breadcrumb
-        :class="'mb-6'"
-        :pathForBreadcrumb="[
-          { text: 'Home', name: 'Home' },
-          { text: 'SaleItem', name: 'Products' },
-          { text: `${product.brandName} ${product.model}`, name: 'UserProfile' },
-        ]"
-      />
+      <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
+        { text: 'Home', name: 'Home' },
+        { text: 'SaleItem', name: 'Products' },
+        { text: `${product.brandName} ${product.model}`, name: 'UserProfile' },
+      ]" />
       <!-- Product Overview Section -->
       <div class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="md:flex">
@@ -206,48 +215,45 @@ const addItem = async () => {
                 <span class="itbms-color font-semibold">{{ nullCatching(product.color) }}</span>
               </h3>
               <div class="mt-2 flex items-center space-x-2">
-                <div class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-blue-600" :style="`background-color: ${product.color?.toLowerCase() || 'gray'}`"></div>
+                <div class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-blue-600"
+                  :style="`background-color: ${product.color?.toLowerCase() || 'gray'}`"></div>
               </div>
             </div>
 
-            <!-- Quantity Selector -->
-            <div class="py-4 border-b flex flex-row justify-center items-center gap-5">
-              <h3 class="text-sm font-medium text-gray-700">จำนวน</h3>
-              <div class="mt-2 flex items-center space-x-2">
-                <button @click="decrementQuantity" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" :disabled="quantity <= 1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-                  </svg>
-                </button>
-                <span class="w-12 text-center font-medium">{{ quantity }}</span>
-                <button @click="incrementQuantity" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition" :disabled="quantity >= product.quantity">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </button>
+            <!-- Quantity Selector + Add to Cart -->
+            <div class="py-6 border-b flex flex-col sm:flex-row items-center gap-6">
+
+              <!-- ส่วนเลือกจำนวน -->
+              <div class="flex flex-row items-center gap-4">
+                <h3 class="text-sm font-medium text-gray-700">จำนวน</h3>
+                <div class="flex items-center space-x-2">
+                  <button @click="decrementQuantity"
+                    class="itbms-dec-qty-button w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="quantity <= 1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                  </button>
+
+                  <span class="itbms-add-to-cart-quantity w-12 text-center font-medium text-gray-800">{{ quantity }}</span>
+
+                  <button @click="incrementQuantity"
+                    class="itbms-inc-qty-button w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    :disabled="quantity >= product.quantity">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
-              <div>
-                <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">add to cart</button>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-              <RouterLink
-                :to="{ name: 'Edit', params: { id: product.id } }"
-                class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center"
-              >
-                Edit
-              </RouterLink>
-
-              <button
-                @click="deleteProduct(product.id)"
-                class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center"
-              >
-                Delete
+              <!-- ปุ่ม Add to Cart -->
+              <button @click="addItem"
+                class="itbms-add-to-cart-button w-[180px] h-[46px] bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg hover:scale-[1.05] active:scale-[0.98] transition-all duration-300 ease-out">
+                Add to Cart
               </button>
-            </div> 
+
+            </div>
 
 
           </div>
@@ -259,7 +265,8 @@ const addItem = async () => {
         <RouterLink to="/sale-items">
           <button class="flex items-center text-blue-600 hover:text-blue-800 transition font-medium">
             <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+              </path>
             </svg>
             กลับไปหน้ารายการสินค้า
           </button>
@@ -274,15 +281,17 @@ const addItem = async () => {
       <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ</h2>
       <p class="itbms-message text-gray-600 mb-6">Do you want to delete this sale item?</p>
       <div class="flex justify-end space-x-2">
-        <button @click="showDeleteModal = false" class="itbms-cancel-button px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">ยกเลิก</button>
-        <button @click="confirmDeleteProduct" class="itbms-confirm-button px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">ยืนยัน</button>
+        <button @click="showDeleteModal = false"
+          class="itbms-cancel-button px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">ยกเลิก</button>
+        <button @click="confirmDeleteProduct"
+          class="itbms-confirm-button px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">ยืนยัน</button>
       </div>
     </div>
 
 
 
     <div>
-      
+
     </div>
   </div>
 </template>

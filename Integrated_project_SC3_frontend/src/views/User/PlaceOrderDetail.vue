@@ -66,7 +66,7 @@ const formatDate = (isoString) => {
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-[calc(100vh-80px)] p-8 text-gray-800">
     <Breadcrumb
-      :class="'mb-6'"
+      :class="'itbms-your-orders-button mb-6'"
       :pathForBreadcrumb="[
         { text: 'Home', name: 'Home' },
         { text: 'SaleItem', name: 'Products' },
@@ -90,25 +90,25 @@ const formatDate = (isoString) => {
       <!-- ข้อมูลคำสั่งซื้อ -->
       <div class="grid md:grid-cols-2 gap-8 relative z-10">
         <div class="space-y-2">
-          <p><strong class="text-blue-700">Order No:</strong> {{ orders.id }}</p>
-          <p><strong class="text-blue-700">Order Date:</strong> {{ formatDate(orders.orderDate) || "-" }}</p>
+          <p><strong class="itbms-order-id text-blue-700">Order No:</strong> {{ orders.id }}</p>
+          <p><strong class="itbms-order-date text-blue-700">Order Date:</strong> {{ formatDate(orders.orderDate) || "-" }}</p>
           <p>
             <strong class="text-blue-700">Total:</strong>
-            <span class="font-bold text-blue-600 text-lg ml-1">{{ formatCurrency(totalPrice) }} Bath</span>
+            <span class="itbms-total-order-price font-bold text-blue-600 text-lg ml-1">{{ formatCurrency(totalPrice) }} Bath</span>
           </p>
           <p class="mt-2">
             <strong class="text-blue-700">Shipped To:</strong>
-            <span class="text-gray-600 ml-1">{{ orders.shippingAddress }}</span>
+            <span class="itbms-shipping-address text-gray-600 ml-1">{{ orders.shippingAddress }}</span>
           </p>
         </div>
 
         <div class="space-y-2">
-          <p><strong class="text-blue-700">Seller:</strong> {{ orders.sellerName || "Somsuan" }}</p>
-          <p><strong class="text-blue-700">Payment Date:</strong> {{ formatDate(orders.paymentDate) || "-" }}</p>
+          <p><strong class="itbms-nickname text-blue-700">Seller:</strong> {{ orders.sellerName || "Somsuan" }}</p>
+          <p><strong class="itbms-payment-date text-blue-700">Payment Date:</strong> {{ formatDate(orders.paymentDate) || "-" }}</p>
           <p>
             <strong class="text-blue-700">Status:</strong>
             <span
-              class="ml-1 px-3 py-1 text-xs rounded-full font-semibold shadow-sm"
+              class="itbms-order-status ml-1 px-3 py-1 text-xs rounded-full font-semibold shadow-sm"
               :class="orders.orderStatus === 'Completed'
                 ? 'bg-green-100 text-green-700'
                 : 'bg-yellow-100 text-yellow-700'"
@@ -116,7 +116,7 @@ const formatDate = (isoString) => {
               {{ orders.orderStatus }}
             </span>
           </p>
-          <p><strong class="text-blue-700">Note:</strong> {{ orders.orderNote || "-" }}</p>
+          <p><strong class="itbms-order-note text-blue-700">Note:</strong> {{ orders.orderNote || "-" }}</p>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ const formatDate = (isoString) => {
         <div
           v-for="item in orders.orderItems"
           :key="item.id"
-          class="flex items-center justify-between p-4 rounded-2xl border border-blue-100 bg-blue-50/40 hover:bg-blue-100/50 transition-all duration-200"
+          class="itbms-item-row flex items-center justify-between p-4 rounded-2xl border border-blue-100 bg-blue-50/40 hover:bg-blue-100/50 transition-all duration-200"
         >
           <div class="flex items-center space-x-4">
             <img
@@ -138,14 +138,14 @@ const formatDate = (isoString) => {
               class="w-16 h-16 rounded-xl object-cover border border-gray-200 shadow-sm"
             />
             <div>
-              <p class="font-semibold text-gray-800">{{ item.productName || item.description }}</p>
-              <p class="text-gray-500 text-xs">Unit Price: {{ formatCurrency(item.price) }} Bath</p>
+              <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName || item.description }}</p>
+              <p class="itbms-item-price text-gray-500 text-xs">Unit Price: {{ formatCurrency(item.price) }} Bath</p>
             </div>
           </div>
 
           <div class="flex items-center space-x-8 text-sm">
-            <p class="text-gray-600">Qty: <span class="font-medium text-gray-800">{{ item.quantity }}</span></p>
-            <p class="font-bold text-blue-700 text-base">{{ formatCurrency(item.price * item.quantity) }} Bath</p>
+            <p class="text-gray-600">Qty: <span class="itbms-item-quantity font-medium text-gray-800">{{ item.quantity }}</span></p>
+            <p class="itbms-item-total-price font-bold text-blue-700 text-base">{{ formatCurrency(item.price * item.quantity) }} Bath</p>
           </div>
         </div>
       </div>

@@ -44,15 +44,15 @@ const router = createRouter({
     { path: '/verify-email', name: 'VerifyEmail', component: VerifyEmail },
 
     //User
-    {path: '/profile', name: 'UserProfile', component: UserProfile , meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] }},
-    {path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] }},
+    { path: '/profile', name: 'UserProfile', component: UserProfile, meta: { requiresAuth: true, roles: ['ROLE_BUYER', 'ROLE_SELLER'] } },
+    { path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
 
-    {path: '/your-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
-    {path: '/your-order/:id', name: 'PlaceOrderId', component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
-    {path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] }},
+    { path: '/your-order', name: 'PlaceOrder', component: PlaceOrder, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] } },
+    { path: '/your-order/:id', name: 'PlaceOrderId', component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] } },
+    { path: '/cart', name: 'Cart', component: Cart, meta: { requiresAuth: true, roles: ['ROLE_BUYER', "ROLE_SELLER"] } },
 
     // Page Not Found
-    {path: '/404', name: 'PageNotFound', component: PageNotFound},
+    { path: '/404', name: 'PageNotFound', component: PageNotFound },
 
 
     // Unknow-Path -> Home Page
@@ -80,7 +80,7 @@ router.beforeEach(async (to) => {
     // ตรวจสอบ role
     const allowedRoles = to.meta.roles || [];
     if (allowedRoles.length > 0 && !allowedRoles.includes(auth.role)) {
-        // ไม่ตรง role -> redirect ไปหน้า Home
+      // ไม่ตรง role -> redirect ไปหน้า Home
       return { name: 'Login' };
     }
   }

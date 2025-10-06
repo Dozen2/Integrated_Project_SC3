@@ -5,12 +5,14 @@ import { onMounted, ref } from "vue";
 import { getImageByImageName } from "@/libs/callAPI/apiSaleItem.js";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/auth";
+import { useRouter } from "vue-router";
 
 
 
 const alertStore = useAlertStore();
 const cartStore = useCartStore();
 const auth = useAuthStore();
+const router = useRouter();
 
 const props = defineProps({
   product: Array,
@@ -44,6 +46,12 @@ onMounted(async () => {
 //===================== add to cart =======================
 const addItem = (item) => {
   // console.log(props.product);
+  const checkRole = localStorage.getItem("role")
+  console.log(checkRole);
+  if (!checkRole) {
+    router.push({ name: 'Login' });
+  }
+
   const accSellerId = auth.getAuthData().sellerId
   console.log(accSellerId);
   if (item.sellerId === accSellerId) {
@@ -81,6 +89,7 @@ const addItem = (item) => {
       "Add to cart",
       "success"
     );
+
     console.log("add success");
 
   } else {
@@ -119,7 +128,7 @@ const addItem = (item) => {
               {{ nullCatching(item.storageGb) }}
               <span class="itbms-storageGb-unit">GB</span>
             </span>
-            <p class="itbms-color text-blue-600 font-semibold mt-3 text-lg">
+            <p class="itbms-color text-sm text-gray-600">
               {{ unitPrice(item.color) }}
             </p>
             <p class="itbms-price text-blue-600 font-semibold mt-3 text-lg">
@@ -128,12 +137,12 @@ const addItem = (item) => {
             </p>
           </div>
         </RouterLink>
-        <div 
-        @click="addItem(item)"
-        class="itbms-add-to-cart-button">
-          add to cart
+        <div>
+          <button @click="addItem"
+            class="itbms-add-to-cart-button w-[140px] h-[42px] bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg hover:scale-[1.05] active:scale-[0.98] transition-all duration-300 ease-out">
+            Add to Cart
+          </button>
         </div>
-
       </div>
     </div>
   </div>
