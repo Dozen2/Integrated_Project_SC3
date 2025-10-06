@@ -119,7 +119,7 @@ const addItem = (item) => {
               {{ nullCatching(item.storageGb) }}
               <span class="itbms-storageGb-unit">GB</span>
             </span>
-            <p class="itbms-price text-blue-600 font-semibold mt-3 text-lg">
+            <p class="itbms-color text-blue-600 font-semibold mt-3 text-lg">
               {{ unitPrice(item.color) }}
             </p>
             <p class="itbms-price text-blue-600 font-semibold mt-3 text-lg">
@@ -128,7 +128,9 @@ const addItem = (item) => {
             </p>
           </div>
         </RouterLink>
-        <div @click="addItem(item)">
+        <div 
+        @click="addItem(item)"
+        class="itbms-add-to-cart-button">
           add to cart
         </div>
 

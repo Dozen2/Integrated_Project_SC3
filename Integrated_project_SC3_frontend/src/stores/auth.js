@@ -86,6 +86,7 @@ export const useAuthStore = defineStore("auth", {
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
+      localStorage.removeItem("cart")
       // Cookies.remove("refreshToken");
       // optional: clear refresh token cookie
     },
