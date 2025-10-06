@@ -326,6 +326,7 @@ onMounted(async () => {
                     <div class="border-t pt-4 text-gray-700 space-y-2">
                          <p>จำนวนสินค้าที่เลือก: <span class="font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
                          </p>
+
                          <p class="font-bold text-xl text-blue-700">ยอดที่ต้องชำระ: ฿{{ selectedSummary.totalPrice }}
                          </p>
                     </div>
