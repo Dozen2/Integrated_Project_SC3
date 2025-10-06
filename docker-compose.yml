@@ -21,7 +21,7 @@ services:
       context: ./Integrated_project_SC3_backend
       dockerfile: dockerfile
     ports:
-      - 8080:8080
+      - 8443:8443
     networks:
       - sc3_network
     depends_on:
