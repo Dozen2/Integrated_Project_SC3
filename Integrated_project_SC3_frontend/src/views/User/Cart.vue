@@ -3,14 +3,16 @@ import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cartStore";
 import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
+import { useAlertStore } from "@/stores/alertStore";
+
 
 const imagesMap = ref({});
 const address = ref("");
 const note = ref("");
-const description = ref("")
 // -------------------- store --------------------
 const auth = useAuthStore();
 const cartStore = useCartStore();
+const alertStore = useAlertStore()
 
 // -------------------- reactive --------------------
 // const sellerMap = ref({});
@@ -114,11 +116,14 @@ const getDescription = (item) => {
 
 
 // -------------------- order --------------------
-const PlaceOrder = () => {
+const PlaceOrder = async () => {
      if (selectedItems.value.length === 0) {
           alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
           return;
      }
+     const buyerId = auth.getAuthData().id
+     console.log(buyerId);
+
 
      // หา sellerId ของสินค้าที่ถูกเลือก
      const sellerIds = [...new Set(
@@ -144,25 +149,31 @@ const PlaceOrder = () => {
           }));
 
           const order = {
-               id: Math.floor(Math.random() * 100000),
-               buyerId: auth.user?.id || 6,
-               sellerDTO: {
-                    id: sellerId,
-                    userName: sellerMap.value[sellerId] || "Unknown Seller"
-               },
+               buyerId: buyerId,
+               sellerId: sellerId,
                orderDate: new Date().toISOString(),
                shippingAddress: address.value,
                orderNote: note.value,
-               orderItems
+               orderItems,
+               orderStatus: "PENDING"
           };
 
           orders.push(order);
      }
 
      console.log("📦 Orders Created:", orders);
+
+     const result = await createOrder(orders);
+     if (result) {
+          // alert("สั่งซื้อเรียบร้อยแล้ว!");
+          alertStore.addToast("สั่งซื้อเรียบร้อยแล้ว", "PlaceOrder", "success");
+          cartStore.clearCart(); // ล้างตะกร้า
+          selectedItems.value = [];
+          selectedSellers.value = [];
+     }
 };
 
-
+const placeholder = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
 
 // -------------------- onMounted --------------------
 onMounted(async () => {
@@ -180,14 +191,24 @@ onMounted(async () => {
      cartStore.updateQuantity();
      //img
      console.log(cartStore.cart);
-     for (const img of cartStore.cart) {
-          const sorted = [...img.images].sort(
-               (a, b) => a.imageViewOrder - b.imageViewOrder
-          );
-          const urls = await Promise.all(
-               sorted.map(img => getImageByImageName(img.fileName))
-          )
-          imagesMap.value[img.id] = urls;
+     for (const item of cartStore.cart) {
+          if (!item.images || item.images.length === 0) {
+               // ถ้าไม่มีรูป ใช้ placeholder
+               imagesMap.value[item.id] = [placeholder];
+          } else {
+               const sorted = [...item.images].sort(
+                    (a, b) => a.imageViewOrder - b.imageViewOrder
+               );
+
+               const urls = await Promise.all(
+                    sorted.map(async (img) => {
+                         const url = await getImageByImageName(img.fileName);
+                         return url || placeholder; // ถ้า getImageByImageName คืนค่า null/undefined ใช้ placeholder
+                    })
+               );
+
+               imagesMap.value[item.id] = urls;
+          }
      }
      console.log(imagesMap.value);
 
@@ -196,87 +217,127 @@ onMounted(async () => {
 </script>
 
 <template>
-     <div class="p-4">
-          <h1 class="text-xl font-bold mb-4">🛒 Shopping cart</h1>
+     <div class="p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen">
+          <h1 class="text-3xl font-extrabold mb-8 text-blue-700 drop-shadow-md">
+               Shopping Cart
+          </h1>
 
-          <!-- ถ้าไม่มีสินค้า -->
-          <div v-if="cartItems.length === 0" class="text-gray-500">
-               ไม่มีสินค้าในตะกร้า
-          </div>
+          <!-- Layout 2 คอลัมน์ -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          <!-- รายการสินค้า -->
-          <div v-else class="space-y-4">
-
-               <!-- ✅ ปุ่มเลือกทั้งหมด -->
-               <div class="flex items-center gap-2 mb-2">
-                    <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" />
-                    <label>เลือกทั้งหมด</label>
-               </div>
-
-               <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="mb-6">
-
-                    <!-- ✅ Checkbox Seller -->
-                    <div class="flex items-center gap-2 mb-2">
-                         <input type="checkbox" :checked="isSellerSelected(sellerId)"
-                              @change="toggleSeller(sellerId)" />
-                         <label class="font-bold">🏪 {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}</label>
+               <!-- ✅ ฝั่งซ้าย: สินค้า -->
+               <div class="lg:col-span-2 space-y-8">
+                    <!-- ถ้าไม่มีสินค้า -->
+                    <div v-if="cartItems.length === 0"
+                         class="text-gray-400 text-center py-16 border-2 border-dashed rounded-2xl bg-white/50 backdrop-blur-sm shadow-inner">
+                         ไม่มีสินค้าในตะกร้า
                     </div>
 
                     <!-- รายการสินค้า -->
-                    <div v-for="item in items" :key="item.id + '-' + item.sellerId"
-                         class="flex items-center justify-between border p-3 rounded mb-2">
-
-                         <div class="flex items-center gap-3">
-                              <input type="checkbox" :value="item.id + '-' + item.sellerId" v-model="selectedItems" />
-
-                              <div v-if="item.images && item.images.length > 0" class="flex gap-1">
-                                   <img v-for="(img, idx) in imagesMap[item.id]" :key="idx" :src="img"
-                                        alt="Product Image" class="w-16 h-16 object-cover rounded" />
-                              </div>
-
-                              <div>
-                                   <p class="font-semibold">
-                                        {{ getDescription(item) }}
-                                   </p>
-                                   <p class="text-sm text-gray-500">฿{{ item.price }}</p>
-                              </div>
+                    <div v-else>
+                         <!-- ปุ่มเลือกทั้งหมด -->
+                         <div class="flex items-center gap-2 mb-6 text-blue-700">
+                              <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll"
+                                   class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
+                              <label class="font-semibold text-lg">เลือกทั้งหมด</label>
                          </div>
 
-                         <div class="flex items-center gap-2">
-                              <button @click="decrement(item)" class="px-2 py-1 bg-gray-200 rounded">-</button>
-                              <span>{{ item.quantity }}</span>
-                              <button @click="increment(item)" class="px-2 py-1 bg-gray-200 rounded">+</button>
-                         </div>
+                         <!-- Seller Group -->
+                         <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="mb-10">
+                              <!-- Checkbox Seller -->
+                              <div class="flex items-center gap-2 mb-4">
+                                   <input type="checkbox" :checked="isSellerSelected(sellerId)"
+                                        @change="toggleSeller(sellerId)"
+                                        class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
+                                   <label class="font-bold text-xl text-blue-800 drop-shadow-sm">
+                                        🏪 {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}
+                                   </label>
+                              </div>
 
-                         <div class="font-bold text-green-600">
-                              ฿{{ item.price * item.quantity }}
+                              <!-- รายการสินค้า -->
+                              <div v-for="item in items" :key="item.id + '-' + item.sellerId"
+                                   class="group flex items-center justify-between bg-white/80 backdrop-blur-md border border-blue-100 p-5 rounded-2xl mb-5 shadow-md hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out">
+
+                                   <!-- ✅ Product Info -->
+                                   <div class="flex items-center gap-4 flex-1">
+                                        <input type="checkbox" :value="item.id + '-' + item.sellerId"
+                                             v-model="selectedItems"
+                                             class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
+
+                                        <div v-if="item.images && item.images.length > 0"
+                                             class="relative flex-shrink-0 overflow-hidden rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300">
+                                             <img :src="imagesMap[item.id]?.[0] || placeholder" alt="Product Image"
+                                                  class="w-20 h-20 object-cover rounded-xl" />
+                                        </div>
+
+                                        <div>
+                                             <p
+                                                  class="font-semibold text-gray-900 text-lg group-hover:text-blue-700 transition">
+                                                  {{ getDescription(item) }}
+                                             </p>
+                                             <p class="text-sm text-gray-500">฿{{ item.price }}</p>
+                                        </div>
+                                   </div>
+
+                                   <!-- ✅ Quantity -->
+                                   <div class="flex items-center gap-3">
+                                        <button @click="decrement(item)"
+                                             class="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-blue-600 font-bold hover:bg-blue-100 hover:scale-110 transition">
+                                             -
+                                        </button>
+                                        <span class="w-6 text-center font-medium">{{ item.quantity }}</span>
+                                        <button @click="increment(item)"
+                                             class="w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition">
+                                             +
+                                        </button>
+                                   </div>
+
+                                   <!-- ✅ Price -->
+                                   <div class="min-w-[120px] text-right">
+                                        <span
+                                             class="inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 font-bold px-4 py-2 rounded-xl shadow-sm">
+                                             ฿{{ item.price * item.quantity }}
+                                        </span>
+                                   </div>
+                              </div>
                          </div>
                     </div>
                </div>
 
+               <!-- ✅ ฝั่งขวา: Cart Summary -->
+               <div class="bg-white border border-blue-100 rounded-xl p-6 shadow-xl h-fit sticky top-6">
+                    <h1 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Cart Summary</h1>
 
-               <div>
-                    <h1>Cart summary</h1>
-                    <h2>ship to</h2>
-                    <h3>address</h3>
-                    <input type="text" v-model="address" placeholder="กรอกที่อยู่">
-                    <h3>note</h3>
-                    <input type="text" v-model="note" placeholder="หมายเหตุ">
+                    <!-- ที่อยู่ -->
+                    <div class="mb-4">
+                         <label class="block text-sm font-medium text-gray-600 mb-1">Address</label>
+                         <input type="text" v-model="address" placeholder="กรอกที่อยู่"
+                              class="w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+                    </div>
 
-                    <!-- ✅ Summary เฉพาะที่เลือก -->
-                    <div class="border-t pt-4 text-right">
-                         <p>จำนวนสินค้าที่เลือก: {{ selectedSummary.totalQty }} ชิ้น</p>
-                         <p class="font-bold">
-                              ยอดที่ต้องชำระ: ฿{{ selectedSummary.totalPrice }}
+                    <!-- Note -->
+                    <div class="mb-4">
+                         <label class="block text-sm font-medium text-gray-600 mb-1">Note</label>
+                         <input type="text" v-model="note" placeholder="หมายเหตุ"
+                              class="w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="border-t pt-4 text-gray-700 space-y-2">
+                         <p>จำนวนสินค้าที่เลือก: <span class="font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
+                         </p>
+                         <p class="font-bold text-xl text-blue-700">ยอดที่ต้องชำระ: ฿{{ selectedSummary.totalPrice }}
                          </p>
                     </div>
-               </div>
-          </div>
 
-          <div>
-               <button @click="PlaceOrder()">
-                    Place Order
-               </button>
+                    <!-- ปุ่มสั่งซื้อ -->
+                    <div class="mt-6">
+                         <button @click="PlaceOrder()"
+                              class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02] transition">
+                              Place Order
+                         </button>
+                    </div>
+               </div>
           </div>
      </div>
 </template>

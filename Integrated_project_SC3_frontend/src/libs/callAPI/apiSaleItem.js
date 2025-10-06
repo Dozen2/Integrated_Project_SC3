@@ -411,6 +411,7 @@ const createOrder = async (orders) => {
     const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/orders`, {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         "Authorization": "Bearer " + token,
       },
       body: JSON.stringify(orders),

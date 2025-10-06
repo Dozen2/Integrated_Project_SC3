@@ -8,6 +8,7 @@ import ImageUploader from "@/components/Common/ImageUploader.vue";
 import Loading from "@/components/Common/Loading.vue";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 import { useCartStore } from "@/stores/cartStore";
+import { useAuthStore } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +19,7 @@ const alertStore = useAlertStore();
 const showDeleteModal = ref(false);
 const pendingDeleteId = ref(null);
 const cartStore = useCartStore();
+const auth = useAuthStore()
 
 const confirmDeleteProduct = async () => {
   try {
@@ -83,6 +85,30 @@ const incrementQuantity = () => {
 
 const addItem = async () => {
   if (!product.value || !product.value.id) return;
+
+  const accSellerId = auth.getAuthData().sellerId
+  console.log(accSellerId);
+  if (product.value.sellerId === accSellerId) {
+    alertStore.addToast("ไม่สามารถเพิ่มสินค้าได้", "Error", "error");
+    return;
+  }
+  
+
+
+  // let allImages = [];
+  // if (product.value.saleItemImage && product.value.saleItemImage.length > 0) {
+  //   const sortedImages = [...product.value.saleItemImage].sort(
+  //     (a, b) => a.imageViewOrder - b.imageViewOrder
+  //   );
+
+  //   allImages = await Promise.all(
+  //     sortedImages.map(img => getImageByImageName(img.fileName))
+  //   );
+  // }
+
+  // console.log(allImages); // จะได้ URL ของแต่ละรูป
+
+  // เตรียมข้อมูลที่เราต้องการเก็บใน cart
   const payload = {
     id: product.value.id,
     sellerId: product.value.sellerId,
@@ -205,6 +231,25 @@ const addItem = async () => {
                 <button class="w-[100px] h-[35px] bg-blue-600" @click="addItem">add to cart</button>
               </div>
             </div>
+
+            <!-- Action Buttons -->
+            <div class="py-4 mt-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <RouterLink
+                :to="{ name: 'Edit', params: { id: product.id } }"
+                class="itbms-edit-button w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center text-center"
+              >
+                Edit
+              </RouterLink>
+
+              <button
+                @click="deleteProduct(product.id)"
+                class="itbms-delete-button w-full sm:w-1/2 border border-red-600 text-red-600 py-3 rounded-lg hover:bg-red-50 transition flex items-center justify-center"
+              >
+                Delete
+              </button>
+            </div> 
+
+
           </div>
         </div>
       </div>
