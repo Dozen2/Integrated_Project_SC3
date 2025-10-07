@@ -45,14 +45,13 @@ onMounted(async () => {
 
 //===================== add to cart =======================
 const addItem = (item) => {
-  // console.log(props.product);
+
   const checkRole = localStorage.getItem("role")
   console.log(checkRole);
   if (!checkRole) {
     router.push({ name: 'Login' });
   }
-  console.log(auth.getAuthData());
-  
+  // console.log(props.product);
   const accSellerId = auth.getAuthData().sellerId
   console.log(accSellerId);
   if (item.sellerId === accSellerId) {
@@ -90,7 +89,6 @@ const addItem = (item) => {
       "Add to cart",
       "success"
     );
-
     console.log("add success");
 
   } else {
@@ -138,12 +136,20 @@ const addItem = (item) => {
             </p>
           </div>
         </RouterLink>
-        <div>
-          <button @click="addItem"
-            class="itbms-add-to-cart-button w-[140px] h-[42px] bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:from-blue-700 hover:to-blue-600 hover:shadow-lg hover:scale-[1.05] active:scale-[0.98] transition-all duration-300 ease-out">
-            Add to Cart
-          </button>
+        <div @click="addItem(item)" class="itbms-add-to-cart-button cursor-pointer select-none
+         bg-blue-600 text-white font-semibold
+         px-5 py-2 rounded-2xl shadow-md
+         transition transform duration-200
+         hover:bg-blue-700 hover:scale-105 active:scale-95
+         flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.293 2.293a1 1 0 001.707 1.414L9 14h6l1.586 2.707a1 1 0 001.707-1.414L17 13M10 21h4M9 17h6" />
+          </svg>
+          Add to Cart
         </div>
+
       </div>
     </div>
   </div>

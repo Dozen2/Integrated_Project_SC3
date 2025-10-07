@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cartStore";
 import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 import { useAlertStore } from "@/stores/alertStore";
+import { nullCatching, unitPrice } from "@/libs/utils.js";
 
 
 const imagesMap = ref({});
@@ -121,7 +122,22 @@ const isValid = computed(() => {
           address.value.trim() !== ""
      )
 })
-
+watch(
+     () => cartStore.cart,
+     (newCart) => {
+          if (newCart.length === 0) {
+               selectedItems.value = [];
+               selectedSellers.value = [];
+               address.value = ""
+          } else {
+               // ลบ item ที่ไม่อยู่ใน cart ออก
+               selectedItems.value = selectedItems.value.filter(key =>
+                    newCart.some(item => key === item.id + "-" + item.sellerId)
+               );
+          }
+     },
+     { deep: true }
+);
 
 // -------------------- order --------------------
 const PlaceOrder = async () => {
@@ -170,12 +186,20 @@ const PlaceOrder = async () => {
      }
 
      console.log("📦 Orders Created:", orders);
+     console.log(selectedItems.value);
+     console.log(selectedSellers.value);
+     
+     
 
      const result = await createOrder(orders);
      if (result) {
           // alert("สั่งซื้อเรียบร้อยแล้ว!");
           alertStore.addToast("สั่งซื้อเรียบร้อยแล้ว", "PlaceOrder", "success");
-          cartStore.clearCart(); // ล้างตะกร้า
+          // cartStore.clearCart(); // ล้างตะกร้า
+          selectedItems.value.forEach(key => {
+               const [id, sellerId] = key.split("-")
+               cartStore.removeFromCart(id, sellerId)
+          })
           selectedItems.value = [];
           selectedSellers.value = [];
           address.value = ""
@@ -284,7 +308,7 @@ onMounted(async () => {
                                                   class="itbms-item-description font-semibold text-gray-900 text-lg group-hover:text-blue-700 transition">
                                                   {{ getDescription(item) }}
                                              </p>
-                                             <p class="text-sm text-gray-500">฿{{ item.price }}</p>
+                                             <p class="text-sm text-gray-500">฿{{ unitPrice(item.price) }}</p>
                                         </div>
                                    </div>
 
@@ -294,8 +318,8 @@ onMounted(async () => {
                                              class="itbms-dec-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-blue-600 font-bold hover:bg-blue-100 hover:scale-110 transition">
                                              -
                                         </button>
-                                        
-                                        <span class="itbms-item-quantity w-6 text-center font-medium">{{ item.quantity }}</span>
+
+                                        <span class="itbms-item-quantity w-6 text-center font-medium">{{ item.quantity}}</span>
 
                                         <button @click="increment(item)"
                                              class="itbms-inc-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition">
@@ -307,7 +331,7 @@ onMounted(async () => {
                                    <div class="min-w-[120px] text-right">
                                         <span
                                              class="itbms-item-total-price inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 font-bold px-4 py-2 rounded-xl shadow-sm">
-                                             ฿{{ item.price * item.quantity }}
+                                             ฿{{ unitPrice(item.price * item.quantity) }}
                                         </span>
                                    </div>
                               </div>
@@ -335,17 +359,18 @@ onMounted(async () => {
 
                     <!-- Summary -->
                     <div class="border-t pt-4 text-gray-700 space-y-2">
-                         <p>Total items: <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
+                         <p>Total items: <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty}}</span> ชิ้น
                          </p>
 
-                         <p class="itbms-total-total-price font-bold text-xl text-blue-700">Total price: {{ selectedSummary.totalPrice }}
+                         <p class="itbms-total-total-price font-bold text-xl text-blue-700">Total price: {{unitPrice(selectedSummary.totalPrice) }}
                          </p>
                     </div>
 
                     <!-- ปุ่มสั่งซื้อ -->
                     <div class="mt-6">
                          <button @click="PlaceOrder()" :disabled="!isValid"
-                              class="itbms-place-order-button w-full px-6 py-3 text-white font-bold rounded-lg shadow-lg transition" :class="isValid
+                              class="itbms-place-order-button w-full px-6 py-3 text-white font-bold rounded-lg shadow-lg transition"
+                              :class="isValid
                                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 hover:scale-[1.02]'
                                    : 'bg-blue-300 cursor-not-allowed opacity-60'">
                               Place Order
