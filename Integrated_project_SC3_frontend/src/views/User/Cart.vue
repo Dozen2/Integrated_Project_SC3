@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useCartStore } from "@/stores/cartStore";
 import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
@@ -121,7 +121,22 @@ const isValid = computed(() => {
           address.value.trim() !== ""
      )
 })
-
+watch(
+  () => cartStore.cart,
+  (newCart) => {
+    if (newCart.length === 0) {
+      selectedItems.value = [];
+      selectedSellers.value = [];
+      address.value = ""
+    } else {
+      // ลบ item ที่ไม่อยู่ใน cart ออก
+      selectedItems.value = selectedItems.value.filter(key =>
+        newCart.some(item => key === item.id + "-" + item.sellerId)
+      );
+    }
+  },
+  { deep: true }
+);
 
 // -------------------- order --------------------
 const PlaceOrder = async () => {
