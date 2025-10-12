@@ -225,8 +225,8 @@ async function authFetch(url, options = {}) {
       res = await fetch(url, { ...options, headers, credentials: "include" });
     } else {
       // refresh ไม่สำเร็จ → เด้งไป login
-      // auth.logout();
-      // router.push("/login");
+      auth.logout();
+      router.push("/login");
       throw new Error("Session expired. Please login again.");
     }
   }

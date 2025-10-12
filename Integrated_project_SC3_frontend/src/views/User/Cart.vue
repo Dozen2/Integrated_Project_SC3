@@ -8,8 +8,13 @@ import { nullCatching, unitPrice } from "@/libs/utils.js";
 
 
 const imagesMap = ref({});
-const address = ref("");
+const address = ref([]);
+const selectedAddress = ref("");
+const newAddress = ref("");
 const note = ref("");
+const showConfirmModal = ref(false)
+const confirmMessage = ref('')
+let confirmAction = null;
 // -------------------- store --------------------
 const auth = useAuthStore();
 const cartStore = useCartStore();
@@ -22,6 +27,22 @@ const placeholder = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
 // ทำ computed เพื่อให้ template reactive สวย ๆ
 const cartItems = computed(() => cartStore.cart);
 
+// -------------------- model comfrim ------------------------
+const openConfirmModal = (message, onConfirm) => {
+     confirmMessage.value = message;
+     confirmAction = onConfirm;
+     showConfirmModal.value = true;
+};
+
+const confirmYes = () => {
+     if (confirmAction) confirmAction();
+     showConfirmModal.value = false;
+};
+
+const confirmNo = () => {
+     showConfirmModal.value = false;
+};
+
 // -------------------- ฟังก์ชันเพิ่ม / ลดสินค้า --------------------
 const increment = (item) => {
      cartStore.updateQuantity(item.id, item.sellerId, item.quantity + 1);
@@ -29,11 +50,33 @@ const increment = (item) => {
 
 const decrement = (item) => {
      if (item.quantity - 1 <= 0) {
-          cartStore.removeFromCart(item.id, item.sellerId);
+          openConfirmModal(`คุณต้องการลบ "${getDescription(item)}" ออกจากตะกร้าหรือไม่?`, () => {
+               cartStore.removeFromCart(item.id, item.sellerId);
+               alertStore.addToast("ลบสินค้าที่เลือกเรียบร้อยแล้ว", "Delete Selected", "success")
+          })
      } else {
           cartStore.updateQuantity(item.id, item.sellerId, item.quantity - 1);
      }
 };
+
+const deleteselected = () => {
+     if (selectedItems.value.length === 0) {
+          alertStore.addToast("กรุณาเลือกสินค้าที่ต้องการลบ", "Delete Selected", "warning")
+     }
+
+     openConfirmModal("คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากตะกร้าหรือไม่?", () => {
+          selectedItems.value.forEach(key => {
+               const [id, sellerId] = key.split("-")
+               cartStore.removeFromCart(id, sellerId)
+          })
+
+          selectedItems.value = []
+          selectedSellers.value = []
+          alertStore.addToast("ลบสินค้าที่เลือกเรียบร้อยแล้ว", "Delete Selected", "success")
+     })
+
+}
+
 
 // -------------------- select item --------------------
 const selectedItems = ref([]);
@@ -69,24 +112,44 @@ const selectedSummary = computed(() => {
 // toggle seller checkbox
 const toggleSeller = (sellerId) => {
      const items = groupedCart.value[sellerId] || [];
+     const allSelected = items.every(it => selectedItems.value.includes(it.id + "-" + it.sellerId));
 
-     if (selectedSellers.value.includes(sellerId)) {
-          // ถ้าเลือกอยู่ → ยกเลิกทั้งหมดของ seller นี้
+     if (allSelected) {
+          // ยกเลิกเลือกทั้งหมดของ seller นี้
+          selectedItems.value = selectedItems.value.filter(
+               key => !items.some(it => key === it.id + "-" + it.sellerId)
+          );
           selectedSellers.value = selectedSellers.value.filter(id => id !== sellerId);
-          selectedItems.value = selectedItems.value.filter(key => {
-               return !items.some(it => key === it.id + "-" + it.sellerId);
-          });
      } else {
-          // ถ้ายังไม่ได้เลือก → เลือกทั้งหมดของ seller นี้
-          selectedSellers.value.push(sellerId);
+          // เลือกทั้งหมดของ seller นี้
           for (const it of items) {
                const key = it.id + "-" + it.sellerId;
                if (!selectedItems.value.includes(key)) {
                     selectedItems.value.push(key);
                }
           }
+          if (!selectedSellers.value.includes(sellerId)) {
+               selectedSellers.value.push(sellerId);
+          }
      }
 };
+watch(selectedItems, () => {
+     const sellerIds = Object.keys(groupedCart.value);
+
+     for (const sellerId of sellerIds) {
+          const items = groupedCart.value[sellerId] || [];
+          const allSelected = items.length > 0 && items.every(it => selectedItems.value.includes(it.id + "-" + it.sellerId));
+
+          if (allSelected) {
+               if (!selectedSellers.value.includes(sellerId)) {
+                    selectedSellers.value.push(sellerId);
+               }
+          } else {
+               selectedSellers.value = selectedSellers.value.filter(id => id !== sellerId);
+          }
+     }
+});
+
 const isSellerSelected = (sellerId) => {
      const items = groupedCart.value[sellerId] || [];
      if (items.length === 0) return false;
@@ -119,7 +182,7 @@ const getDescription = (item) => {
 const isValid = computed(() => {
      return (
           selectedItems.value.length > 0 &&
-          address.value.trim() !== ""
+          selectedAddress.value.trim() !== ""
      )
 })
 watch(
@@ -128,7 +191,7 @@ watch(
           if (newCart.length === 0) {
                selectedItems.value = [];
                selectedSellers.value = [];
-               address.value = ""
+               // address.value = ""
           } else {
                // ลบ item ที่ไม่อยู่ใน cart ออก
                selectedItems.value = selectedItems.value.filter(key =>
@@ -176,10 +239,10 @@ const PlaceOrder = async () => {
                buyerId: buyerId,
                sellerId: sellerId,
                orderDate: new Date().toISOString(),
-               shippingAddress: address.value,
+               shippingAddress: selectedAddress.value,
                orderNote: note.value,
                orderItems,
-               orderStatus: "PENDING"
+               orderStatus: "Cancelled"
           };
 
           orders.push(order);
@@ -188,8 +251,8 @@ const PlaceOrder = async () => {
      console.log("📦 Orders Created:", orders);
      console.log(selectedItems.value);
      console.log(selectedSellers.value);
-     
-     
+
+
 
      const result = await createOrder(orders);
      if (result) {
@@ -202,15 +265,60 @@ const PlaceOrder = async () => {
           })
           selectedItems.value = [];
           selectedSellers.value = [];
-          address.value = ""
+          // address.value = ""
      }
 };
+//-------------------- addess -----------------------
+const getAddressKey = (userId) => `address_${userId}`
 
+const isLoadingAddress = ref(false);
+
+watch(selectedAddress, (val) => {
+     console.log("Selected address:", val);
+     // บันทึก selectedAddress ที่เลือกล่าสุด
+     const user = auth.getAuthData();
+     if (user && user.id && val) {
+          localStorage.setItem(`selectedAddress_${user.id}`, val);
+     }
+});
+
+watch(address, () => {
+     if (isLoadingAddress.value) return;
+     saveAddresses();
+}, { deep: true });
+
+// เพิ่ม address ใหม่
+const addAddress = () => {
+     const trimmed = newAddress.value.trim();
+     if (trimmed === "") return;
+
+     // ถ้ายังไม่มี address นี้ใน list
+     if (!address.value.includes(trimmed)) {
+          address.value.push(trimmed);
+          // saveAddresses();
+     }
+     newAddress.value = "";
+     selectedAddress.value = trimmed; // auto select
+};
+
+// บันทึก address ลง localStorage
+const saveAddresses = () => {
+     const user = auth.getAuthData();
+     if (user && user.id) {
+          localStorage.setItem(getAddressKey(user.id), JSON.stringify(address.value));
+     }
+};
 
 
 // -------------------- onMounted --------------------
 onMounted(async () => {
      cartStore.loadCart();
+
+     //addess in localstroage
+     const user = auth.getAuthData();
+     console.log(user.id);
+
+
      //get seller
      const sellerIds = [...new Set(cartStore.cart.map(item => item.sellerId))];
      const sellersData = await fetchSellers(sellerIds);
@@ -222,30 +330,60 @@ onMounted(async () => {
      });
 
      cartStore.updateQuantity();
+
      //img
-     console.log(cartStore.cart);
-     for (const item of cartStore.cart) {
-          if (!item.images || item.images.length === 0) {
-               // ถ้าไม่มีรูป ใช้ placeholder
-               imagesMap.value[item.id] = [placeholder];
-          } else {
-               const sorted = [...item.images].sort(
-                    (a, b) => a.imageViewOrder - b.imageViewOrder
-               );
+     try {
+          for (const item of cartStore.cart) {
+               if (!item.images || item.images.length === 0) {
+                    imagesMap.value[item.id] = [placeholder];
+               } else {
+                    const sorted = [...item.images].sort(
+                         (a, b) => a.imageViewOrder - b.imageViewOrder
+                    );
 
-               const urls = await Promise.all(
-                    sorted.map(async (img) => {
-                         const url = await getImageByImageName(img.fileName);
-                         return url || placeholder; // ถ้า getImageByImageName คืนค่า null/undefined ใช้ placeholder
-                    })
-               );
+                    const urls = await Promise.all(
+                         sorted.map(async (img) => {
+                              try {
+                                   const url = await getImageByImageName(img.fileName);
+                                   return url || placeholder;
+                              } catch (e) {
+                                   console.error("โหลดรูปไม่ได้:", img.fileName, e);
+                                   return placeholder; // ใช้ placeholder แทน
+                              }
+                         })
+                    );
 
-               imagesMap.value[item.id] = urls;
+                    imagesMap.value[item.id] = urls;
+               }
           }
+     } catch (e) {
+          console.error("เกิดข้อผิดพลาดขณะโหลดรูปทั้งหมด:", e);
      }
+
      console.log(imagesMap.value);
 
 
+     if (user && user.id) {
+          isLoadingAddress.value = true;
+          const savedAddress = localStorage.getItem(getAddressKey(user.id))
+          console.log(savedAddress);
+
+          if (savedAddress) {
+               address.value = JSON.parse(savedAddress);
+
+               // โหลด selectedAddress ที่บันทึกไว้ล่าสุด
+               const lastSelected = localStorage.getItem(`selectedAddress_${user.id}`);
+
+               if (lastSelected && address.value.includes(lastSelected)) {
+                    // ถ้ามีและยังอยู่ใน array → ใช้ตัวนั้น
+                    selectedAddress.value = lastSelected;
+               } else {
+                    // ถ้าไม่มีหรือถูกลบไปแล้ว → ใช้ตัวแรก
+                    selectedAddress.value = address.value[0] || "";
+               }
+          }
+          isLoadingAddress.value = false;
+     }
 });
 </script>
 
@@ -266,6 +404,26 @@ onMounted(async () => {
                          ไม่มีสินค้าในตะกร้า
                     </div>
 
+                    <!-- ✅ Confirm Modal -->
+                    <div v-if="showConfirmModal"
+                         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                         <div class="bg-white p-6 rounded-2xl shadow-2xl w-[90%] max-w-sm text-center">
+                              <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ</h2>
+                              <p class="text-gray-600 mb-6">{{ confirmMessage }}</p>
+                              <div class="flex justify-center gap-4">
+                                   <button @click="confirmYes"
+                                        class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition">
+                                        ยืนยัน
+                                   </button>
+                                   <button @click="confirmNo"
+                                        class="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition">
+                                        ยกเลิก
+                                   </button>
+                              </div>
+                         </div>
+                    </div>
+
+
                     <!-- รายการสินค้า -->
                     <div v-else>
                          <!-- ปุ่มเลือกทั้งหมด -->
@@ -274,6 +432,11 @@ onMounted(async () => {
                                    class="itbms-select-all w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
                               <label class="font-semibold text-lg">Select All</label>
                          </div>
+
+                         <button @click="deleteselected" :disabled="selectedItems.length === 0"
+                              class="px-4 py-2 rounded-lg shadow-md transition text-white font-medium bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+                              🗑️ Delete Selected
+                         </button>
 
                          <!-- Seller Group -->
                          <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="itbms-row mb-10">
@@ -319,7 +482,8 @@ onMounted(async () => {
                                              -
                                         </button>
 
-                                        <span class="itbms-item-quantity w-6 text-center font-medium">{{ item.quantity}}</span>
+                                        <span class="itbms-item-quantity w-6 text-center font-medium">{{
+                                             item.quantity }}</span>
 
                                         <button @click="increment(item)"
                                              class="itbms-inc-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition">
@@ -345,9 +509,25 @@ onMounted(async () => {
 
                     <!-- ที่อยู่ -->
                     <div class="mb-4">
-                         <label class="block text-sm font-medium text-gray-600 mb-1">Address</label>
-                         <input type="text" v-model="address" placeholder="กรอกที่อยู่"
-                              class="itbms-shipping-address w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+
+                         <!-- Dropdown เลือก address -->
+                         <select v-model="selectedAddress"
+                              class="w-full border rounded-md p-2 mb-2 focus:ring focus:ring-blue-200 focus:border-blue-400">
+                              <option disabled value="">-- เลือกที่อยู่ --</option>
+                              <option v-for="(addr, index) in address" :key="index" :value="addr">
+                                   {{ addr }}
+                              </option>
+                         </select>
+
+                         <!-- Input เพิ่ม address ใหม่ -->
+                         <input type="text" v-model="newAddress" placeholder="เพิ่มที่อยู่ใหม่"
+                              class="w-full border rounded-md p-2 mb-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+
+                         <!-- ปุ่มเพิ่ม address -->
+                         <button @click="addAddress" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                              เพิ่มที่อยู่
+                         </button>
+
                     </div>
 
                     <!-- Note -->
@@ -359,10 +539,12 @@ onMounted(async () => {
 
                     <!-- Summary -->
                     <div class="border-t pt-4 text-gray-700 space-y-2">
-                         <p>Total items: <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty}}</span> ชิ้น
+                         <p>Total items: <span class="itbms-total-order-items font-medium">{{
+                              selectedSummary.totalQty }}</span> ชิ้น
                          </p>
 
-                         <p class="itbms-total-total-price font-bold text-xl text-blue-700">Total price: {{unitPrice(selectedSummary.totalPrice) }}
+                         <p class="itbms-total-total-price font-bold text-xl text-blue-700">Total price:
+                              {{ unitPrice(selectedSummary.totalPrice) }}
                          </p>
                     </div>
 

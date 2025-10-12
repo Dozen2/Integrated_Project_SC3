@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useAuthStore } from "./auth";
 
 const CART_KEY = "cart";
 
@@ -13,18 +14,30 @@ export const useCartStore = defineStore("cart", {
   },
 
   actions: {
+    getCartKey() {
+      const auth = useAuthStore();
+      const user = auth.getAuthData();
+      if (user && user.id) {
+        return `cart_${user.id}`
+      }
+      return "cart_guest"
+    },
+
     loadCart() {
       try {
-        const raw = localStorage.getItem(CART_KEY);
+        const key = this.getCartKey();
+        const raw = localStorage.getItem(key);
         this.cart = raw ? JSON.parse(raw) : [];
       } catch (e) {
+        console.error("loadCart error", e);
         this.cart = [];
       }
     },
 
     saveCart() {
       try {
-        localStorage.setItem(CART_KEY, JSON.stringify(this.cart));
+        const key = this.getCartKey();
+        localStorage.setItem(key, JSON.stringify(this.cart));
       } catch (e) {
         console.error("saveCart error", e);
       }

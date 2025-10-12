@@ -62,8 +62,8 @@ export const useAuthStore = defineStore("auth", {
 
         return true;
       } catch (err) {
-        // this.logout();
-        // router.push("/signin"); 
+        this.logout();
+        router.push("/signin"); 
         console.log("refresh not finis");
         
         return false;
@@ -86,7 +86,6 @@ export const useAuthStore = defineStore("auth", {
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("role");
-      localStorage.removeItem("cart")
       // Cookies.remove("refreshToken");
       // optional: clear refresh token cookie
     },
