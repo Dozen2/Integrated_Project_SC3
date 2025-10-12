@@ -62,20 +62,15 @@ public class OrderServices {
         order = orderRepository.save(order);
         Set<OrderDetail> orderDetails = new LinkedHashSet<>();
         BigDecimal total = BigDecimal.ZERO;
+        boolean hasIssue = false;
         for (OrderItems itemRequest:
              orderRequest.getOrderItems()) {
             SaleItem saleItem = saleitemRepository.findById(itemRequest.getSaleItemId()).orElseThrow(()->new ItemNotFoundException("sale item not found"));
             if(!saleItem.getSeller().getId().equals(seller.getId())){
                 throw new ForbiddenException("Order cannot contain other seller's saleItem");
             }
-            if(itemRequest.getQuantity() <= 0){
-                throw new OutOfStockException("Quantity must no equal or lower than 0");
-            }
-            if (saleItem.getQuantity() < itemRequest.getQuantity()){
-                throw new OutOfStockException("Not enough stock for " + saleItem.getModel());
-            }
-            saleItem.setQuantity(saleItem.getQuantity() - itemRequest.getQuantity());
-            saleitemRepository.save(saleItem);
+
+            boolean checkStock = saleItem.getQuantity() > 0 && saleItem.getQuantity() >= itemRequest.getQuantity();
             OrderDetail orderDetail = new OrderDetail();
             orderDetail.setOrder(order);
             orderDetail.setSaleItem(saleItem);
@@ -84,12 +79,23 @@ public class OrderServices {
             orderDetail.setDescription(itemRequest.getDescription());
             orderDetailRepository.save(orderDetail);
 
+            if(checkStock){
+                saleItem.setQuantity(saleItem.getQuantity() - itemRequest.getQuantity());
+                saleitemRepository.save(saleItem);
+            }else {
+                hasIssue = true;
+            }
             BigDecimal subTotal = BigDecimal.valueOf(saleItem.getPrice()).multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
             total = total.add(subTotal);
             orderDetails.add(orderDetail);
         }
         order.setOrderDetails(orderDetails);
         order.setTotalPrice(total);
+        if(hasIssue){
+            order.setOrderStatus("Cancelled");
+            order.setPaymentStatus("Cancelled");
+        }
+
         return orderRepository.save(order);
 
 
@@ -282,6 +288,13 @@ public class OrderServices {
                     orderItem.setPrice(item.getPriceEachAtPurchase());
                     orderItem.setQuantity(item.getQuantity());
                     orderItem.setDescription(item.getDescription());
+                    String mainImageFileName = item.getSaleItem().getSaleItemImage()
+                            .stream()
+                            .filter(img -> img.getImageViewOrder() != null && img.getImageViewOrder() == 1)
+                            .map(SaleItemImage::getFileName)
+                            .findFirst()
+                            .orElse(null);
+                    orderItem.setMainImageFileName(mainImageFileName);
                     return orderItem;
                 }).toList();
 
