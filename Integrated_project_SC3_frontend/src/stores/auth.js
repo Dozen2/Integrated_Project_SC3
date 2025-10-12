@@ -8,7 +8,6 @@ import {
   logout as apiLogout,
   editUserProfile as apiEditUserProfile
 } from "@/libs/callAPI/apiAuth";
-import router from "@/router";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -49,7 +48,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         const { accessToken, role } = await apiRefreshToken();
 
-        console.log("✅ AccessToken ใหม่:", accessToken);
+        console.log("New AccessToken:", accessToken);
         console.log("new role = ", role);
 
 

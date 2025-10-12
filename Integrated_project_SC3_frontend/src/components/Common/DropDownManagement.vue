@@ -1,69 +1,57 @@
 <script setup>
-import { ChevronDown } from 'lucide-vue-next'
-import { ref, computed, onMounted, onUnmounted, reactive, watch } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { ChevronDown } from "lucide-vue-next";
+import { ref, computed, onMounted, onUnmounted, reactive, watch } from "vue";
+import { useRoute, RouterLink } from "vue-router";
 
-// --- State and Router ---
-const isOpen = ref(false) // State สำหรับการเปิด/ปิด Dropdown
-const route = useRoute() // เข้าถึงข้อมูล Route ปัจจุบัน
-const currentPath = ref(route.path) // ใช้ route.path แทน window.location.pathname
+const isOpen = ref(false);
+const route = useRoute();
+const currentPath = ref(route.path);
 
-// --- Dropdown Menu Items ---
-// รายการเมนูที่จะแสดงใน Dropdown
 const menuItems = reactive([
-  { text:'SaleItem Manage', name: 'ProductManage', path: '/sale-items/list' },
-  { text:'Brand Manage', name: 'BrandManage', path: '/brands' }
-])
+  { text: "SaleItem Manage", name: "ProductManage", path: "/sale-items/list" },
+  { text: "Brand Manage", name: "BrandManage", path: "/brands" },
+  { text: "Order Manage", name: "OrderManage", path: "/seller-order" },
+]);
 
-// --- Watch route changes ---
-// เมื่อ route เปลี่ยน ให้อัปเดต currentPath
 watch(route, (newRoute) => {
-  currentPath.value = newRoute.path
-})
+  currentPath.value = newRoute.path;
+});
 
-// --- Computed Property for Display Text ---
-// สร้าง computed property เพื่อคำนวณข้อความที่จะแสดงผลแบบ Dynamic
 const displayText = computed(() => {
-  const path = currentPath.value
-  if (path === '/sale-items/list') {
-    return menuItems[0].text
+  const path = currentPath.value;
+  if (path === "/sale-items/list") {
+    return menuItems[0].text;
   }
-  if (path === '/brands') {
-    return menuItems[1].text
+  if (path === "/brands") {
+    return menuItems[1].text;
   }
-  return 'Management' // ค่า Default ถ้าไม่อยู่ใน 2 หน้านั้น
-})
+  return "Management";
+});
 
-// --- Function to check if menu item is active ---
 const isActiveMenuItem = (itemPath) => {
-  return currentPath.value === itemPath
-}
+  return currentPath.value === itemPath;
+};
 
-// --- Click Outside Logic ---
-// Logic สำหรับการปิด Dropdown เมื่อคลิกที่พื้นที่ด้านนอก
-const dropdown = ref(null) // สร้าง ref ไปยัง element ของ dropdown
+const dropdown = ref(null);
 
 const handleClickOutside = (event) => {
-  // ถ้า dropdown เปิดอยู่ และ element ที่ถูกคลิกไม่ได้อยู่ใน dropdown ของเรา
   if (isOpen.value && dropdown.value && !dropdown.value.contains(event.target)) {
-    isOpen.value = false // ให้ปิด dropdown
+    isOpen.value = false;
   }
-}
+};
 
 onMounted(() => {
-  console.log("Current path: ", currentPath.value); 
-  document.addEventListener('mousedown', handleClickOutside)
-})
+  console.log("Current path: ", currentPath.value);
+  document.addEventListener("mousedown", handleClickOutside);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('mousedown', handleClickOutside)
-})
+  document.removeEventListener("mousedown", handleClickOutside);
+});
 
-// --- Functions ---
-// ฟังก์ชันสำหรับปิด dropdown (ใช้เมื่อคลิกที่เมนู)
 const closeDropdown = () => {
-  isOpen.value = false
-}
+  isOpen.value = false;
+};
 </script>
 
 <template>
@@ -78,23 +66,19 @@ const closeDropdown = () => {
         aria-haspopup="true"
       >
         {{ displayText }}
-        <span class="-mr-1 h-5 w-5 text-gray-400 transition-transform duration-200"
-          :class="{'transform rotate-180': isOpen}"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true">
-          <ChevronDown color="#478eff" strokeWidth=2 />
+        <span class="-mr-1 h-5 w-5 text-gray-400 transition-transform duration-200" :class="{ 'transform rotate-180': isOpen }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <ChevronDown color="#478eff" strokeWidth="2" />
         </span>
       </button>
     </div>
 
     <transition
-        enter-active-class="transition ease-out duration-100"
-        enter-from-class="transform opacity-0 scale-95"
-        enter-to-class="transform opacity-100 scale-100"
-        leave-active-class="transition ease-in duration-75"
-        leave-from-class="transform opacity-100 scale-100"
-        leave-to-class="transform opacity-0 scale-95"
+      enter-active-class="transition ease-out duration-100"
+      enter-from-class="transform opacity-0 scale-95"
+      enter-to-class="transform opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="transform opacity-100 scale-100"
+      leave-to-class="transform opacity-0 scale-95"
     >
       <div
         v-if="isOpen"
@@ -112,7 +96,7 @@ const closeDropdown = () => {
             @click="closeDropdown"
             :class="{
               'bg-blue-50 border-l-4 border-blue-500': isActiveMenuItem(item.path),
-              'hover:bg-gray-100 border-l-4 border-gray-200' : !isActiveMenuItem(item.path)
+              'hover:bg-gray-100 border-l-4 border-gray-200': !isActiveMenuItem(item.path),
             }"
             class="block px-4 py-2 text-sm hover:text-gray-900 transition-colors duration-150"
             role="menuitem"
@@ -121,7 +105,7 @@ const closeDropdown = () => {
             <span
               :class="{
                 'text-blue-700 font-semibold': isActiveMenuItem(item.path),
-                'text-gray-700': !isActiveMenuItem(item.path)
+                'text-gray-700': !isActiveMenuItem(item.path),
               }"
             >
               {{ item.text }}

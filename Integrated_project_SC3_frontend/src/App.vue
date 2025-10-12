@@ -15,7 +15,7 @@ const hideNavbarOn = ['/signin', '/verify-email']
 </script>
 <template>
   <div
-    class=" bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
+    class="bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
   >
   <navbar v-if="!hideNavbarOn.includes(route.path)" />
   <Toast />

@@ -3,21 +3,13 @@ import { useAuthStore } from "@/stores/auth";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 
-
-
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 // const userUrlV2 = `${VITE_ROOT_API_URL}/itb-mshop/v2/user/register`;
-
-
 
 //ใช้ /auth
 //===========================================================================================================================================
 // ฟังก์ชัน register user
-async function registerUser(
-  userData,
-  nationalIdPhotoFront,
-  nationalIdPhotoBack
-) {
+async function registerUser(userData, nationalIdPhotoFront, nationalIdPhotoBack) {
   const formData = new FormData();
 
   // field ที่ตรงกับ UserDTO
@@ -61,7 +53,6 @@ async function verifyEmail(token) {
   return response.status; // ส่งข้อความกลับไปให้ caller
 }
 
-
 async function refreshEmail(token) {
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/auth/refresh-email-token?token=${token}`;
   console.log("refrech fetching:", url);
@@ -73,26 +64,23 @@ async function refreshEmail(token) {
   }
 }
 
-
 async function loginUser(username, password) {
   try {
     const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: username, password: password }),
-      credentials: "include"
+      credentials: "include",
     });
 
     if (!res.ok) throw new Error("Login failed");
 
     const data = await res.json();
     console.log("Login response:", data);
-    const accessToken = data.access_token;   // token ที่ BE ส่งกลับมา
+    const accessToken = data.access_token; // token ที่ BE ส่งกลับมา
     // const refreshToken = data.refresh_token;
 
-
     // Cookies.set("refreshToken", refreshToken, { expires: 7, secure: true, sameSite: "Strict" });
-
 
     const decoded = jwtDecode(accessToken);
     console.log(decoded);
@@ -104,9 +92,9 @@ async function loginUser(username, password) {
 
     let role = "UNKNOWN";
 
-    if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
+    if (authorities.some((auth) => auth.role === "ROLE_SELLER")) {
       role = "ROLE_SELLER";
-    } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
+    } else if (authorities.some((auth) => auth.role === "ROLE_BUYER")) {
       role = "ROLE_BUYER";
     }
     console.log(role);
@@ -123,7 +111,7 @@ async function loginUser(username, password) {
 async function refreshToken() {
   const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/refresh`, {
     method: "POST",
-    credentials: "include" // refresh token จะส่งมากับ cookie
+    credentials: "include", // refresh token จะส่งมากับ cookie
   });
 
   if (!res.ok) throw new Error("Refresh failed");
@@ -133,31 +121,30 @@ async function refreshToken() {
 
   const authorities = decoded.authorities || [];
 
-  let decode_role = 'UNKNOWN'
-  
-  if (authorities.some(auth => auth.role === "ROLE_SELLER")) {
+  let decode_role = "UNKNOWN";
+
+  if (authorities.some((auth) => auth.role === "ROLE_SELLER")) {
     decode_role = "ROLE_SELLER";
-  } else if (authorities.some(auth => auth.role === "ROLE_BUYER")) {
+  } else if (authorities.some((auth) => auth.role === "ROLE_BUYER")) {
     decode_role = "ROLE_BUYER";
   }
 
-
-  return { accessToken: data.access_token, role: decode_role};
+  return { accessToken: data.access_token, role: decode_role };
 }
 
 // ใช้ /user
 //=========================================================================================================================================
 async function fetchUserProfile(userId) {
-  const accessToken = localStorage.getItem("accessToken")
-  if (!accessToken) throw new Error("No access token")
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) throw new Error("No access token");
 
   const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/${userId}`, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,  // ใส่ JWT ไปด้วย
+      Authorization: `Bearer ${accessToken}`, // ใส่ JWT ไปด้วย
     },
-  })
-  if (!res.ok) throw new Error("Failed to fetch profile")
+  });
+  if (!res.ok) throw new Error("Failed to fetch profile");
 
   return res.json();
 }
@@ -165,7 +152,7 @@ async function fetchUserProfile(userId) {
 async function logout() {
   const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/logout`, {
     method: "POST",
-    credentials: "include"
+    credentials: "include",
   });
 
   if (!res.ok && res.status !== 204) {
@@ -185,7 +172,7 @@ async function editUserProfile(userData) {
   const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/user/profile/all`, {
     method: "PUT",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
     body: formData,
   });
@@ -195,7 +182,7 @@ async function editUserProfile(userData) {
     throw new Error(errorData.message || "Update failed");
   }
 
-  return res.json()
+  return res.json();
 }
 
 // ใช้แทน fatch ใน api ที่ต้องการใช้ access or refresh token
@@ -208,14 +195,12 @@ async function authFetch(url, options = {}) {
     ...(options.headers || {}),
     Authorization: `Bearer ${accessToken}`,
   };
-
   let res = await fetch(url, { ...options, headers, credentials: "include" });
 
   // ถ้า token หมดอายุ → ลอง refresh
   if (res.status === 401) {
     const success = await auth.refreshToken();
     console.log("do is finis!!!!");
-
 
     if (success) {
       accessToken = localStorage.getItem("accessToken");
@@ -230,20 +215,7 @@ async function authFetch(url, options = {}) {
       throw new Error("Session expired. Please login again.");
     }
   }
-
   return res;
 }
 
-
-
-export {
-  registerUser,
-  verifyEmail,
-  refreshEmail,
-  loginUser,
-  refreshToken,
-  fetchUserProfile,
-  logout,
-  editUserProfile,
-  authFetch
-};
+export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken, fetchUserProfile, logout, editUserProfile, authFetch };

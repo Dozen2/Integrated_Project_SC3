@@ -65,9 +65,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class=" min-h-[calc(100vh-80px)]  bg-white">
+  <div class=" min-h-[calc(100vh-80px)]">
     <!-- Hero Section -->
-    <section class="hero-section relative min-h-[calc(100vh-95px)]  flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <section class="pt-[35px] hero-section relative min-h-[calc(100vh-95px)]  flex items-center justify-center overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <!-- Floating Background Glow -->
       <div class="absolute inset-0">
         <div class="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-purple-500/30 rounded-full blur-[160px]"></div>
