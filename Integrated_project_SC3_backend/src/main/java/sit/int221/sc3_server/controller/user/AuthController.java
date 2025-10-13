@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sit.int221.sc3_server.DTO.Authentication.JwtAuthUser;
+import sit.int221.sc3_server.DTO.Authentication.ResetPasswordRequestDTO;
 import sit.int221.sc3_server.DTO.user.UserDTO;
 import sit.int221.sc3_server.DTO.user.UserResponseDTO;
 import sit.int221.sc3_server.entity.Buyer;
@@ -186,4 +187,21 @@ public class AuthController {
         response.addHeader("Set-Cookie", deleteCookie.toString());
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/send-reset-password-email")
+    public ResponseEntity<?> sendResetPasswordEmail(@RequestBody String email){
+        userServices.sendResetPasswordEmail(email);
+        return ResponseEntity.ok("Send email for verify reset email successful");
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDTO request) {
+        userServices.resetPassword(
+                request.getToken(),
+                request.getNewPassword(),
+                request.getConfirmPassword()
+        );
+        return ResponseEntity.ok("Password reset successful");
+    }
+
 }

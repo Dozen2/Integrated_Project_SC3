@@ -31,6 +31,7 @@ import sit.int221.sc3_server.utils.TokenType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -70,27 +71,27 @@ UserServices {
     }
 
 
-    public Seller findSellerBySellerId(Integer id){
-       Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
-        Buyer buyer =  seller.getBuyer();
+    public Seller findSellerBySellerId(Integer id) {
+        Seller seller = sellerRepository.findById(id).orElseThrow(() -> new ForbiddenException("user not found"));
+        Buyer buyer = seller.getBuyer();
         if (buyer == null) {
             throw new ForbiddenException("seller has no buyer profile");//should not happen
         }
-        if(!buyer.getIsActive()){
+        if (!buyer.getIsActive()) {
             throw new ForbiddenException("user is not active");
         }
         return seller;
 
     }
-    public Buyer findBuyerByBuyerId(Integer id){
-        return buyerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+
+    public Buyer findBuyerByBuyerId(Integer id) {
+        return buyerRepository.findById(id).orElseThrow(() -> new ForbiddenException("user not found"));
     }
 
-    public Buyer findBuyerBySellerId(Integer id){
-        Seller seller =  sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+    public Buyer findBuyerBySellerId(Integer id) {
+        Seller seller = sellerRepository.findById(id).orElseThrow(() -> new ForbiddenException("user not found"));
         return seller.getBuyer();
     }
-
 
 
     @Transactional
@@ -200,7 +201,6 @@ UserServices {
     }
 
 
-
     //***********************************************
 
 //    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
@@ -221,24 +221,23 @@ UserServices {
 //    }
 
     //**************************************************
-    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
+    public Map<String, Object> authenticateUser(JwtAuthUser jwtAuthUser) {
         UsernamePasswordAuthenticationToken uToken =
-                new UsernamePasswordAuthenticationToken(jwtAuthUser.getEmail(),jwtAuthUser.getPassword());
+                new UsernamePasswordAuthenticationToken(jwtAuthUser.getEmail(), jwtAuthUser.getPassword());
         authenticationManager.authenticate(uToken);
         UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getEmail());
-        long refreshTokenAgeInMinute = 24*60 ;
+        long refreshTokenAgeInMinute = 24 * 60;
 
         String accessToken = jwtUtils.generateToken(userDetails);
-        String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
+        String refreshToken = jwtUtils.generateToken(userDetails, refreshTokenAgeInMinute, TokenType.refresh_token);
         return Map.of(
-                "access_token",accessToken,
-                "refresh_token",refreshToken
+                "access_token", accessToken,
+                "refresh_token", refreshToken
 
         );
 
     }
 //*************************************************************
-
 
 
     public Map<String, Object> refreshToken(String refreshToken) {
@@ -265,11 +264,10 @@ UserServices {
     }
 
 
-
     public boolean checkPassword(String password, String email) {
         Buyer user = buyerRepository.findByUserNameOrEmail(email).orElseThrow(
-                ()->new UnAuthorizeException("Email or Password is Incorrect"));
-        if(!user.getIsActive()){
+                () -> new UnAuthorizeException("Email or Password is Incorrect"));
+        if (!user.getIsActive()) {
             throw new ForbiddenException("your account is not active");
 
         }
@@ -294,7 +292,7 @@ UserServices {
 
 
     public SellerProfileDTO getSeller(int id) {
-        Seller seller = sellerRepository.findById(id).orElseThrow(()->new UnAuthorizeException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(() -> new UnAuthorizeException("user not found"));
         Buyer buyer = seller.getBuyer();
         return this.mapSellerDto(buyer);
 
@@ -309,9 +307,9 @@ UserServices {
     }
 
     public SellerProfileDTO updateSeller(UserProfileRequestRTO userProfileRequestRTO, int id) {
-        Seller seller = sellerRepository.findById(id).orElseThrow(()-> new ForbiddenException("user not found"));
+        Seller seller = sellerRepository.findById(id).orElseThrow(() -> new ForbiddenException("user not found"));
         Buyer buyer = seller.getBuyer();
-        if(buyer.getSeller() == null){
+        if (buyer.getSeller() == null) {
             throw new ForbiddenException("user is buyer");
         }
         buyer.setNickName(userProfileRequestRTO.getNickName());
@@ -346,7 +344,48 @@ UserServices {
         dto.setBankAccount(buyer.getSeller().getBankAccountNumber());
         dto.setNickName(buyer.getNickName());
         return dto;
+    }
 
+
+    public void sendResetPasswordEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email must not be null or empty");
+        }
+        boolean exists = buyerRepository.existsBuyerByEmail(email.trim().replace("\"", ""));
+        System.out.println("Check email exists for [" + email + "] = " + exists);
+
+        if (!exists) {
+            throw new NoSuchElementException("No user found with email: " + email);
+        }
+        emailService.sendMailVerityResetPassword(email, email);
+    }
+
+    public void resetPassword(String token, String newPassword, String confirmPassword) {
+        try {
+            //check new and confirm password
+            if (newPassword == null || confirmPassword == null || !newPassword.equals(confirmPassword)) {
+                throw new IllegalArgumentException("New password and confirm password do not match");
+            }
+
+            //decode token and getEmail
+            String email = jwtUtils.verifyAndDecodeEmailToken(token);
+            System.out.println("Check decode email: " + email);
+            if (email == null || email.isBlank()) {
+                throw new IllegalArgumentException("Email not found in token");
+            }
+            Buyer buyer = buyerRepository.findByEmail(email)
+                    .orElseThrow(() -> new NoSuchElementException("No user found with email: " + email));
+
+            //change password argon
+            String hashedPassword = passwordEncoder.encode(newPassword);
+
+            //set new password in repo by email
+            buyer.setPasswords(hashedPassword);
+            buyerRepository.save(buyer);
+            System.out.println("Password has been reset successfully for: " + email);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -32,11 +32,13 @@ public class WebConfig {
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     @Autowired
     private JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -45,32 +47,32 @@ public class WebConfig {
 
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/itb-mshop/v2/user/register","/itb-mshop/v2/user/**","/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
-                        .requestMatchers("/itb-mshop/v2/auth/register","/itb-mshop/v2/auth/verify-email"
-                        ,"/itb-mshop/v2/auth/refresh-email-token").permitAll()
-                        .requestMatchers("/itb-mshop/v1/brands/**","/itb-mshop/v2/sale-items","/itb-mshop/v2/sale-items/file/{filename:.+}").permitAll()
-                        .requestMatchers("/itb-mshop/v2/auth/login","/itb-mshop/v2/auth/logout").permitAll()
+                                .requestMatchers("/itb-mshop/v2/auth/register", "/itb-mshop/v2/auth/verify-email"
+                                        , "/itb-mshop/v2/auth/refresh-email-token").permitAll()
+                                .requestMatchers("/itb-mshop/v1/brands/**", "/itb-mshop/v2/sale-items", "/itb-mshop/v2/sale-items/file/{filename:.+}").permitAll()
+                                .requestMatchers("/itb-mshop/v2/auth/login", "/itb-mshop/v2/auth/logout","/itb-mshop/v2/auth/send-reset-password-email","/itb-mshop/v2/auth/reset-password").permitAll()
                                 .requestMatchers("itb-mshop/v2/sale-items/{saleItemId}").permitAll()
-                        .requestMatchers("/itb-mshop/v2/auth/refresh").permitAll()
+                                .requestMatchers("/itb-mshop/v2/auth/refresh").permitAll()
                                 .requestMatchers("/itb-mshop/v2/sale-items").permitAll()
                                 .requestMatchers("/itb-mshop/v2/sale-items/storages").permitAll()
-                        .requestMatchers(
-                        "/itb-mshop/v2/user/{id}","/itb-mshop/v2/user/profile/all").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
-                        .requestMatchers("/itb-mshop/v2/sellers/**").authenticated()
+                                .requestMatchers(
+                                        "/itb-mshop/v2/user/{id}", "/itb-mshop/v2/user/profile/all").hasAnyAuthority("ROLE_BUYER", "ROLE_SELLER")
+                                .requestMatchers("/itb-mshop/v2/sellers/**").authenticated()
 
 //                        .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
 
-                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider(jwtUserDetailService))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex->ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
 
-//    @Bean
+    //    @Bean
 //    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        http.headers(httpSecurityHeadersConfigurer ->
 //                httpSecurityHeadersConfigurer.frameOptions(frameOptionsConfig ->
@@ -98,6 +100,7 @@ public class WebConfig {
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();

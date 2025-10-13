@@ -39,7 +39,7 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
-        throw "Hello123456:  "+err;
+        throw "Invalid Authentication: "+err;
       }
     },
 

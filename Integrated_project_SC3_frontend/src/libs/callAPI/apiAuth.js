@@ -185,6 +185,61 @@ async function editUserProfile(userData) {
   return res.json();
 }
 
+async function sendResetPasswordEmail(email) {
+  try {
+    console.log("Check Endpoint:", `${VITE_ROOT_API_URL}/itb-mshop/v2/auth/send-reset-password-email`);
+
+    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/send-reset-password-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(email), // ถ้า backend รับ String ตรง ๆ (ไม่ใช่ object)
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to send reset password email");
+    }
+
+    const data = await res.text();
+    console.log("Email send response:", data);
+    return data;
+  } catch (err) {
+    console.error("Error sending reset password email:", err.message);
+    throw err;
+  }
+}
+
+async function resetPassword(token, newPassword, confirmPassword) {
+  try {
+    console.log("CheckEnpoint: ", `${VITE_ROOT_API_URL}/itb-mshop/v2/auth/reset-password`);
+    const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/reset-password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: token,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to reset password");
+    }
+
+    const data = await res.text();
+    console.log("Password reset response:", data);
+    return data;
+  } catch (err) {
+    console.error("Error resetting password:", err.message);
+    throw err;
+  }
+}
+
 // ใช้แทน fatch ใน api ที่ต้องการใช้ access or refresh token
 //=========================================================================================================================================
 async function authFetch(url, options = {}) {
@@ -218,4 +273,4 @@ async function authFetch(url, options = {}) {
   return res;
 }
 
-export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken, fetchUserProfile, logout, editUserProfile, authFetch };
+export { registerUser, verifyEmail, refreshEmail, loginUser, refreshToken, fetchUserProfile, logout, editUserProfile, authFetch, sendResetPasswordEmail, resetPassword };
