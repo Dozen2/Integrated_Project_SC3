@@ -6,8 +6,12 @@ import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import sit.int221.sc3_server.DTO.Authentication.AuthUserDetail;
+import sit.int221.sc3_server.DTO.user.PasswordDTO;
+import sit.int221.sc3_server.DTO.user.profile.BuyerProfileDTO;
 import sit.int221.sc3_server.DTO.user.profile.UserProfileRequestRTO;
+import sit.int221.sc3_server.entity.Buyer;
 import sit.int221.sc3_server.exception.ForbiddenException;
+import sit.int221.sc3_server.exception.UnAuthorizeException;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
 import sit.int221.sc3_server.service.FileService;
 import sit.int221.sc3_server.service.user.UserServices;
@@ -69,6 +73,22 @@ public class UserController {
         }
     }
 
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(Authentication authentication, @RequestBody PasswordDTO passwordDTO){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token type");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        Buyer buyer;
+        if(isSeller){
+           buyer = userServices.changePassword(authUserDetail.getId(),passwordDTO.getNewPassword());
+           return ResponseEntity.ok(userServices.mapSellerDto(buyer));
+        }else{
+           buyer = userServices.changePassword(authUserDetail.getId(),passwordDTO.getNewPassword());
+           return ResponseEntity.ok(userServices.mapBuyerDto(buyer));
+        }
+    }
 
 
 
