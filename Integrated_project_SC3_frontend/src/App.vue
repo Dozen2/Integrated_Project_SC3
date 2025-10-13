@@ -9,7 +9,7 @@ import Toast from './components/Common/Toast.vue';
 // alertStore.addToast("The sale item has been updated.", "Success", "error");
 const route = useRoute()
 
-const hideNavbarOn = ['/signin', '/verify-email']
+const hideNavbarOn = ['/verify-email']
 
 
 </script>

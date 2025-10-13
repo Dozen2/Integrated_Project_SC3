@@ -81,7 +81,7 @@ const summitForm = async () => {
 };
 </script>
 <template>
-  <FormInputBox label="Forgot Password" description="Please enter your email so we can verify your account and help you reset your password.">
+  <FormInputBox label="Reset Password" description="Please enter your new password below. Make sure it’s strong and easy for you to remember.">
     <template #form>
       <form class="flex flex-col gap-4" @submit.prevent="summitForm">
         <InputBox

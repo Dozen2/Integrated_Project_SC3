@@ -92,7 +92,7 @@ const summitForm = async () => {
 
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"
+    class="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"
   >
     <!-- กล่องหลัก -->
     <div
