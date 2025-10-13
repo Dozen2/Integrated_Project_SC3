@@ -8,6 +8,7 @@ import { deleteUserById, getAllData } from "@/libs/api.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js"
 import { MoveLeft } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
+import ConfirmDelete from "@/components/Common/ConfirmDelete.vue";
 
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 const alertStore = useAlertStore();
@@ -63,6 +64,7 @@ const confirmDeleteProduct = async () => {
   }
 };
 
+
 const deleteBrand = (id, name, noOfSaleItems) => {
   console.log(noOfSaleItems);
   if (noOfSaleItems > 0) {
@@ -109,7 +111,7 @@ onBeforeUnmount(() => {
           </RouterLink>
         </div>
 
-    <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <!-- <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ</h2>
         <p class="itbms-message text-gray-600 mb-6">Do you want to delete <strong>{{ brandToDeleteName }}</strong>
@@ -121,10 +123,16 @@ onBeforeUnmount(() => {
             class="itbms-confirm-button px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">ยืนยัน</button>
         </div>
       </div>
-    </div>
+    </div> -->
+        <ConfirmDelete
+      :show="showDeleteModal"
+      :message="`Do you want to delete brand '${brandToDeleteName}' ?`"
+      @confirm="confirmDeleteProduct"
+      @cancel="() => (showDeleteModal = false)"
+    />
 
     <!-- Modal: Cannot Delete Brand -->
-    <div v-if="cannotdelete" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <!-- <div v-if="cannotdelete" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h2 class="text-lg font-semibold text-red-700 mb-4">Delete Not Allowed</h2>
         <p class="itbms-message text-gray-700 mb-6">
@@ -138,7 +146,14 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
+<ConfirmDelete
+  :show="cannotdelete"
+  :message="`Cannot delete brand '${brandToDeleteName}'. There are sale items associated with this brand.`"
+  confirm-text="OK"        
+  hide-cancel              
+  @confirm="() => (cannotdelete = false)"
+/>
 
     <!-- Brand Table -->
     <div class="overflow-x-auto">

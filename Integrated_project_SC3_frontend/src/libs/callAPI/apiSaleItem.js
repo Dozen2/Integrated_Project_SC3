@@ -235,12 +235,16 @@ async function deleteSaleItemSeller(id) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  console.log(res);
 
   if (!res.ok) {
+    console.log(res);
     const err = await res.json();
     throw new Error(err.message || "Failed to create sale item");
   }
-
+  if (res.status === 204) {
+    return
+  }
   return res.json();
 
 }

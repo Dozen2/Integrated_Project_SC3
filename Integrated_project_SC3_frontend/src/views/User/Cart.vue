@@ -5,6 +5,8 @@ import { useCartStore } from "@/stores/cartStore";
 import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 import { useAlertStore } from "@/stores/alertStore";
 import { nullCatching, unitPrice } from "@/libs/utils.js";
+import ConfirmDelete from "@/components/Common/ConfirmDelete.vue";
+
 
 
 const imagesMap = ref({});
@@ -404,26 +406,14 @@ onMounted(async () => {
                          ไม่มีสินค้าในตะกร้า
                     </div>
 
-                    <!-- ✅ Confirm Modal -->
-                    <div v-if="showConfirmModal"
-                         class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                         <div class="bg-white p-6 rounded-2xl shadow-2xl w-[90%] max-w-sm text-center">
-                              <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ</h2>
-                              <p class="text-gray-600 mb-6">{{ confirmMessage }}</p>
-                              <div class="flex justify-center gap-4">
-                                   <button @click="confirmYes"
-                                        class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition">
-                                        ยืนยัน
-                                   </button>
-                                   <button @click="confirmNo"
-                                        class="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400 transition">
-                                        ยกเลิก
-                                   </button>
-                              </div>
-                         </div>
-                    </div>
-
-
+                    <ConfirmDelete
+                    v-if="showConfirmModal"  
+                    :show="showConfirmModal" 
+                    :message="confirmMessage" 
+                    @confirm="confirmYes"
+                    @cancel="confirmNo" 
+                    />
+                    
                     <!-- รายการสินค้า -->
                     <div v-else>
                          <!-- ปุ่มเลือกทั้งหมด -->
