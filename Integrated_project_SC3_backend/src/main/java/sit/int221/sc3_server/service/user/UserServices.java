@@ -349,4 +349,15 @@ UserServices {
 
     }
 
+
+    public Buyer changePassword(Integer buyerId,String newPassword){
+        Buyer buyer = buyerRepository.findById(buyerId).orElseThrow(()->new ForbiddenException("user not found"));
+        if(passwordEncoder.matches(newPassword, buyer.getPasswords())){
+            throw new ForbiddenException("Your new password is the same as old password");
+        }
+        buyer.setPasswords(passwordEncoder.encode(newPassword));
+        buyerRepository.save(buyer);
+        return buyer;
+    }
+
 }
