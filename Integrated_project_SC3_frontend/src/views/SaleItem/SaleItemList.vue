@@ -498,75 +498,114 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
-    <div class="flex gap-6">
-      <!-- Filters -->
-      <div class="w-1/7 flex flex-col gap-4 mt-5">
-        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)" :options="brand" label="Brands"
-          placeholder="Fitler ฺBrands" :sessionKey="SESSION_KEYS.BRAND" valueField="name" displayField="name"
-          mode="brand" @filterChanged="handleBrandFilter" />
+    <div class="flex flex-col md:flex-row gap-6 px-4 md:px-8">
+  <!-- Filters -->
+  <div class="w-full md:w-1/5 lg:w-1/6 flex flex-col gap-4 ml-[-40px] mt-4 md:mt-6">
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
+      :options="brand"
+      label="Brands"
+      placeholder="Filter Brands"
+      :sessionKey="SESSION_KEYS.BRAND"
+      valueField="name"
+      displayField="name"
+      mode="brand"
+      @filterChanged="handleBrandFilter"
+    />
 
-        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)" :options="STORAGE_OPTIONS" label="Storages"
-          placeholder="Fitler StoragesGB" :sessionKey="SESSION_KEYS.STORAGE" valueField="name" displayField="name"
-          mode="Storages" @filterChanged="handleStorageFilter" />
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
+      :options="STORAGE_OPTIONS"
+      label="Storages"
+      placeholder="Filter Storages"
+      :sessionKey="SESSION_KEYS.STORAGE"
+      valueField="name"
+      displayField="name"
+      mode="Storages"
+      @filterChanged="handleStorageFilter"
+    />
 
-        <!-- Price Filter -->
-        <Filter :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)" :options="priceOption" label="Price"
-          placeholder="Fitler PriceRange" :sessionKey="SESSION_KEYS.PRICE" valueField="value" displayField="name"
-          :enableCustomPriceInput="true" mode="price" @filterChanged="handlePriceFilter">
-          <template #InputPrice>
-            <div class="items-center px-4 py-3 border-t border-gray-100 gap-2">
-              <div class="mb-[7px] text-gray-800 font-semibold">
-                Custom Price
-              </div>
-              <div class="flex mb-[8px]">
-                <span class="mx-1">Min</span>
-                <input type="number" class="border rounded px-2 py-1 flex-1 min-w-0" placeholder="Min"
-                  v-model.number="min_price" />
-              </div>
-              <div class="flex mb-[8px]">
-                <span class="mx-1">Max</span>
-                <input :disabled="min_price === null" type="number" class="border rounded px-2 py-1 flex-1 min-w-0"
-                  placeholder="Max" v-model.number="max_price" />
-              </div>
-              <div v-if="min_price > max_price && max_price != 0">
-                <p class="text-red-500 text-sm">
-                  * Min price must be least than max price
-                </p>
-              </div>
-              <div class="flex justify-end">
-                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
-                  @click="applyCustomPrice">
-                  Apply
-                </button>
-              </div>
-            </div>
-          </template>
-        </Filter>
+    <!-- Price Filter -->
+    <Filter
+      :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
+      :options="priceOption"
+      label="Price"
+      placeholder="Filter Price Range"
+      :sessionKey="SESSION_KEYS.PRICE"
+      valueField="value"
+      displayField="name"
+      :enableCustomPriceInput="true"
+      mode="price"
+      @filterChanged="handlePriceFilter"
+    >
+      <template #InputPrice>
+        <div class="px-4 py-3 border-t border-gray-100 space-y-3">
+          <div class="text-gray-800 font-semibold">Custom Price</div>
 
-        <!-- Clear Button -->
-        <div class="flex">
-          <ClearButton :sessionKeys="[
-            SESSION_KEYS.BRAND,
-            SESSION_KEYS.STORAGE,
-            SESSION_KEYS.PRICE,
-            SESSION_KEYS.CUSTOM_PRICE_MIN,
-            SESSION_KEYS.CUSTOM_PRICE_MAX,
-            SESSION_KEYS.PAGE,
-            SESSION_KEYS.SEARCH,
-          ]" @cleared="handleClear" />
+          <div class="flex items-center gap-2">
+            <span>Min</span>
+            <input
+              type="number"
+              class="border rounded px-2 py-1 flex-1"
+              placeholder="Min"
+              v-model.number="min_price"
+            />
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span>Max</span>
+            <input
+              :disabled="min_price === null"
+              type="number"
+              class="border rounded px-2 py-1 flex-1"
+              placeholder="Max"
+              v-model.number="max_price"
+            />
+          </div>
+
+          <p v-if="min_price > max_price && max_price != 0" class="text-red-500 text-sm">
+            * Min price must be less than max price
+          </p>
+
+          <div class="flex justify-end">
+            <button
+              class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap"
+              @click="applyCustomPrice"
+            >
+              Apply
+            </button>
+          </div>
         </div>
-      </div>
+      </template>
+    </Filter>
 
-      <!-- Product Gallery -->
-      <div class="flex-1">
-        <SelectAllSaleItemGallery 
-        v-if="product?.content" 
-        :product="product.content" 
-        :imageUrl="imageUrl">
-        </SelectAllSaleItemGallery>
-      </div>
-
+    <!-- Clear Button -->
+    <div class="flex justify-start">
+      <ClearButton
+        :sessionKeys="[
+          SESSION_KEYS.BRAND,
+          SESSION_KEYS.STORAGE,
+          SESSION_KEYS.PRICE,
+          SESSION_KEYS.CUSTOM_PRICE_MIN,
+          SESSION_KEYS.CUSTOM_PRICE_MAX,
+          SESSION_KEYS.PAGE,
+          SESSION_KEYS.SEARCH,
+        ]"
+        @cleared="handleClear"
+      />
     </div>
+  </div>
+
+  <!-- Product Gallery -->
+  <div class="flex-1">
+    <SelectAllSaleItemGallery
+      v-if="product?.content"
+      :product="product.content"
+      :imageUrl="imageUrl"
+    />
+  </div>
+</div>
+
 
     <!-- 🔹 Pagination ด้านล่าง -->
     <div class="mt-4">

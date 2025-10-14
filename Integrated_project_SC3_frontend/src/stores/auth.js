@@ -6,9 +6,9 @@ import {
   refreshToken as apiRefreshToken,
   fetchUserProfile,
   logout as apiLogout,
-  editUserProfile as apiEditUserProfile
+  editUserProfile as apiEditUserProfile,
+  changePassword as apiChangePassword
 } from "@/libs/callAPI/apiAuth";
-import router from "@/router";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -23,11 +23,11 @@ export const useAuthStore = defineStore("auth", {
     async login(username, password) {
       try {
         // const { accessToken, refreshToken, role } = await loginUser(username, password);
-       const { accessToken, role } = await loginUser(username, password);
+        const { accessToken, role } = await loginUser(username, password);
         this.accessToken = accessToken;
         this.role = role;
         this.isLoggedIn = true;
-        if(accessToken === "Unverified"){
+        if (accessToken === "Unverified") {
           console.log("Unverified user cannot login");
           this.logout();
           return false
@@ -40,7 +40,7 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
-        throw "Hello123456:  "+err;
+        throw "Invalid Authentication: " + err;
       }
     },
 
@@ -49,7 +49,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         const { accessToken, role } = await apiRefreshToken();
 
-        console.log("✅ AccessToken ใหม่:", accessToken);
+        console.log("New AccessToken:", accessToken);
         console.log("new role = ", role);
 
 
@@ -63,9 +63,9 @@ export const useAuthStore = defineStore("auth", {
         return true;
       } catch (err) {
         this.logout();
-        router.push("/signin"); 
+        router.push("/signin");
         console.log("refresh not finis");
-        
+
         return false;
       }
     },
@@ -73,7 +73,7 @@ export const useAuthStore = defineStore("auth", {
     // ฟังก์ชัน logout
     async logout() {
       console.log("logout");
-      
+
       try {
         await apiLogout();
       } catch {
@@ -116,5 +116,16 @@ export const useAuthStore = defineStore("auth", {
         throw err;
       }
     },
+
+    async apiChangePassword(newPassword) {
+      try {
+        const updatedUser = await apiChangePassword(newPassword);
+        console.log("Password changed successfully:", updatedUser);
+        return true;
+      } catch (err) {
+        console.error("Change password failed:", err.message);
+        throw err;
+      }
+    }
   },
 });

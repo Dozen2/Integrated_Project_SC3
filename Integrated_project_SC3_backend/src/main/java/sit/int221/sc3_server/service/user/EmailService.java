@@ -78,6 +78,20 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void sendMailVerityResetPassword(String to, String token) {
+        try {
+            String hostPath = getHost();
+            String verifyToken = jwtUtils.generateEmailVerifyToken(token);
+            String link = hostPath + "/sc3/forgot-password/reset-password?token=" + verifyToken;
+            Context context = new Context();
+            context.setVariable("verificationLinkForgotPassword", link);
+            String htmlContent = templateEngine.process("VerifyEmailForgotPassword", context);
+            sendEmail(to, "Verify your email", htmlContent, true);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // ใช้สำหรับส่ง forgot password
 //    public void sendForgotPassword(String to,String resetToken) throws MessagingException, UnsupportedEncodingException {

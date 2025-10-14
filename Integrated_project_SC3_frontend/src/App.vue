@@ -9,13 +9,13 @@ import Toast from './components/Common/Toast.vue';
 // alertStore.addToast("The sale item has been updated.", "Success", "error");
 const route = useRoute()
 
-const hideNavbarOn = ['/signin', '/verify-email']
+const hideNavbarOn = ['/verify-email']
 
 
 </script>
 <template>
   <div
-    class=" bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
+    class="bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen"
   >
   <navbar v-if="!hideNavbarOn.includes(route.path)" />
   <Toast />

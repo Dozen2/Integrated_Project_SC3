@@ -242,6 +242,10 @@ const changeToViewMode = () => {
           Edit profile
         </button>
 
+        <RouterLink :to="{name: 'chang-password'}">
+          chang-password
+        </RouterLink>
+
       </template>
       <template v-else>
 

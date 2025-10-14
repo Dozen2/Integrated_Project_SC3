@@ -353,9 +353,6 @@ public class SaleItemControllerV2 {
         } else {
             buyer = userServices.findBuyerByBuyerId(authUserDetail.getId());
         }
-
-
-
         Page<OrderResponse> order = orderServices.findAllBuyersOrderResponse(buyer.getId(), page,size);
         PageDTO<OrderResponse> response = PageDTO.<OrderResponse>builder()
                 .content(order.getContent())

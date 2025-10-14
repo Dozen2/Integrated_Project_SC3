@@ -33,9 +33,7 @@ const isFormValid = computed(() => {
     isValid: f.isValid ?? null, 
     isFirstInput: f.isFirstInput ?? null,
   }));
-
   console.table(results);
-
   return results.filter((r) => r.isValid !== null).every((r) => r.isValid);
 });
 
@@ -69,9 +67,6 @@ const summitForm = async () => {
   }
     const role = await authStore.getAuthData().authorities[authStore.getAuthData().authorities.length - 1].role;
     console.log("User role after login:", role);
-    loading.value = true;
-    // const res = await registerUser(formData);
-    loading.value = false;
     alertStore.addToast(
       "The user account has been successfully registered.",
       "Create buyer successful.",
@@ -95,9 +90,10 @@ const summitForm = async () => {
 };
 </script>
 
+
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"
+    class="min-h-[calc(100vh-80px)] flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200"
   >
     <!-- กล่องหลัก -->
     <div
@@ -124,7 +120,8 @@ const summitForm = async () => {
             @validateValue="validateEmail"
           />
 
-          <InputBox
+          <div>
+            <InputBox
             class="itbms-password"
             label="Password"
             type="password"
@@ -135,6 +132,10 @@ const summitForm = async () => {
             :errorText="form.password.errorText"
             @validateValue="validatePassword"
           />
+          <RouterLink :to="{ name: 'ForgotPassword' }">
+            <p class="text-sm text-blue-500 text-right mt-1 cursor-pointer hover:text-blue-700 hover:underline">forgot password</p>
+          </RouterLink>
+        </div>
 
           <!-- Buttons -->
           <div class="flex flex-col gap-3 mt-4">

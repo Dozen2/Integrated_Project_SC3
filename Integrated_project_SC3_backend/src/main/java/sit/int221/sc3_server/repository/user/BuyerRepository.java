@@ -11,8 +11,6 @@ import java.util.Optional;
 public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
     boolean existsBuyerByEmail(String email);
 
-
-
     @Query("""
                 select p from Buyer p
                 where (p.fullName=:usernameOrEmail or p.email = :usernameOrEmail)
@@ -27,4 +25,14 @@ public interface BuyerRepository extends JpaRepository<Buyer, Integer> {
             """)
     Buyer findByEmailAndNonIsActive(
             @Param("email") String email);
+
+    @Query("""
+    select case when count(p) > 0 then true else false end
+    from Buyer p
+    where lower(p.email) = lower(:email)
+      and p.isActive = :isActive
+""")
+    boolean existsByEmailAndIsActive(@Param("email") String email, @Param("isActive") boolean isActive);
+
+    Optional<Buyer> findByEmail(String email);
 }

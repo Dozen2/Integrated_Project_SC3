@@ -165,6 +165,8 @@ public class JwtUtils {
             if (userEmail == null || userEmail.isBlank()) {
                 throw new IllegalArgumentException("User email cannot be null or blank");
             }
+            userEmail = userEmail.trim().replace("\"", "");
+
             JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(userEmail)

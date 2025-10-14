@@ -28,8 +28,10 @@ const cartCount = computed(() => cartStore.cartItemCount);
 
 // เรียกตอน mounted เพื่อให้แสดงจำนวนตั้งแต่โหลดหน้าแรก
 onMounted(() => {
-  cartStore.loadCart();
-  cartStore.updateQuantity();
+  if(auth.role){
+    cartStore.loadCart();
+    cartStore.updateQuantity();
+  }
 });
 
 </script>

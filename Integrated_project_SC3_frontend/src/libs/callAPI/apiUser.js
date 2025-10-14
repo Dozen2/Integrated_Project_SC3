@@ -40,4 +40,27 @@ async function getOrderById(id) {
   return res.json();
 }
 
-export { getAllOrderByUserId, getOrderById };
+
+async function getSellerOrderBySellerId(size = 10, page = 0) {
+  const accessToken = localStorage.getItem("accessToken");
+  const decoded = jwtDecode(accessToken);
+  console.log("decoded: ", decoded);
+  console.log("decoded.id: ", decoded.id);
+  if (!accessToken) throw new Error("No access token");
+
+   const params = new URLSearchParams();
+  params.append("size", size);
+  params.append("page", page);
+
+  const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/orders?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch profile");
+  return res.json();
+}
+
+
+export { getAllOrderByUserId, getOrderById,getSellerOrderBySellerId };
