@@ -28,7 +28,6 @@ public class SaleItemServices {
 
     public List<SaleItem> getAllProduct() {
         return saleitemRepository.findAll();
-//        return productRepository.findAllByOrderByCreatedOnDesc();
     }
 
 

@@ -34,12 +34,6 @@ public class SaleItemDetailFileDto {
     @JsonProperty("seller")
     private SellerDTO sellerDTO;
 
-//    public List<String> getImageNames() {
-//        return saleItemImages.stream()
-//                .sorted(Comparator.comparing(SaleItemImage::getImageViewOrder))
-//                .map(SaleItemImage::getFileName)
-//                .collect(Collectors.toList());
-//    }
     public void setColor(String color) {
         if (color != null && color.trim().isEmpty()) {
             this.color = null;

@@ -22,15 +22,8 @@ import sit.int221.sc3_server.utils.JwtUtils;
 public class UserController {
     @Autowired
     private UserServices userServices;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private JwtUtils jwtUtils;
 
-    @Autowired
-    private JwtUserDetailService jwtUserDetailService;
-    @Value("${app.cookie.path:/itb-mshop/v2/auth/refresh}")
-    private String cookiePath;
+
 
 
 
@@ -94,13 +87,5 @@ public class UserController {
 
 
 
-//    @GetMapping("/user/file/{filename:.+}")
-//    @ResponseBody
-//    public ResponseEntity<Resource> serveFile(
-//            @PathVariable String filename) {
-//        Resource file = fileService.loadFileAsResourceNational(filename);
-//        System.out.println(MediaType.valueOf(fileService.getFileType(file)));
-//        return ResponseEntity.ok()
-//                .contentType(MediaType.valueOf(fileService.getFileType(file))).body(file);
-//    }
+
 }

@@ -383,27 +383,7 @@ public class SaleItemControllerV2 {
 
 
 
-//    @PutMapping("/orders/pay")
-//    public ResponseEntity<>
 
-
-
-//    @PutMapping("/orders/cancel")
-//     public ResponseEntity<>
-//    @PutMapping(value = "/sellers/{id}/sale-items/{saleItemId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<SaleItemDetailFileDto> updateSaleItemBySeller(@ModelAttribute SaleItemWithImageInfo info
-//            ,@PathVariable(value = "id") int sellerId,@PathVariable(value = "saleItemId") int saleItemId
-//            ,Authentication authentication){
-//
-//        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
-//        if("ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
-//            throw new UnAuthorizeException("Invalid token");
-//        }
-//        if(!authUserDetail.getSellerId().equals(sellerId)){
-//            throw new UnAuthorizeException("request user id not matched with id in access token");
-//        }
-//
-//    }
 
 
 

@@ -58,7 +58,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (buyerId != null && authentication == null) {
-            // โหลด user ตาม buyerId เสมอ
             UserDetails userDetails = jwtUserDetailService.loadUserByBuyerId(buyerId);
 
             if (userDetails == null || !userDetails.getUsername().equals(claims.get("email"))) {
@@ -71,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     userDetails.getPassword(),
                     ((AuthUserDetail) userDetails).getNickName(),
                     ((AuthUserDetail) userDetails).getEmail(),
-                    ((AuthUserDetail) userDetails).getSellerId(), // ถ้ามี sellerId
+                    ((AuthUserDetail) userDetails).getSellerId(),
                     (String) claims.get("typ"),
                     userDetails.getAuthorities()
             );

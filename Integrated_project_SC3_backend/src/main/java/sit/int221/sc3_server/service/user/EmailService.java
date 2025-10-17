@@ -36,13 +36,7 @@ public class EmailService {
     public EmailService(Environment environment) {
         this.environment = environment;
     }
-//    public void sendEmail(String to,String subject,String body) throws MessagingException {
-//        SimpleMailMessage message = new SimpleMailMessage();
-//        message.setTo(to);
-//        message.setSubject(subject);
-//        message.setText(body);
-//        sender.send(message);
-//    }
+
 
     public void sendEmail(String to, String subject, String content, boolean isHtml) throws MessagingException, UnsupportedEncodingException {
         MimeMessage message = sender.createMimeMessage();
@@ -93,16 +87,5 @@ public class EmailService {
         }
     }
 
-    // ใช้สำหรับส่ง forgot password
-//    public void sendForgotPassword(String to,String resetToken) throws MessagingException, UnsupportedEncodingException {
-//        String hostPath = getHost();
-//        String link = hostPath + "/sc3/verify-email?token=" + resetToken;
-//        String body = "Click the link to verify your email:\n\n" + link;
-//        MimeMessage message02 = sender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(message02, true, "UTF-8");
-//        helper.setTo(to);
-//        helper.setSubject("Verify your ITBMS account");
-//        helper.setFrom("jillterkorn@gmail.com", "ITBMS Team");
-//        sendEmail(to,"Reset your password",body);
-//    }
+
 }
