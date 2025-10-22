@@ -9,6 +9,9 @@ import {
   editUserProfile as apiEditUserProfile,
   changePassword as apiChangePassword
 } from "@/libs/callAPI/apiAuth";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 
 export const useAuthStore = defineStore("auth", {
