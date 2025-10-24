@@ -21,6 +21,7 @@ import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
@@ -93,10 +94,22 @@ UserServices {
         return seller.getBuyer();
     }
 
+    public boolean isValidThaiId(String id) {
+        if (id == null || !id.matches("\\d{13}")) return false;
+        int sum = 0;
+        for (int i = 0; i < 12; i++) {
+            sum += Character.getNumericValue(id.charAt(i)) * (13 - i);
+        }
+        int checkDigit = (11 - (sum % 11)) % 10;
+        return checkDigit == Character.getNumericValue(id.charAt(12));
+    }
 
     @Transactional
     public Buyer createUser(UserDTO userDTO, MultipartFile front, MultipartFile back) throws MessagingException, UnsupportedEncodingException {
         checkDuplication(userDTO);
+        if (!isValidThaiId(userDTO.getNationalId())) {
+            throw new CreateFailedException("Invalid Thai national ID number");
+        }
         Buyer user = new Buyer();
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());

@@ -19,8 +19,9 @@ public class UserDTO {
     )
     private String passwords;
     private String fullName;
-
+    @Pattern(regexp = "^(buyer|seller)$", message = "User type must be either 'buyer' or 'seller'")
     private String role;
+    @Pattern(regexp = "0\\d{9}", message = "Mobile number must be 10 digits and start with 0")
     private String mobileNumber;
     private String bankAccountNumber;
     private String bankName;
