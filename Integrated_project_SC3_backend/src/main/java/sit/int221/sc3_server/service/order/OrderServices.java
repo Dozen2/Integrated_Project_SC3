@@ -92,7 +92,7 @@ public class OrderServices {
         order.setOrderDetails(orderDetails);
         order.setTotalPrice(total);
         if(hasIssue){
-            order.setOrderStatus("Cancelled");
+            order.setOrderStatus("new_cancelled");
             order.setPaymentStatus("Cancelled");
         }
 
@@ -100,6 +100,17 @@ public class OrderServices {
 
 
 
+    }
+
+    public Order setOrderStatus(Integer id){
+        Order order = orderRepository.findById(id).orElseThrow(()-> new ItemNotFoundException("order not found"));
+        if("new_complete".equalsIgnoreCase(order.getOrderStatus())){
+            order.setOrderStatus("Complete");
+        }
+        if("new_cancelled".equalsIgnoreCase(order.getOrderStatus())){
+            order.setOrderStatus("Cancelled");
+        }
+        return orderRepository.save(order);
     }
 
     public Order getOrderById(Integer id){

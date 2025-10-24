@@ -381,7 +381,22 @@ public class SaleItemControllerV2 {
     }
 
 
+    @PutMapping("/order-status/{id}")
+    public  ResponseEntity<OrderResponseMoreSeller> setOrderStatus(@PathVariable int id , Authentication authentication){
+        AuthUserDetail authUserDetail = (AuthUserDetail) authentication.getPrincipal();
+        if(!"ACCESS_TOKEN".equals(authUserDetail.getTokenType())){
+            throw new UnAuthorizeException("Invalid token");
+        }
+        boolean isSeller = authUserDetail.getAuthorities().stream().anyMatch(a->a.getAuthority().equals("ROLE_SELLER"));
+        if(!isSeller){
+            throw new ForbiddenException("User is not seller");
+        }
+        Order order = orderServices.setOrderStatus(id);
+        OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
+        return ResponseEntity.ok(response);
 
+
+    }
 
 
 

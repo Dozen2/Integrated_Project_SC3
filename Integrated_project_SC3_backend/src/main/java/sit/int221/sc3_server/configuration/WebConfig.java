@@ -56,6 +56,7 @@ public class WebConfig {
                                 .requestMatchers("/itb-mshop/v2/sale-items/storages").permitAll()
                                 .requestMatchers(
                                         "/itb-mshop/v2/user/{id}", "/itb-mshop/v2/user/profile/all").hasAnyAuthority("ROLE_BUYER", "ROLE_SELLER")
+//                                .requestMatchers("/itb-mshop/v2/status/{id}").hasAuthority("ROLE_SELLER")
                                 .requestMatchers("/itb-mshop/v2/sellers/**").authenticated()
 
 //                        .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
