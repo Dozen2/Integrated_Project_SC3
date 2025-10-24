@@ -115,7 +115,7 @@ const formatDate = (isoString) => {
   }).format(date);
 };
 
-const activeTab = ref("COMPLETE"); // ค่าเริ่มต้นเป็น complete
+const activeTab = ref("Complete"); // ค่าเริ่มต้นเป็น complete
 
 // ✅ computed: แสดงเฉพาะ order ตามแท็บที่เลือก
 const filteredOrders = computed(() => {
@@ -154,10 +154,10 @@ const filteredOrders = computed(() => {
     <!-- ✅ ส่วนของแท็บ -->
     <div class="flex justify-center gap-6 mb-8">
       <button
-        @click="activeTab = 'COMPLETE'"
+        @click="activeTab = 'Complete'"
         :class="[
           'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-          activeTab === 'Completed'
+          activeTab === 'Complete'
             ? 'bg-blue-500 text-white shadow-md'
             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
@@ -197,7 +197,7 @@ const filteredOrders = computed(() => {
             <strong class="text-gray-500">Status:</strong>
             <span
               class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
-              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
+              :class="order.orderStatus === 'Complete' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
             >
               {{ order.orderStatus }}
             </span>

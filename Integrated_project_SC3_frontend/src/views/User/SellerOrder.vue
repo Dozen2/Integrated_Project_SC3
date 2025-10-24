@@ -8,6 +8,7 @@ import Loading from "@/components/Common/Loading.vue";
 import { getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
 import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
+import { computed } from "vue";
 
 const auth = useAuthStore();
 const sellerOrder = ref([]);
@@ -37,11 +38,11 @@ const fetchselect = async () => {
     console.log("Fetching size:", size);
     pagination.value.page = page;
     pagination.value.size = size;
-    
+
     const sellerOrderData = await getSellerOrderBySellerId(size, page);
     sellerOrder.value = sellerOrderData;
     console.log("Fetched seller order:", sellerOrderData);
-    
+
     pagination.value = {
       page: sellerOrderData.page,
       size: sellerOrderData.size,
@@ -59,7 +60,7 @@ const fetchselect = async () => {
     currentTotalPrice.value = totalPrice.value.reduce((a, b) => a + b, 0);
     console.log("currentTotalPrice.value: ", currentTotalPrice.value);
     console.log("totalPrice.value: ", totalPrice.value);
-    
+
     //------------------------- Image Showing -------------------------
     await loadImageUrl();
     console.log("imageMap.value mounted: ", imageMap.value);
@@ -116,6 +117,23 @@ const formatDate = (isoString) => {
     day: "numeric",
   }).format(date);
 };
+
+const activeTab = ref("all")
+const filteredOrders = computed(() => {
+  if (!sellerOrder.value.content) return [];
+
+  if (activeTab.value = "new_Complete") {
+    return sellerOrder.value.content.filter(
+      (order) => order.orderStatus === "new_Complete"
+    )
+  } else if (activeTab.value = "new_cancelled") {
+    return sellerOrder.value.content.filter(
+      (order) => order.orderStatus === "new_cancelled"
+    )
+  } else {
+    return sellerOrder.value.content;
+  }
+})
 </script>
 
 <template>
@@ -124,14 +142,11 @@ const formatDate = (isoString) => {
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb 
-      :class="'mb-6'" 
-      :pathForBreadcrumb="[
-        { text: 'Home', name: 'Home' },
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
+      { text: 'Home', name: 'Home' },
       { text: 'SaleItem', name: 'Products' },
-        { text: 'Seller Orders', name: 'SellerOrders' },
-      ]" 
-    />
+      { text: 'Seller Orders', name: 'SellerOrders' },
+    ]" />
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
         <span class="mr-2">
@@ -139,12 +154,40 @@ const formatDate = (isoString) => {
         </span>SELLER ORDERS
       </h1>
     </div>
-    
-    <div 
-      v-for="(order, index) in sellerOrder.content" 
-      :key="order.id"
-      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl"
-    >
+
+    <!-- Filter Tabs -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button @click="activeTab = 'all'" :class="[
+        'px-4 py-2 rounded-full border transition',
+        activeTab === 'all'
+          ? 'bg-blue-500 text-white border-blue-500'
+          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
+      ]">
+        All
+      </button>
+
+      <button @click="activeTab = 'new'" :class="[
+        'px-4 py-2 rounded-full border transition',
+        activeTab === 'new'
+          ? 'bg-blue-500 text-white border-blue-500'
+          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
+      ]">
+        New
+      </button>
+
+      <button @click="activeTab = 'cancelled'" :class="[
+        'px-4 py-2 rounded-full border transition',
+        activeTab === 'cancelled'
+          ? 'bg-blue-500 text-white border-blue-500'
+          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
+      ]">
+        Cancelled
+      </button>
+    </div>
+
+
+    <div v-for="(order, index) in sellerOrder.content" :key="order.id"
+      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
         <div>
           <div class="flex items-center mb-2">
@@ -156,44 +199,40 @@ const formatDate = (isoString) => {
           </p>
           <p>
             <strong class="text-gray-500">Status:</strong>
-            <span 
-              class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
-              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
-            >
+            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
+              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
               {{ order.orderStatus }}
             </span>
           </p>
         </div>
         <div>
-          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
+          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) ||
+            "-" }}</p>
         </div>
         <div>
-          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{
+            formatDate(order.paymentDate) || "-" }}</p>
         </div>
         <div class="md:text-right">
           <p class="text-gray-500">Total:</p>
-          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
+          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }}
+            Bath</p>
         </div>
       </div>
-      
+
       <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
         <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}
+        </p>
       </div>
-      
+
       <hr class="my-4" />
-      
+
       <div class="space-y-4">
-        <div 
-          v-for="item in order.orderItems" 
-          :key="item.no"
-          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none"
-        >
-          <img 
-            :src="imageMap[item.no]" 
-            :alt="item.description"
-            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" 
-          />
+        <div v-for="item in order.orderItems" :key="item.no"
+          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+          <img :src="imageMap[item.no]" :alt="item.description"
+            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
           <div class="flex-grow">
             <p class="itbms-item-description font-semibold text-gray-800">{{ item.description || "No Description" }}</p>
             <p class="itbms-item-quantity text-gray-500">Quantity: {{ item.quantity }}</p>
@@ -206,22 +245,12 @@ const formatDate = (isoString) => {
       </div>
     </div>
   </div>
-  
+
   <div class="flex gap-4 justify-center pb-10">
-    <PaginationSeller 
-      v-model="pagination.page" 
-      :total-page="pagination.totalPages" 
-      storage-key="seller_order_pagination"
-      @update:modelValue="fetchselect" 
-    />
-    <SizeAndSortSeller 
-      v-model:modelSize="pagination.size" 
-      v-model:modelSort="pagination.sort"
-      v-model:modelPage="pagination.page" 
-      storage-key-size="seller_order_size" 
-      storage-key-sort="seller_order_sort"
-      reset-storage="seller_order_pagination" 
-      @update:modelPage="handlePageChange" 
-    />
+    <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages"
+      storage-key="seller_order_pagination" @update:modelValue="fetchselect" />
+    <SizeAndSortSeller v-model:modelSize="pagination.size" v-model:modelSort="pagination.sort"
+      v-model:modelPage="pagination.page" storage-key-size="seller_order_size" storage-key-sort="seller_order_sort"
+      reset-storage="seller_order_pagination" @update:modelPage="handlePageChange" />
   </div>
 </template>

@@ -244,7 +244,7 @@ const PlaceOrder = async () => {
                shippingAddress: selectedAddress.value,
                orderNote: note.value,
                orderItems,
-               orderStatus: "Cancelled"
+               orderStatus: "Complete"
           };
 
           orders.push(order);
