@@ -7,9 +7,7 @@ import lombok.Data;
 
 @Data
 public class JwtAuthUser {
-//    @Email
-//    @Size(min = 0,max = 50 ,message = "Your email is too long")
-//    private String username;
+
     @Size(min = 0,max = 50 ,message = "Your email is too long")
     private String email;
     private String password;

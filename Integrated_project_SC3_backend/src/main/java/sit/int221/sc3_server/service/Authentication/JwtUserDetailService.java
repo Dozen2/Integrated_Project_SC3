@@ -36,7 +36,6 @@ public class JwtUserDetailService implements UserDetailsService {
         if(!buyer.getIsActive()){
             throw new UnAuthorizeException("User is not verify");
         }
-//        String role = (buyer.getSeller() != null)? "SELLER":"BUYER";
         Set<Role> roles = new HashSet<>();
         roles.add(Role.BUYER);
         Integer sellerId = null;
@@ -46,10 +45,10 @@ public class JwtUserDetailService implements UserDetailsService {
         }
 
 
-        return new AuthUserDetail(buyer.getId(),             // id
+        return new AuthUserDetail(buyer.getId(),
                 buyer.getEmail(),          // username (ใช้ email)
-                buyer.getPasswords(),      // password
-                buyer.getNickName(),       // nickName
+                buyer.getPasswords(),
+                buyer.getNickName(),
                 buyer.getEmail(),
                 sellerId,
                 null,
@@ -75,8 +74,8 @@ public class JwtUserDetailService implements UserDetailsService {
                 buyer.getPasswords(),
                 buyer.getNickName(),
                 buyer.getEmail(),
-                sellerId,           // if has seller
-                null,               // tokenType, ใส่เมื่อ generate token
+                sellerId,
+                null,
                 getAuthorities(roles)
         );
 
@@ -88,14 +87,5 @@ public class JwtUserDetailService implements UserDetailsService {
                 .toList();
     }
 
-//    private static List<GrantedAuthority> getAuthorities(Set<Role> roles) {
-//        return roles.stream()
-//                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-//                .collect(Collectors.toList());
-//    }
 
-
-//    private static GrantedAuthority getAuthority(String role){
-//        return new SimpleGrantedAuthority(role);
-//    }
 }

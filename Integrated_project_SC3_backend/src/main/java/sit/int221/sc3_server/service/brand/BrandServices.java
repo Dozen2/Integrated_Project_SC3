@@ -34,9 +34,7 @@ public class BrandServices {
     @Autowired
     private ModelMapper modelMapper;
 
-//    public List<Brand> getAllBrand() {
-//        return brandRepository.findAll();
-//    }
+
 
     public List<BrandDetailDTO> getAllBrand() {
         List<Brand> brandList = brandRepository.findAll();
@@ -44,8 +42,6 @@ public class BrandServices {
         return brandList.stream().map(brand -> {
             BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
             dto.setNoOfSaleItems(brand.getSaleItems().size());
-//            int count = productRepository.countByBrand_Id(brand.getId()); // อย่าลืมใช้ method ที่ชื่อถูกต้อง
-//            dto.setNoOfSaleItems(count);
             return dto;
         }).collect(Collectors.toList());
     }
@@ -61,8 +57,6 @@ public class BrandServices {
 
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
         dto.setNoOfSaleItems(brand.getSaleItems().size());
-//        int count = productRepository.countByBrand_Id(brand.getId());
-//        dto.setNoOfSaleItems(count);
 
         return dto;
     }
@@ -92,16 +86,10 @@ public class BrandServices {
 
         Boolean isActive = dtos.getIsActive();
         brand.setIsActive(isActive != null ? isActive : true);
-
-//        Timestamp now = Timestamp.from(ZonedDateTime.now().toInstant());
-//        brand.setUpdatedOn(now);
-
         brand = brandRepository.save(brand);
-
         BrandDetailDTO dto = modelMapper.map(brand, BrandDetailDTO.class);
         dto.setNoOfSaleItems(brand.getSaleItems().size());
-//        int count = productRepository.countByBrand_Id(brand.getId());
-//        dto.setNoOfSaleItems(count);
+
 
         return dto;
     }

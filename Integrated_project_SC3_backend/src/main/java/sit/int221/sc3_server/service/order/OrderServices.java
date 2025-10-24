@@ -75,7 +75,7 @@ public class OrderServices {
             orderDetail.setOrder(order);
             orderDetail.setSaleItem(saleItem);
             orderDetail.setPriceEachAtPurchase(saleItem.getPrice());
-            orderDetail.setQuantity(itemRequest.getQuantity()); // จำนวนที่ user สั่ง\
+            orderDetail.setQuantity(itemRequest.getQuantity());
             orderDetail.setDescription(itemRequest.getDescription());
             orderDetailRepository.save(orderDetail);
 
@@ -92,7 +92,7 @@ public class OrderServices {
         order.setOrderDetails(orderDetails);
         order.setTotalPrice(total);
         if(hasIssue){
-            order.setOrderStatus("Cancelled");
+            order.setOrderStatus("new_cancelled");
             order.setPaymentStatus("Cancelled");
         }
 
@@ -102,13 +102,21 @@ public class OrderServices {
 
     }
 
+    public Order setOrderStatus(Integer id){
+        Order order = orderRepository.findById(id).orElseThrow(()-> new ItemNotFoundException("order not found"));
+        if("new_complete".equalsIgnoreCase(order.getOrderStatus())){
+            order.setOrderStatus("Complete");
+        }
+        if("new_cancelled".equalsIgnoreCase(order.getOrderStatus())){
+            order.setOrderStatus("Cancelled");
+        }
+        return orderRepository.save(order);
+    }
+
     public Order getOrderById(Integer id){
         return orderRepository.findById(id).orElseThrow(()->new ItemNotFoundException("order not found"));
     }
 
-//    public Page<Order> findAllBuyersOrder(Integer userId,Integer page,Integer size){
-//        return orderRepository.findAllOrderByBuyerId(userId, PageRequest.of(page,size, Sort.by("orderDate").descending()));
-//    }
 
     public OrderResponse mapOrderToResponseDTO(Order order){
         OrderResponse dto = new OrderResponse();
@@ -184,9 +192,6 @@ public class OrderServices {
 
     }
 
-//    public Page<OrderResponseBuyer> mapSellerOrder(Order order){
-//
-//    }
 
     public Order payOrder(Integer orderId){
         Order order = orderRepository.findById(orderId).orElseThrow(()-> new ItemNotFoundException("order does not exist"));
@@ -206,8 +211,6 @@ public class OrderServices {
 
     public Page<OrderResponse> findAllBuyersOrderResponse(Integer buyerId, Integer page, Integer size) {
         Page<Order> orders = orderRepository.findByBuyerId(buyerId, PageRequest.of(page, size,Sort.by("orderDate").descending()));
-
-        // map order -> response
         return orders.map(this::mapOrderToResponseBuyer);
     }
 
@@ -313,16 +316,6 @@ public class OrderServices {
 
     }
 
-//    public SellerDTO mapSellerDTO(Seller seller){
-//        SellerDTO dto = new SellerDTO();
-//        dto.setId(seller.getId());
-//        dto.setUserName(seller.getBuyer().getNickName());
-//        return dto;
-//    }
-
-//    public Page<OrderRequest> MapAllOrder(Order order){
-//
-//    }
 
 
 }
