@@ -89,7 +89,7 @@ const summitForm = async () => {
       fullName: fullname.value,
       email: email.value,
       passwords: password.value,
-      role: "BUYER",
+      role: "buyer",
       mobileNumber: "",
       bankAccountNumber: "",
       bankName: "",
