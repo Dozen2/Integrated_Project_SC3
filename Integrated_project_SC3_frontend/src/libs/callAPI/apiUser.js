@@ -26,7 +26,11 @@ async function getAllOrderByUserId(size = 10, page = 0) {
 
 
 async function getOrderById(id) {
+  console.log("id eiei: " ,id);
+  
   const accessToken = localStorage.getItem("accessToken");
+  console.log("accessToken: ",accessToken);
+  
   if (!accessToken) throw new Error("No access token");
 
   const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/orders/${id}`, {

@@ -220,6 +220,14 @@ const addItem = async () => {
               </div>
             </div>
 
+            <!-- description -->
+            <div class="py-4 border-b">
+              <h3 class="text-sm font-medium text-gray-700">
+                description:
+                <span class="itbms-color font-semibold">{{ product.description }}</span>
+              </h3>
+            </div>
+
             <!-- Quantity Selector + Add to Cart -->
             <div class="py-6 border-b flex flex-col sm:flex-row items-center gap-6">
 
@@ -235,7 +243,8 @@ const addItem = async () => {
                     </svg>
                   </button>
 
-                  <span class="itbms-add-to-cart-quantity w-12 text-center font-medium text-gray-800">{{ quantity }}</span>
+                  <span class="itbms-add-to-cart-quantity w-12 text-center font-medium text-gray-800">{{ quantity
+                    }}</span>
 
                   <button @click="incrementQuantity"
                     class="itbms-inc-qty-button w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"

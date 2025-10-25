@@ -220,18 +220,17 @@ const PlaceOrder = async () => {
       mainImageFileName: item.images?.length ? item.images[0].fileName : null,
     }));
 
-    const order = {
-      buyerId: buyerId,
-      sellerId: sellerId,
-      orderDate: new Date().toISOString(),
-      shippingAddress: selectedAddress.value,
-      orderNote: note.value,
-      orderItems,
-      orderStatus: "Complete",
-    };
-
     orders.push(order);
   }
+  const order = {
+    buyerId: buyerId,
+    sellerId: sellerId,
+    orderDate: new Date().toISOString(),
+    shippingAddress: selectedAddress.value,
+    orderNote: note.value,
+    orderItems,
+    orderStatus: "new_complete",
+  };
 
   console.log("📦 Orders Created:", orders);
   console.log(selectedItems.value);

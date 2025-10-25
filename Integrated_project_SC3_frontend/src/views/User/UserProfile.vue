@@ -175,92 +175,98 @@ const changeToViewMode = () => {
 
 <template>
   <div v-if="isLoading" class="flex items-center justify-center min-h-[calc(100vh-80px)]">
-    <Loading/>  
+    <Loading />
   </div>
-  <div v-else
-    class=" max-w-2xl mx-auto min-h-[calc(100vh-80px)] py-10"
-  >
-  <Breadcrumb
-  :class="'mb-6'"
-  :pathForBreadcrumb="[
-    { text: 'Home', name: 'Home' },
-    { text: 'SaleItem', name: 'Products' },
-    { text: 'Profile', name: 'UserProfile' }
-  ]" />
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-blue-100">
-      <div class="p-8">
-        <!-- Profile Title -->
-        <h2 class="text-2xl font-semibold text-blue-800 mb-8 text-center">
-          User Profile
-        </h2>
 
-        <!-- Avatar -->
-        <div class="flex justify-center mb-8">
-          <div
-            class="w-32 h-32 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md hover:scale-105 transition-transform">
-            <UserRoundPen size="80px" color="white" />
+  <div v-else class="py-8 max-w-4xl mx-auto">
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
+      { text: 'Home', name: 'Home' },
+      { text: 'SaleItem', name: 'Products' },
+      { text: 'Profile', name: 'UserProfile' }
+    ]" />
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="md:col-span-1 space-y-4">
+
+        <div class="bg-card border rounded-xl p-6 text-center">
+          <div class="flex justify-center mb-4">
+            <div
+              class="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md hover:scale-105 transition-transform">
+              <UserRoundPen size="60px" color="white" />
+            </div>
           </div>
+          <h3>{{ userProfile.fullName || userProfile.nickName }}</h3>
+          <p class="text-sm text-muted-foreground mt-1">{{ userProfile.email }}</p>
         </div>
 
-        <!-- User Data -->
-        <form @submit.prevent="summitForm" class="space-y-4">
+        <div class="bg-card border rounded-xl p-4 space-y-2">
+          <RouterLink :to="{ name: 'chang-password' }" class="block">
+            <button
+              class="w-full justify-start text-left py-2 px-4 hover:bg-accent hover:text-accent-foreground rounded-md">
+              Change Password
+            </button>
+          </RouterLink>
+        </div>
+      </div>
 
-          <userDataList classname="itbms-nickname" label="NickName" v-model="userProfile.nickName" :isEditMode="isEditMode"
-            :isValid="form.nickname.isValid" :isFirstInput="form.nickname.isFirstInput"
-            :errorText="form.nickname.errorText" @validateValue="validateNickname" />
-            
-          <userDataList 
-            classname="itbms-email" 
-            label="Email" 
-            v-model="userProfile.email"/>
+      <div class="md:col-span-2">
+        <div class="bg-card border rounded-xl p-6">
 
-          <userDataList classname="itbms-fullname" label="FullName" v-model="userProfile.fullName" :isEditMode="isEditMode"
-            :isValid="form.fullname.isValid" :isFirstInput="form.fullname.isFirstInput"
-            :errorText="form.fullname.errorText" @validateValue="validateFullname" />
-
-          <userDataList classname="itbms-type" label="Type" v-model="userType" />
-
-          <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList classname="itbms-mobile" label="Mobile" v-model="phoneNumber"/>
-
-            <userDataList classname="itbms-bankAccount" label="Bank Account No" v-model="bankAccount"/>
-
-            <userDataList classname="itbms-bankName" label="Bank Name" v-model="userProfile.bankName"/>
+          <div class="flex items-center justify-between mb-6">
+            <h2>Personal Information</h2>
+            <template v-if="!isEditMode">
+              <button @click="changeToEditMode"
+                class="itbms-profile-button bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded-md transition-colors cursor-pointer">
+                Edit
+              </button>
+            </template>
+            <template v-else>
+              <div class="flex gap-2">
+                <button @click="cancelButton"
+                  class="itbms-cancel-button bg-transparent border border-input hover:bg-accent hover:text-accent-foreground py-2 px-4 rounded-md transition-colors cursor-pointer">
+                  Cancel
+                </button>
+                <button @click="editUserProfile" :disabled="!isFormValid" :class="[
+                  'itbms-save-button py-2 px-4 rounded-md transition-colors',
+                  !isFormValid
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer',
+                ]">
+                  Save
+                </button>
+              </div>
+            </template>
           </div>
-        </form>
+
+          <form @submit.prevent="summitForm" class="space-y-4">
+            <userDataList classname="itbms-nickname" label="NickName" v-model="userProfile.nickName"
+              :isEditMode="isEditMode" :isValid="form.nickname.isValid" :isFirstInput="form.nickname.isFirstInput"
+              :errorText="form.nickname.errorText" @validateValue="validateNickname" />
+
+            <userDataList classname="itbms-email" label="Email" :isEditMode="isEditMode" v-model="userProfile.email"
+              :disabled="true" />
+
+            <userDataList classname="itbms-fullname" label="FullName" v-model="userProfile.fullName"
+              :isEditMode="isEditMode" :isValid="form.fullname.isValid" :isFirstInput="form.fullname.isFirstInput"
+              :errorText="form.fullname.errorText" @validateValue="validateFullname" />
+
+            <userDataList classname="itbms-type" label="Type" v-model="userType" />
+
+            <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
+              <userDataList classname="itbms-mobile" label="Mobile" v-model="phoneNumber" :isEditMode="isEditMode"
+                :disabled="true" />
+
+              <userDataList classname="itbms-bankAccount" label="Bank Account No" v-model="bankAccount"
+                :isEditMode="isEditMode" :disabled="true" />
+
+              <userDataList classname="itbms-bankName" label="Bank Name" v-model="userProfile.bankName"
+                :isEditMode="isEditMode" :disabled="true" />
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- Buttons -->
-    <div class="flex mt-6 justify-center space-x-4">
-      <template v-if="!isEditMode">
-
-        <button @click="changeToEditMode"
-          class="itbms-profile-button bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-full transition-colors cursor-pointer">
-          Edit profile
-        </button>
-
-        <RouterLink :to="{name: 'chang-password'}">
-          chang-password
-        </RouterLink>
-
-      </template>
-      <template v-else>
-
-        <button @click="editUserProfile" :disabled="!isFormValid" :class="[
-          'py-2 rounded-lg transition',
-          !isFormValid
-            ? 'bg-gray-300 hover:bg-gray-500 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-not-allowed'
-            : 'bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-8 rounded-full transition-colors cursor-pointer',
-        ]" class="itbms-save-button">
-          Save
-        </button>
-
-        <button @click="cancelButton"
-          class="itbms-cancel-button bg-white text-blue-600 border border-blue-300 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors cursor-pointer">
-          Cancel
-        </button>
-      </template>
-    </div>
   </div>
 </template>

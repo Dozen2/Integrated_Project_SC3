@@ -298,8 +298,6 @@ public class SaleItemControllerV2 {
         }
          OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
         return ResponseEntity.ok(response);
-
-
     }
 
     @GetMapping("/sellers/{sid}/orders")

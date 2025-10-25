@@ -54,6 +54,7 @@ const router = createRouter({
     { path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/your-order", name: "PlaceOrder", component: PlaceOrder, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/your-order/:id", name: "PlaceOrderId", component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
+    { path: "/seller-order/:id", name: "PlaceOrderSellerId", component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ["ROLE_SELLER"] } },
     { path: "/cart", name: "Cart", component: Cart, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/seller-order", name: "SellerOrder", component: SellerOrder, meta: { requiresAuth: true, roles: ["ROLE_SELLER"] } },
     { path: "/chang-password", name: "chang-password", component: ChangePassword, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },

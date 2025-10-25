@@ -9,6 +9,7 @@ import {
   editUserProfile as apiEditUserProfile,
   changePassword as apiChangePassword
 } from "@/libs/callAPI/apiAuth";
+import router from "@/router";
 
 
 export const useAuthStore = defineStore("auth", {
@@ -88,6 +89,7 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("role");
       // Cookies.remove("refreshToken");
       // optional: clear refresh token cookie
+      router.push("/signin");
     },
 
     getAuthData() {
