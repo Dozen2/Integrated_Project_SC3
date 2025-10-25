@@ -140,7 +140,7 @@ const summitForm = async () => {
           <!-- Buttons -->
           <div class="flex flex-col gap-3 mt-4">
             <button
-              class="itbms-signin-button"
+              class="itbms-signin-button cursor-pointer"
               type="submit"
               :disabled="loading || !isFormValid"
               :class="[
