@@ -123,18 +123,33 @@ const activeTab = ref("all")
 const filteredOrders = computed(() => {
   if (!sellerOrder.value.content) return [];
 
-  if (activeTab.value = "new_Complete") {
-    return sellerOrder.value.content.filter(
-      (order) => order.orderStatus === "new_Complete"
-    )
-  } else if (activeTab.value = "new_cancelled") {
-    return sellerOrder.value.content.filter(
-      (order) => order.orderStatus === "new_cancelled"
-    )
-  } else {
-    return sellerOrder.value.content;
+  const status = activeTab.value;
+
+  // all tab → แสดงทุกอันที่เป็น new_complete, new_cancelled, Complete, Cancelled
+  if (status === "all") {
+    return sellerOrder.value.content.filter(order =>
+      ["new_complete", "new_cancelled", "Complete", "Cancelled"].includes(order.orderStatus)
+    );
   }
-})
+
+  // cancelled tab → แสดงเฉพาะ new_cancelled, Cancelled
+  if (status === "cancelled") {
+    return sellerOrder.value.content.filter(order =>
+      ["new_cancelled", "Cancelled"].includes(order.orderStatus)
+    );
+  }
+
+  // new tab → แสดงเฉพาะ new_complete, new_cancelled
+  if (status === "new") {
+    return sellerOrder.value.content.filter(order =>
+      ["new_complete", "new_cancelled"].includes(order.orderStatus)
+    );
+  }
+
+  // default
+  return sellerOrder.value.content;
+});
+
 
 const formatOrderStatus = (status) => {
   switch (status) {
@@ -207,9 +222,8 @@ const getOrderTag = (status) => {
     </div>
 
 
-    <RouterLink v-for="(order, index) in sellerOrder.content" :key="order.id"
-      :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }"
-      @click="console.log('clicked id:', order)"
+    <RouterLink v-for="(order, index) in filteredOrders" :key="order.id"
+      :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }" @click="console.log('clicked id:', order)"
       class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
         <div>
@@ -223,15 +237,16 @@ const getOrderTag = (status) => {
           <p>
             <strong class="text-gray-500">Status:</strong>
             <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
-              order.orderStatus === 'new_complete'
+              order.orderStatus === 'new_complete' || order.orderStatus === 'Complete'
                 ? 'bg-green-100 text-green-700'
-                : order.orderStatus === 'new_cancelled'
+                : order.orderStatus === 'new_cancelled' || order.orderStatus === 'Cancelled'
                   ? 'bg-red-100 text-red-700'
                   : 'bg-yellow-100 text-yellow-700'
             ]">
               {{ formatOrderStatus(order.orderStatus) }}
             </span>
           </p>
+
 
           <p class="mt-2">
             <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full"

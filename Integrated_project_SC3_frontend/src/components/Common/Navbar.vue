@@ -69,13 +69,6 @@ onMounted(() => {
               refresh token
             </button>
           </div> -->
-
-
-          <!-- <div>
-            <button @click="refresh">
-              refresh token
-            </button>
-          </div> -->
           
           <!-- <RouterLink
             :to="{ name: 'ProductManage' }"

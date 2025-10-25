@@ -434,6 +434,31 @@ const createOrder = async (orders) => {
   }
 };
 
+const setOrderStatus = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) throw new Error("No access token found");
+
+    const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/order-status/${id}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + token,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to update order status: " + res.status);
+    }
+
+    const data = await res.json();
+    console.log("Updated Order:", data);
+    return data;
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    return null;
+  }
+}
+
 
 
 
@@ -456,4 +481,5 @@ export {
   deleteSaleItemSeller,
   fetchSellers,
   createOrder,
+  setOrderStatus,
 };
