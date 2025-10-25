@@ -3,6 +3,9 @@ import { computed, ref, reactive, onBeforeMount, watch } from "vue";
 import { addData, getDataById, updateData } from "@/libs/api";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alertStore.js";
+import Breadcrumb from "../Common/Breadcrumb.vue";
+import { Smartphone } from "lucide-vue-next";
+import { useAuthStore } from "@/stores/auth";
 
 const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 
@@ -10,11 +13,8 @@ const router = useRouter();
 const route = useRoute();
 const alertStore = useAlertStore();
 
-const blockTailwind =
-  "block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
-
-const blockTailwindError =
-  "block w-full pl-10 pr-3 py-2.5 border border-red-400 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-blue-500";
+const blockTailwind = "block w-full pl-5 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+const blockTailwindError = "block w-full pl-5 pr-3 py-2.5 border border-red-400 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-blue-500";
 
 const blockTailwindName = ref(blockTailwind);
 const blockTailwindWebsiteURL = ref(blockTailwind);
@@ -39,10 +39,7 @@ const brand = reactive({
 onBeforeMount(async () => {
   if (prop.mode === "edit" && isEdit) {
     try {
-      const data = await getDataById(
-        VITE_ROOT_API_URL + `/itb-mshop/v1/brands`,
-        isEdit
-      );
+      const data = await getDataById(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, isEdit);
       brand.id = data.id;
       brand.name = data.name;
       brand.websiteUrl = data.websiteUrl;
@@ -67,13 +64,7 @@ const handleCancel = () => {
 
 const compareProduct = (a, b) => {
   if (a === b) return true;
-  if (
-    typeof a !== "object" ||
-    typeof b !== "object" ||
-    a === null ||
-    b === null
-  )
-    return false;
+  if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
 
   const keysA = Object.keys(a);
   const keysB = Object.keys(b);
@@ -130,10 +121,7 @@ const isValidUrl = (url) => {
 
 const validationBrandForm = () => {
   let isValid = true;
-  if (
-    !brand.name ||
-    brand.name.length > maxLength.name 
-  ) {
+  if (!brand.name || brand.name.length > maxLength.name) {
     blockTailwindName.value = blockTailwindError;
     isValid = false;
   } else {
@@ -147,9 +135,7 @@ const validationBrandForm = () => {
     blockTailwindWebsiteURL.value = blockTailwind;
   }
 
-  if (
-    (brand.countryOfOrigin?.length ?? 0) > maxLength.countryOfOrigin 
-  ) {
+  if ((brand.countryOfOrigin?.length ?? 0) > maxLength.countryOfOrigin) {
     blockTailwindCountryOfOrigin.value = blockTailwindError;
     isValid = false;
   } else {
@@ -174,21 +160,16 @@ const handleSave = async () => {
   normalizeEmptyStringsToNull(newBrand);
   try {
     if (prop.mode === "edit" && isEdit) {
-      await updateData(
-        VITE_ROOT_API_URL + `/itb-mshop/v1/brands`,
-        isEdit,
-        newBrand
-      );
+      await updateData(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, isEdit, newBrand);
       alertStore.addToast("The sale item has been updated.", "Update success", "success");
-router.push({ name: "BrandManage" });
-alertStore.addToast("The brand has been updated.", "Update success", "success");
-} else {
-  await addData(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, newBrand);
-  alertStore.addToast("The brand has been added.", "Add success", "success");
-  router.push({ name: "BrandManage" });
-  alertStore.addToast("The brand has been added.", "Add success", "success");
-}
-
+      router.push({ name: "BrandManage" });
+      alertStore.addToast("The brand has been updated.", "Update success", "success");
+    } else {
+      await addData(VITE_ROOT_API_URL + `/itb-mshop/v1/brands`, newBrand);
+      alertStore.addToast("The brand has been added.", "Add success", "success");
+      router.push({ name: "BrandManage" });
+      alertStore.addToast("The brand has been added.", "Add success", "success");
+    }
   } catch (err) {
     console.log(err);
   } finally {
@@ -196,115 +177,52 @@ alertStore.addToast("The brand has been updated.", "Update success", "success");
     localStorage.setItem("brand-updated", Date.now().toString());
   }
 };
+const auth = useAuthStore();
+
 </script>
 
 <template>
-  <div class=" p-6">
-    <div class="max-w-4xl mx-auto">
-      <!-- Header -->
-      <div class="mb-6">
-        <div class="text-2xl font-bold text-blue-600 mb-4 flex items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-8 w-8 mr-2"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          ITB MShop
-        </div>
 
-        <!-- Breadcrumbs -->
-        <nav class="flex items-center text-sm font-medium">
-          <RouterLink
-            :to="{ name: 'ProductManage' }"
-            class="text-blue-500 hover:text-blue-700 transition-colors duration-200"
-          >
-            Sale Item List
-          </RouterLink>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mx-2 text-gray-400"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-          <RouterLink
-            :to="{ name: 'BrandManage' }"
-            class="text-blue-500 hover:text-blue-700 transition-colors duration-200"
-          >
-            Brand List
-          </RouterLink>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mx-2 text-gray-400"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-          <span class="text-gray-600">
-            {{ isEdit ? "Edit Brand" : "New Brand" }}
-            <span v-if="isEdit" class="text-gray-500 ml-1">
-              - {{ brand.name }}
-            </span>
-          </span>
-        </nav>
+  <div class="p-6">
+    <div class="max-w-4xl mx-auto">
+
+     
+      <!-- Header -->
+      <div class="mb-6 ">
+        <div class="flex items-center mt-[40px]">
+        
       </div>
 
+        <span v-if="isEdit">
+          <Breadcrumb
+          :class="'mb-6'"
+          :pathForBreadcrumb="[
+            { text: 'Home', name: 'Home' },
+            { text: 'SaleItem', name: 'Products' },
+            { text: 'Edit Brand' },
+          ]"
+    />
+  </span>
+  <span v-else>
+<Breadcrumb
+      :class="'mb-6'"
+      :pathForBreadcrumb="[
+        { text: 'Home', name: 'Home' },
+        { text: 'SaleItem', name: 'Products' },
+        { text: 'Create Brand' },
+      ]"
+    />
+  </span>
+      </div>
+
+ <h3 class="text-3xl font-bold text-blue-700">Wellcome {{ auth.getAuthData().nickname }}</h3>
+   <h1 class="text-4xl font-bold text-blue-700 flex items-center mb-4">Brand Management</h1>
+
       <!-- Form Card -->
-      <div
-        class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100"
-      >
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100">
         <!-- Card Header -->
         <div class="bg-blue-600 px-6 py-4">
           <h2 class="text-xl font-semibold text-white flex items-center">
-            <svg
-              v-if="isEdit"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-              ></path>
-              <path
-                d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-              ></path>
-            </svg>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mr-2"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
             {{ isEdit ? "Edit Brand" : "New Brand" }}
           </h2>
         </div>
@@ -314,126 +232,29 @@ alertStore.addToast("The brand has been updated.", "Update success", "success");
           <div class="space-y-6">
             <!-- Name Field -->
             <div>
-              <label
-                for="itbms-name"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Brand Name <span class="text-red-500">*</span>
-              </label>
+              <label for="itbms-name" class="block text-sm font-medium text-gray-700 mb-1"> Brand Name <span class="text-red-500">*</span> </label>
               <div class="relative">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
-                    ></path>
-                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                  </svg>
-                </div>
-                <input
-                  v-model="brand.name"
-                  type="text"
-                  required
-                  @blur="trimField('name')"
-                  :class="`itbms-name ${blockTailwindName}`"
-                  placeholder="Enter brand name"
-                />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"></div>
+                <input v-model="brand.name" type="text" required @blur="trimField('name')" :class="`itbms-name ${blockTailwindName}`" placeholder="Enter brand name" />
               </div>
-              <!-- <p v-if="!brand.name" class="mt-1 text-sm text-red-500">
-                Brand name is required
-              </p> -->
-              <p
-                v-show="!brand.name||brand.name.length > maxLength.name"
-                class="itbms-message mt-1 text-sm text-red-500"
-              >
-                Brand name must be 1-30 characters long.
-              </p>
+              <p v-show="!brand.name || brand.name.length > maxLength.name" class="itbms-message mt-1 text-sm text-red-500">Brand name must be 1-30 characters long.</p>
             </div>
 
             <!-- Website URL Field -->
             <div>
-              <label
-                for="itbms-websiteUrl"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Website URL
-              </label>
+              <label for="itbms-websiteUrl" class="block text-sm font-medium text-gray-700 mb-1"> Website URL </label>
               <div class="relative">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                    ></path>
-                  </svg>
-                </div>
-                <input
-                  v-model="brand.websiteUrl"
-                  type="text"
-                  @blur="trimField('websiteUrl')"
-                  :class="`itbms-websiteUrl ${blockTailwindWebsiteURL}`"
-                  placeholder="https://example.com"
-                />
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"></div>
+                <input v-model="brand.websiteUrl" type="text" @blur="trimField('websiteUrl')" :class="`itbms-websiteUrl ${blockTailwindWebsiteURL}`" placeholder="https://example.com" />
               </div>
-              <p
-                v-if="!isValidUrl(brand.websiteUrl)"
-                class="itbms-message mt-1 text-sm text-red-500"
-              >
-                Brand URL must be a valid URL or not specified.
-              </p>
+              <p v-if="!isValidUrl(brand.websiteUrl)" class="itbms-message mt-1 text-sm text-red-500">Brand URL must be a valid URL or not specified.</p>
             </div>
 
             <!-- Country of Origin Field -->
             <div>
-              <label
-                for="itbms-countryOfOrigin"
-                class="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Country of Origin
-              </label>
+              <label for="itbms-countryOfOrigin" class="block text-sm font-medium text-gray-700 mb-1"> Country of Origin </label>
               <div class="relative">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-gray-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M2 12h20"></path>
-                    <path
-                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-                    ></path>
-                  </svg>
-                </div>
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"></div>
                 <input
                   v-model="brand.countryOfOrigin"
                   type="text"
@@ -442,66 +263,40 @@ alertStore.addToast("The brand has been updated.", "Update success", "success");
                   placeholder="Enter country of origin"
                 />
               </div>
-              <p
-                v-if="
-                  (brand.countryOfOrigin?.length ?? 0) >
-                  maxLength.countryOfOrigin
-                "
-                class="itbms-message mt-1 text-sm text-red-500"
-              >
-                Brand country of origin must be 1-80 characters long or not
-                specified.
+              <p v-if="(brand.countryOfOrigin?.length ?? 0) > maxLength.countryOfOrigin" class="itbms-message mt-1 text-sm text-red-500">
+                Brand country of origin must be 1-80 characters long or not specified.
               </p>
             </div>
-
-            <!-- Active Status -->
             <div class="flex items-center">
-              <div
-                class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-              >
+              <div class="relative inline-block w-12 mr-3 align-middle select-none transition duration-200 ease-in">
                 <input
+                  id="itbms-isActive"
                   type="checkbox"
                   name="toggle"
                   v-model="brand.isActive"
-                  class="itbms-isActive toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+                  class="peer absolute w-6 h-6 bg-white border-4 rounded-full appearance-none cursor-pointer transition-all duration-300 ease-in-out checked:translate-x-6"
                 />
-                <label
-                  for="itbms-isActive"
-                  class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-                ></label>
+                <label for="itbms-isActive" class="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-all duration-300 ease-in-out peer-checked:bg-blue-500"></label>
               </div>
-              <div class="ml-3 text-sm">
-                <label for="itbms-isActive" class="font-medium text-gray-700"
-                  >Active</label
-                >
-                <p class="text-gray-500">
-                  Set the brand as active in the system
-                </p>
+
+              <div class="ml-2 text-sm">
+                <label for="itbms-isActive" class="font-medium text-gray-700">Active</label>
               </div>
             </div>
           </div>
-
-          <!-- Action Buttons -->
-          <div
-            class="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0"
-          >
+          <div class="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
             <button
               @click="handleSave"
-              :disabled="
-                !isSaving ||
-                !isFormValid || 
-                (prop.mode === 'edit' && !isBrandChanged)
-              "
+              :disabled="!isSaving || !isFormValid || (prop.mode === 'edit' && !isBrandChanged)"
               type="submit"
-              class="itbms-save-button w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="itbms-save-button w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Save
             </button>
-
             <button
               type="button"
               @click="handleCancel"
-              class="itbms-cancel-button w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-blue-300 text-base font-medium rounded-lg shadow-sm text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              class="itbms-cancel-button w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-blue-300 text-base font-medium rounded-lg shadow-sm text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 cursor-pointer"
             >
               Cancel
             </button>
@@ -511,5 +306,3 @@ alertStore.addToast("The brand has been updated.", "Update success", "success");
     </div>
   </div>
 </template>
-
-
