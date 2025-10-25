@@ -330,12 +330,14 @@ UserServices {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email must not be null or empty");
         }
-        boolean exists = buyerRepository.existsBuyerByEmail(email.trim().replace("\"", ""));
+        boolean exists = buyerRepository.existsByEmailAndIsActive(email.trim().replace("\"", ""),true);
         System.out.println("Check email exists for [" + email + "] = " + exists);
 
         if (!exists) {
             throw new NoSuchElementException("No user found with email: " + email);
         }
+
+
         emailService.sendMailVerityResetPassword(email, email);
     }
 

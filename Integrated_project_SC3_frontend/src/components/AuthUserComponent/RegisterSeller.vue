@@ -40,8 +40,7 @@ const form = reactive({
     isFirstInput: true,
   },
   password: {
-    errorText:
-      "Password must be 8+ chars with uppercase, lowercase, number, special char",
+    errorText: "Password must be 8+ chars with uppercase, lowercase, number, special char",
     isValid: false,
     isFirstInput: true,
   },
@@ -76,7 +75,7 @@ const form = reactive({
 const isFormValid = computed(() => {
   const results = Object.entries(form).map(([key, f]) => ({
     field: key,
-    isValid: f.isValid ?? null, // ถ้าไม่มี isValid จะได้ null
+    isValid: f.isValid ?? null,
     isFirstInput: f.isFirstInput ?? null,
   }));
 
@@ -104,30 +103,37 @@ const validateEmail = () => {
 };
 
 const validatePassword = () => {
-  form.password.isValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-      password.value
-    );
+  form.password.isValid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password.value);
   updateIsFirstInput("password", password.value);
 };
 
 const validateBankAccount = () => {
-  form.bankAccount.isValid =
-    /^[0-9]+$/.test(bankAccount.value) && bankAccount.value.length >= 6;
+  form.bankAccount.isValid = /^[0-9]+$/.test(bankAccount.value) && bankAccount.value.length >= 6;
   updateIsFirstInput("bankAccount", bankAccount.value);
 };
 
 const validateNationalId = () => {
-  form.nationalId.isValid = /^[0-9]{13}$/.test(nationalId.value);
-  updateIsFirstInput("nationalId", nationalId.value);
+  const id = nationalId.value;
+  if (!/^[0-9]{13}$/.test(id)) {
+    form.nationalId.isValid = false;
+    updateIsFirstInput("nationalId", id);
+    return;
+  }
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(id.charAt(i), 10) * (13 - i);
+  }
+  const checkDigit = (11 - (sum % 11)) % 10;
+  const lastDigit = parseInt(id.charAt(12), 10);
+  form.nationalId.isValid = checkDigit === lastDigit;
+  updateIsFirstInput("nationalId", id);
 };
 
 const validatePhoneNumber = () => {
-form.phoneNumber.isValid = /^[0][0-9]{9}$/.test(phoneNumber.value) && phoneNumber.value.trim().length > 0;
+  form.phoneNumber.isValid = /^[0][0-9]{9}$/.test(phoneNumber.value) && phoneNumber.value.trim().length > 0;
   updateIsFirstInput("phoneNumber", phoneNumber.value);
 };
 
-// =================== Summit Form ===================
 // Update isFirstInput
 const updateIsFirstInput = (field, value) => {
   form[field].isFirstInput = form[field].isFirstInput && value === "";
@@ -151,20 +157,11 @@ const summitForm = async () => {
     };
 
     loading.value = true;
-    const res = await registerUser(
-      userData,
-      nationalIdFront.value,
-      nationalIdBack.value
-    );
+    const res = await registerUser(userData, nationalIdFront.value, nationalIdBack.value);
     loading.value = false;
 
     console.log("✅ Registered success:", res);
-    alertStore.addToast(
-      "The user account has been successfully registered.",
-      "Create seller successful.",
-      "success",
-      5000
-    );
+    alertStore.addToast("The user account has been successfully registered.", "Create seller successful.", "success", 5000);
     route.push({ name: "Products" });
   } catch (err) {
     loading.value = false;
@@ -211,9 +208,7 @@ const removeBackImage = () => {
   <div class="min-h-screen flex items-center justify-center bg-blue-50">
     <div class="bg-white shadow-xl rounded-2xl p-6 w-full max-w-lg m-10">
       <!-- Title -->
-      <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">
-        Seller Sign Up
-      </h2>
+      <h2 class="text-2xl font-bold text-center text-blue-700 mb-4">Seller Sign Up</h2>
 
       <!-- Form -->
       <form class="flex flex-col space-y-2" @submit.prevent="summitForm">
@@ -308,58 +303,22 @@ const removeBackImage = () => {
 
         <!-- Upload National ID card -->
         <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600"
-            >National ID Card - Front</label
-          >
-          <input
-            type="file"
-            accept="image/*"
-            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            @change="handleFileChangeFront"
-            ref="frontInput"
-          />
+          <label class="text-sm font-medium text-gray-600">National ID Card - Front</label>
+          <input type="file" accept="image/*" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="handleFileChangeFront" ref="frontInput" />
 
           <div v-if="nationalIdFrontPreview" class="mt-2 relative">
-            <img
-              :src="nationalIdFrontPreview"
-              alt="Front Preview"
-              class="w-40 rounded-lg border"
-            />
-            <button
-              type="button"
-              @click="removeFrontImage"
-              class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-            >
-              ✕
-            </button>
+            <img :src="nationalIdFrontPreview" alt="Front Preview" class="w-40 rounded-lg border" />
+            <button type="button" @click="removeFrontImage" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
           </div>
         </div>
 
         <div class="flex flex-col space-y-1">
-          <label class="text-sm font-medium text-gray-600"
-            >National ID Card - Back</label
-          >
-          <input
-            type="file"
-            accept="image/*"
-            class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            @change="handleFileChangeBack"
-            ref="backInput"
-          />
+          <label class="text-sm font-medium text-gray-600">National ID Card - Back</label>
+          <input type="file" accept="image/*" class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" @change="handleFileChangeBack" ref="backInput" />
 
           <div v-if="nationalIdBackPreview" class="mt-2 relative">
-            <img
-              :src="nationalIdBackPreview"
-              alt="Back Preview"
-              class="w-40 rounded-lg border"
-            />
-            <button
-              type="button"
-              @click="removeBackImage"
-              class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-            >
-              ✕
-            </button>
+            <img :src="nationalIdBackPreview" alt="Back Preview" class="w-40 rounded-lg border" />
+            <button type="button" @click="removeBackImage" class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">✕</button>
           </div>
         </div>
 
@@ -368,32 +327,17 @@ const removeBackImage = () => {
           <button
             type="submit"
             :disabled="loading || !isFormValid"
-            :class="[
-              'w-full py-2 rounded-lg transition',
-              loading || !isFormValid
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700',
-            ]"
+            :class="['w-full py-2 rounded-lg transition', loading || !isFormValid ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700']"
           >
             {{ loading ? "Loading..." : "Sign Up" }}
           </button>
-          <RouterLink
-            :to="{ name: 'Products' }"
-            class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"
-          >
-            Cancel
-          </RouterLink>
+          <RouterLink :to="{ name: 'Products' }" class="w-full text-center border border-gray-300 text-gray-600 py-2 rounded-lg hover:bg-gray-100 transition"> Cancel </RouterLink>
         </div>
 
         <!-- Already have account -->
         <p class="text-center text-sm text-gray-600 mt-4">
           Already have an account?
-          <RouterLink
-            :to="{ name: 'Login' }"
-            class="text-blue-600 font-medium hover:underline"
-          >
-            Login
-          </RouterLink>
+          <RouterLink :to="{ name: 'Login' }" class="text-blue-600 font-medium hover:underline"> Login </RouterLink>
         </p>
       </form>
     </div>

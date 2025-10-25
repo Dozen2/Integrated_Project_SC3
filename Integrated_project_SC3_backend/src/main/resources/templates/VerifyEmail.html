@@ -6,10 +6,10 @@
     <title>Email Verification - ITBMS</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
             background: #f1f5f9;
             margin: 0;
-            padding: 20px;
+            padding: 40px 16px;
             color: #1e293b;
         }
 
@@ -17,44 +17,48 @@
             max-width: 600px;
             margin: auto;
             background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
+            border: 2px solid #bfdbfe; /* ✅ กรอบสีฟ้าอ่อน (border-blue-200) */
         }
 
         .header {
             background: #1d4ed8;
             color: #ffffff;
             text-align: center;
-            padding: 30px 20px;
+            padding: 32px 20px;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .header .tagline {
             font-size: 14px;
             opacity: 0.9;
+            margin-top: 4px;
         }
 
         .content {
-            padding: 30px 20px;
+            padding: 36px 24px;
             text-align: center;
         }
 
         .content h2 {
-            font-size: 20px;
-            margin-bottom: 16px;
+            font-size: 22px;
+            margin-bottom: 14px;
             color: #1e3a8a;
         }
 
         .content p {
-            font-size: 14px;
+            font-size: 15px;
             color: #475569;
-            margin-bottom: 24px;
-            line-height: 1.5;
+            margin-bottom: 28px;
+            line-height: 1.6;
         }
 
         .verify-button {
@@ -62,10 +66,11 @@
             background: #3b82f6;
             color: #ffffff;
             text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: background 0.3s;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background 0.25s ease;
         }
 
         .verify-button:hover {
@@ -76,7 +81,8 @@
             font-size: 12px;
             color: #1d4ed8;
             word-break: break-all;
-            margin-top: 16px;
+            margin-top: 18px;
+            line-height: 1.4;
         }
 
         .footer {
@@ -99,17 +105,17 @@
     <div class="content">
         <h2>Verify Your Email</h2>
         <p>
-            Please confirm your email address by clicking the button below.
+            Please confirm your email address by clicking the button below.<br>
             This helps us keep your account secure.
         </p>
 
         <a th:href="${verificationLink}" class="verify-button">Verify My Email</a>
 
-        <p class="link-box" th:text="${verificationLink}"></p>
+        <!-- <p class="link-box" th:text="${verificationLink}"></p> -->
     </div>
 
     <div class="footer">
-        FROM ITBMS-SC3 TEAM
+        © 2025 ITBMS-SC3 TEAM
     </div>
 </div>
 </body>
