@@ -21,6 +21,7 @@ import sit.int221.sc3_server.entity.*;
 import sit.int221.sc3_server.exception.DuplicteItemException;
 import sit.int221.sc3_server.exception.ForbiddenException;
 import sit.int221.sc3_server.exception.UnAuthorizeException;
+import sit.int221.sc3_server.exception.crudException.CreateFailedException;
 import sit.int221.sc3_server.repository.user.BuyerRepository;
 import sit.int221.sc3_server.repository.user.SellerRepository;
 import sit.int221.sc3_server.service.Authentication.JwtUserDetailService;
@@ -93,35 +94,40 @@ UserServices {
         return seller.getBuyer();
     }
 
+    public boolean isValidThaiId(String id) {
+        if (id == null || !id.matches("\\d{13}")) return false;
+        int sum = 0;
+        for (int i = 0; i < 12; i++) {
+            sum += Character.getNumericValue(id.charAt(i)) * (13 - i);
+        }
+        int checkDigit = (11 - (sum % 11)) % 10;
+        return checkDigit == Character.getNumericValue(id.charAt(12));
+    }
 
     @Transactional
     public Buyer createUser(UserDTO userDTO, MultipartFile front, MultipartFile back) throws MessagingException, UnsupportedEncodingException {
-        // ตรวจสอบข้อมูลซ้ำ (อีเมล, ชื่อเล่น ฯลฯ)
         checkDuplication(userDTO);
-
-        // สร้าง User ใหม่
+        if (!isValidThaiId(userDTO.getNationalId())) {
+            throw new CreateFailedException("Invalid Thai national ID number");
+        }
         Buyer user = new Buyer();
         user.setNickName(userDTO.getNickName());
         user.setEmail(userDTO.getEmail());
         user.setFullName(userDTO.getFullName());
         user.setIsActive(false);
 
-        // เข้ารหัสรหัสผ่าน
         String hashPassword = passwordEncoder.encode(userDTO.getPasswords());
         user.setPasswords(hashPassword);
 
-        // ถ้า role = seller
+
         if ("seller".equalsIgnoreCase(userDTO.getRole())) {
-            // ตรวจสอบความครบถ้วนของข้อมูล Seller
             if (userDTO.getBankName() == null || userDTO.getBankAccountNumber() == null
                     || userDTO.getNationalId() == null
             ) {
                 throw new IllegalArgumentException("Seller details must not be null for seller role");
             }
-            // จัดการอัพโหลดไฟล์บัตรประชาชน
             String frontFileName = saveNationalIdFile(front);
             String backFileName = saveNationalIdFile(back);
-            // สร้าง Seller
             Seller seller = new Seller();
             seller.setBankName(userDTO.getBankName());
             seller.setMobileNumber(userDTO.getMobileNumber());
@@ -130,21 +136,13 @@ UserServices {
             seller.setNationalIdPhotoFront(frontFileName);
             seller.setNationalIdPhotoBack(backFileName);
 
-            // บันทึก Seller และเชื่อมกับ User
             sellerRepository.saveAndFlush(seller);
             user.setSeller(seller);
             user.getRoles().add(Role.SELLER);
         }
-        // บันทึก User
         user.getRoles().add(Role.BUYER);
         buyerRepository.save(user);
 
-//        VerifyToken verifyToken = new VerifyToken();
-//        verifyToken.setVerifyToken(UUID.randomUUID().toString());
-//        verifyToken.setExpiredDate(Instant.now().plus(24, ChronoUnit.HOURS));
-//        verifyToken.setBuyer(user);
-//        verifyTokenRepository.save(verifyToken);
-//        user.setVerifyToken(verifyToken);
 
         buyerRepository.save(user);
 
@@ -201,26 +199,7 @@ UserServices {
     }
 
 
-    //***********************************************
 
-//    public Map<String,Object> authenticateUser(JwtAuthUser jwtAuthUser){
-//        UsernamePasswordAuthenticationToken uToken =
-//                new UsernamePasswordAuthenticationToken(jwtAuthUser.getUsername(),jwtAuthUser.getPassword());
-//        authenticationManager.authenticate(uToken);
-//        UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getUsername());
-//        long refreshTokenAgeInMinute = 24*60 ;
-//
-//        String accessToken = jwtUtils.generateToken(userDetails);
-//        String refreshToken = jwtUtils.generateToken(userDetails,refreshTokenAgeInMinute,TokenType.refresh_token);
-//        return Map.of(
-//                "access_token",accessToken,
-//                "refresh_token",refreshToken
-//
-
-//        );
-//    }
-
-    //**************************************************
     public Map<String, Object> authenticateUser(JwtAuthUser jwtAuthUser) {
         UsernamePasswordAuthenticationToken uToken =
                 new UsernamePasswordAuthenticationToken(jwtAuthUser.getEmail(), jwtAuthUser.getPassword());
@@ -237,7 +216,7 @@ UserServices {
         );
 
     }
-//*************************************************************
+
 
 
     public Map<String, Object> refreshToken(String refreshToken) {

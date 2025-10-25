@@ -2,6 +2,7 @@ package sit.int221.sc3_server.DTO.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -12,10 +13,15 @@ public class UserDTO {
     @Email
     private String email;
     @Size(min = 8, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            message = "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
     private String passwords;
     private String fullName;
-
+    @Pattern(regexp = "^(buyer|seller)$", message = "User type must be either 'buyer' or 'seller'")
     private String role;
+    @Pattern(regexp = "0\\d{9}", message = "Mobile number must be 10 digits and start with 0")
     private String mobileNumber;
     private String bankAccountNumber;
     private String bankName;

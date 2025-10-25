@@ -30,13 +30,6 @@ import java.util.Map;
 public class AuthController {
     @Autowired
     private UserServices userServices;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private JwtUserDetailService jwtUserDetailService;
     @Value("${app.cookie.path:/itb-mshop/v2/auth/refresh}")
     private String cookiePath;
 
@@ -72,39 +65,7 @@ public class AuthController {
     }
 
 
-//        @PostMapping("/login")//******
-//    public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
-//
-//        if (jwtAuthUser.getUsername().isBlank()){
-//            throw new UnAuthorizeException("Email or Password is incorrect");
-//        }
-//                try {
-//                    boolean check = userServices.checkPassword(jwtAuthUser.getPassword(), jwtAuthUser.getUsername());
-//                    if(!check){
-//                        throw new UnAuthorizeException("Email or Password is incorrect");
-//                    }
-//                    Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
-//                    ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
-//                            .httpOnly(true)
-//                            .secure(false)
-////                            .path("/itb-mshop/v2/auth/refresh")
-//                            .path(cookiePath)
-//                            .maxAge(Duration.ofDays(1))
-//                            .sameSite("Lax")
-////                            .sameSite("Strict")
-//                            .build();
-//                    response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
-//
-//                    return ResponseEntity.ok(Map.of(
-//                            "access_token",tokens.get("access_token")
-//                    ));
-//                }catch (BadCredentialsException e){
-//                    return ResponseEntity.status(400).build();
-//                }
-//
-//
-//    }
-    //********************************************************
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody JwtAuthUser jwtAuthUser, HttpServletResponse response){
 
@@ -120,7 +81,6 @@ public class AuthController {
             ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
                     .httpOnly(true)
                     .secure(false)
-//                            .path("/itb-mshop/v2/auth/refresh")
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
                     .sameSite("Lax")
@@ -137,7 +97,7 @@ public class AuthController {
 
 
     }
-    //****************************************************
+
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
@@ -151,31 +111,7 @@ public class AuthController {
         return ResponseEntity.ok(userServices.refreshToken(token));
     }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity<?> logout(HttpServletRequest request,HttpServletResponse response){
-//        String authHeader = request.getHeader("Authorization");
-//        if(authHeader == null || !authHeader.startsWith("Bearer ")){
-//            return ResponseEntity.badRequest().build();
-//        }
-////        String token = authHeader.substring(7);
-////        Map<String,Object> claims;
-////        try{
-////            claims =jwtUtils.getJWTClaimSet(token);
-////        }catch (Exception e){
-////            return ResponseEntity.badRequest().build();
-////        }
-////        Integer userId = Integer.parseInt(claims.get("id").toString());
-////         userServices.checkIsActive(userId);
-//         ResponseCookie deleteCookie = ResponseCookie.from("refresh_token","")
-//                 .httpOnly(true)
-////                 .secure(true)
-//                 .path("/")
-//                 .maxAge(0)  // expire ทันที
-//                 .build();
-//         response.addHeader("Set-Cookie",deleteCookie.toString());
-//         return ResponseEntity.noContent().build();
-//
-//    }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
