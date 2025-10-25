@@ -24,7 +24,7 @@ import java.util.Map;
 @Component
 public class JwtUtils {
 
-    @Value("2")
+    @Value("1")
     private long MAX_TOKEN_INTERVAL;
 
     @Value("${app.security.jwt.key-id}")

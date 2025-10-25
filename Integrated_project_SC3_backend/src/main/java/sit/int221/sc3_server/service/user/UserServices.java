@@ -206,7 +206,7 @@ UserServices {
         authenticationManager.authenticate(uToken);
         UserDetails userDetails = jwtUserDetailService.loadUserByUsername(jwtAuthUser.getEmail());
 //        long refreshTokenAgeInMinute = 24 * 60;
-        long refreshTokenAgeInMinute = 5;
+        long refreshTokenAgeInMinute = 2;
 
         String accessToken = jwtUtils.generateToken(userDetails);
         String refreshToken = jwtUtils.generateToken(userDetails, refreshTokenAgeInMinute, TokenType.refresh_token);
