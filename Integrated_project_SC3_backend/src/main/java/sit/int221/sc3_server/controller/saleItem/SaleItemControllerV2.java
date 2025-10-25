@@ -295,13 +295,9 @@ public class SaleItemControllerV2 {
         }
 
         if(!buyer.getId().equals(order.getBuyer().getId())){
-            if(isSeller && order.getSeller().getId().equals(authUserDetail.getSellerId())){
-                OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
-                return ResponseEntity.ok(response);
-            }else{
+            if(!isSeller || !order.getSeller().getId().equals(authUserDetail.getSellerId())){
                 throw new ForbiddenException("request user id not matched with id in order");
             }
-
         }
          OrderResponseMoreSeller response = orderServices.mapOrderToResponseMoreSellerDTO(order);
         return ResponseEntity.ok(response);
