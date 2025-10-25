@@ -107,7 +107,7 @@ UserServices {
     @Transactional
     public Buyer createUser(UserDTO userDTO, MultipartFile front, MultipartFile back) throws MessagingException, UnsupportedEncodingException {
         checkDuplication(userDTO);
-        if (!isValidThaiId(userDTO.getNationalId())) {
+        if ( userDTO.getNationalId() != null && !isValidThaiId(userDTO.getNationalId())) {
             throw new CreateFailedException("Invalid Thai national ID number");
         }
         Buyer user = new Buyer();
