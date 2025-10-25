@@ -84,8 +84,8 @@ function togglePasswordVisibility() {
         class="absolute inset-y-0 right-3 flex items-center text-gray-500"
         @click="togglePasswordVisibility"
       >
-        <span v-if="showPassword"><Eye /></span>
-        <span v-else><EyeOff /></span>
+        <span v-if="showPassword" class="cursor-pointer"><Eye /></span>
+        <span v-else><EyeOff  class="cursor-pointer"/></span>
       </button>
   </div>
   </div>

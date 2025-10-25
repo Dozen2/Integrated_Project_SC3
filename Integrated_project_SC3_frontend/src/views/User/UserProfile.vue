@@ -212,9 +212,7 @@ const changeToViewMode = () => {
           <userDataList 
             classname="itbms-email" 
             label="Email" 
-            :isEditMode="isEditMode"
-            v-model="userProfile.email"
-            :disabled="true"/>
+            v-model="userProfile.email"/>
 
           <userDataList classname="itbms-fullname" label="FullName" v-model="userProfile.fullName" :isEditMode="isEditMode"
             :isValid="form.fullname.isValid" :isFirstInput="form.fullname.isFirstInput"
@@ -223,11 +221,11 @@ const changeToViewMode = () => {
           <userDataList classname="itbms-type" label="Type" v-model="userType" />
 
           <div v-if="auth.role === 'ROLE_SELLER'" class="space-y-4">
-            <userDataList classname="itbms-mobile" label="Mobile" v-model="phoneNumber" :isEditMode="isEditMode" :disabled="true"/>
+            <userDataList classname="itbms-mobile" label="Mobile" v-model="phoneNumber"/>
 
-            <userDataList classname="itbms-bankAccount" label="Bank Account No" v-model="bankAccount" :isEditMode="isEditMode" :disabled="true"/>
+            <userDataList classname="itbms-bankAccount" label="Bank Account No" v-model="bankAccount"/>
 
-            <userDataList classname="itbms-bankName" label="Bank Name" v-model="userProfile.bankName" :isEditMode="isEditMode" :disabled="true"/>
+            <userDataList classname="itbms-bankName" label="Bank Name" v-model="userProfile.bankName"/>
           </div>
         </form>
       </div>

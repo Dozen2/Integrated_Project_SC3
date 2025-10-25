@@ -10,6 +10,7 @@ import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSell
 import { Pencil, Trash2 } from "lucide-vue-next";
 import { useAuthStore } from "@/stores/auth";
 import ConfirmDelete from "@/components/Common/ConfirmDelete.vue";
+import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 
 const alertStore = useAlertStore();
 const auth = useAuthStore();
@@ -111,7 +112,15 @@ const deleteProduct = (id) => {
 </script>
 
 <template>
-  <div class="p-6 max-w-7xl mx-auto">
+  <div class="max-w-7xl mx-auto mt-[40px]">
+     <Breadcrumb
+      :class="'mb-6'"
+      :pathForBreadcrumb="[
+        { text: 'Home', name: 'Home' },
+        { text: 'SaleItem', name: 'Products' },
+        { text: 'SaleItemManage' },
+      ]"
+    />
     <h3 class="itbms-nickname text-3xl font-bold text-blue-700 mb-[-15px]">Wellcome {{ auth.getAuthData().nickname }}
     </h3>
     <div class="flex justify-between items-center gap-4 mt-[20px]">

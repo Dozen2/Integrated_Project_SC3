@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from "vue";
 import { getAllOrderByUserId } from "@/libs/callAPI/apiUser.js";
 import { useAuthStore } from "@/stores/auth";
-import { PackageOpen } from "lucide-vue-next";
+import { PackageOpen, ShoppingCart } from "lucide-vue-next";
 import { RouterLink } from "vue-router";
 import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 import Loading from "@/components/Common/Loading.vue";
@@ -68,7 +68,6 @@ const fetchselect = async () => {
   }
 };
 
-
 const loadImageUrl = async () => {
   imageMap.value = {};
   for (const order of orders.value.content) {
@@ -115,16 +114,13 @@ const formatDate = (isoString) => {
   }).format(date);
 };
 
-const activeTab = ref("COMPLETE"); // ค่าเริ่มต้นเป็น complete
+const activeTab = ref("Complete"); // ค่าเริ่มต้นเป็น complete
 
 // ✅ computed: แสดงเฉพาะ order ตามแท็บที่เลือก
 const filteredOrders = computed(() => {
   if (!orders.value.content) return [];
-  return orders.value.content.filter(
-    (order) => order.orderStatus === activeTab.value
-  );
+  return orders.value.content.filter((order) => order.orderStatus === activeTab.value);
 });
-
 </script>
 
 <template>
@@ -145,123 +141,104 @@ const filteredOrders = computed(() => {
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
         <span class="mr-2">
-          <PackageOpen size="50" color="#6678ff" />
+          <PackageOpen size="50" color="#3B82F6" />
         </span>
         YOUR ORDERS
       </h1>
     </div>
 
-    <!-- ✅ ส่วนของแท็บ -->
     <div class="flex justify-center gap-6 mb-8">
       <button
-        @click="activeTab = 'COMPLETE'"
-        :class="[
-          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-          activeTab === 'Completed'
-            ? 'bg-blue-500 text-white shadow-md'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        ]"
-      >
-        COMPLETE
-      </button>
-      <button
-        @click="activeTab = 'Cancelled'"
-        :class="[
-          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-          activeTab === 'Cancelled'
-            ? 'bg-blue-500 text-white shadow-md'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        ]"
-      >
-        CANCELLED
-      </button>
-    </div>
-
-    <!-- ✅ ใช้ filteredOrders แทน orders.content -->
-    <RouterLink
-      v-for="(order, index) in filteredOrders"
-      :key="order.orderNo"
-      :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
-      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer"
-    >
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
-        <div>
-          <div class="flex items-center mb-2">
-            <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
-          </div>
-          <p>
-            <strong class="text-gray-500">Order No:</strong>
-            <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
-          </p>
-          <p>
-            <strong class="text-gray-500">Status:</strong>
-            <span
-              class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
-              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
-            >
-              {{ order.orderStatus }}
-            </span>
-          </p>
-        </div>
-
-        <div>
-          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
-        </div>
-        <div>
-          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
-        </div>
-        <div class="md:text-right">
-          <p class="text-gray-500">Total:</p>
-          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
-        </div>
-      </div>
-
-      <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-        <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
-      </div>
-
-      <hr class="my-4" />
-
-      <div class="space-y-4">
-        <div
-          v-for="(item, index) in order.orderItems"
-          :key="item.id"
-          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none"
+          @click="activeTab = 'Complete'"
+          :class="['px-6 py-2 rounded-full font-semibold transition-all duration-200 cursor-pointer', activeTab === 'Complete' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']"
         >
-          <img
-            :src="imageMap[item.no]"
-            :alt="item.productName"
-            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
-          />
-          <div class="flex-grow">
-            <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName }}</p>
-            <p class="itbms-item-quantity text-gray-500">Qty {{ item.quantity }}</p>
+        COMPLETE
+        </button>
+        <button
+          @click="activeTab = 'Cancelled'"
+          :class="['px-6 py-2 rounded-full font-semibold transition-all duration-200 cursor-pointer', activeTab === 'Cancelled' ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']"
+        >
+          CANCELLED
+        </button>
+      </div>
+      
+      <div v-if="filteredOrders.length === 0 " class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-20%]">
+        <ShoppingCart size="140" color="#3B82F6" strokeWidth="{1.30}"/>
+        <p class="text-4xl text-blue-500">You haven’t placed any orders yet.</p>
+      </div>
+  
+      <div v-else>
+      <RouterLink
+        v-for="(order, index) in filteredOrders"
+        :key="order.orderNo"
+        :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
+        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
+          <div>
+            <div class="flex items-center mb-2">
+              <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
+            </div>
+            <p>
+              <strong class="text-gray-500">Order No:</strong>
+              <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
+            </p>
+            <p>
+              <strong class="text-gray-500">Status:</strong>
+              <span
+                class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
+                :class="order.orderStatus === 'Complete' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
+              >
+                {{ order.orderStatus }}
+              </span>
+            </p>
           </div>
-          <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">
-            {{ formatCurrency(item.price * item.quantity) }} Bath
+
+          <div>
+            <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
+          </div>
+          <div>
+            <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+          </div>
+          <div class="md:text-right">
+            <p class="text-gray-500">Total:</p>
+            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
           </div>
         </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
+          <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
+          <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="space-y-4">
+          <div v-for="(item, index) in order.orderItems" :key="item.id" class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+            <img :src="imageMap[item.no]" :alt="item.productName" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+            <div class="flex-grow">
+              <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName }}</p>
+              <p class="itbms-item-quantity text-gray-500">Qty {{ item.quantity }}</p>
+            </div>
+            <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
+          </div>
+        </div>
+      </RouterLink>
+
+      <div class="flex gap-4 justify-center pb-10">
+        <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination" @update:modelValue="fetchselect" />
+        <div v-show="pagination.totalPages > 1">
+          <SizeAndSortSeller
+          v-model:modelSize="pagination.size"
+          v-model:modelSort="pagination.sort"
+          v-model:modelPage="pagination.page"
+          storage-key-size="order_size"
+          storage-key-sort="order_sort"
+          reset-storage="order_pagination"
+          @update:modelPage="handlePageChange"
+          />
+        </div>
       </div>
-    </RouterLink>
-  </div>
-
-  <div class="flex gap-4 justify-center pb-10">
-    <PaginationSeller
-      v-model="pagination.page"
-      :total-page="pagination.totalPages"
-      storage-key="order_pagination"
-      @update:modelValue="fetchselect"
-    />
-
-    <SizeAndSortSeller
-      v-model:modelSize="pagination.size"
-      v-model:modelSort="pagination.sort"
-      v-model:modelPage="pagination.page"
-      storage-key-size="order_size"
-      storage-key-sort="order_sort"
-      reset-storage="order_pagination"
-      @update:modelPage="handlePageChange"
-    />
+    </div>
   </div>
 </template>

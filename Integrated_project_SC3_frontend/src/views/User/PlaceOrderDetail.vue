@@ -109,7 +109,7 @@ const formatDate = (isoString) => {
             <strong class="text-blue-700">Status:</strong>
             <span
               class="itbms-order-status ml-1 px-3 py-1 text-xs rounded-full font-semibold shadow-sm"
-              :class="orders.orderStatus === 'Completed'
+              :class="orders.orderStatus === 'Complete'
                 ? 'bg-green-100 text-green-700'
                 : 'bg-yellow-100 text-yellow-700'"
             >

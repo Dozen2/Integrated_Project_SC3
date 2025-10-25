@@ -25,6 +25,9 @@ const displayText = computed(() => {
   if (path === "/brands") {
     return menuItems[1].text;
   }
+  if (path === "/seller-order") {
+    return menuItems[2].text;
+  }
   return "Management";
 });
 
