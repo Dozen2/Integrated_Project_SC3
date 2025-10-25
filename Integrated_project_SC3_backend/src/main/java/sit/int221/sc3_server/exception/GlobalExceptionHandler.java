@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleInternalException(Exception e,HttpServletRequest httpServletRequest){
         GeneralErrorResponse ger = new GeneralErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Sale item create failed",
+                "create failed",
                 e.getMessage(),
                 httpServletRequest.getRequestURI()
         );
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleUpdateFailedException(Exception e,HttpServletRequest httpServletRequest){
         GeneralErrorResponse ger = new GeneralErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Sale item updated failed",
+                "updated failed",
                 e.getMessage(),
                 httpServletRequest.getRequestURI()
         );
