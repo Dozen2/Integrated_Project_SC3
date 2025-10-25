@@ -9,6 +9,7 @@ import { getImageByImageName } from "@/libs/callAPI/apiSaleItem";
 import PaginationSeller from "@/components/Common/QueryBySeller/PaginationSeller.vue";
 import SizeAndSortSeller from "@/components/Common/QueryBySeller/SizeAndSortSeller.vue";
 import { computed } from "vue";
+import { RouterLink } from "vue-router";
 
 const auth = useAuthStore();
 const sellerOrder = ref([]);
@@ -134,6 +135,26 @@ const filteredOrders = computed(() => {
     return sellerOrder.value.content;
   }
 })
+
+const formatOrderStatus = (status) => {
+  switch (status) {
+    case "new_complete":
+      return "Complete";
+    case "new_cancelled":
+      return "Cancelled";
+    default:
+      return status
+  }
+}
+
+const getOrderTag = (status) => {
+  if (status === "new_complete" || status === "new_cancelled") {
+    return { text: "NEW", class: "bg-blue-100 text-blue-700" };
+  }
+  return { text: "VIEWED", class: "bg-gray-200 text-gray-600" };
+};
+
+
 </script>
 
 <template>
@@ -186,7 +207,9 @@ const filteredOrders = computed(() => {
     </div>
 
 
-    <div v-for="(order, index) in sellerOrder.content" :key="order.id"
+    <RouterLink v-for="(order, index) in sellerOrder.content" :key="order.id"
+      :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }"
+      @click="console.log('clicked id:', order)"
       class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
         <div>
@@ -199,11 +222,24 @@ const filteredOrders = computed(() => {
           </p>
           <p>
             <strong class="text-gray-500">Status:</strong>
-            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
-              :class="order.orderStatus === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
-              {{ order.orderStatus }}
+            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
+              order.orderStatus === 'new_complete'
+                ? 'bg-green-100 text-green-700'
+                : order.orderStatus === 'new_cancelled'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-yellow-100 text-yellow-700'
+            ]">
+              {{ formatOrderStatus(order.orderStatus) }}
             </span>
           </p>
+
+          <p class="mt-2">
+            <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full"
+              :class="getOrderTag(order.orderStatus).class">
+              {{ getOrderTag(order.orderStatus).text }}
+            </span>
+          </p>
+
         </div>
         <div>
           <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) ||
@@ -243,7 +279,7 @@ const filteredOrders = computed(() => {
           </div>
         </div>
       </div>
-    </div>
+    </RouterLink>
   </div>
 
   <div class="flex gap-4 justify-center pb-10">
