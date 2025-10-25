@@ -18,11 +18,17 @@ async function registerUser(userData, nationalIdPhotoFront, nationalIdPhotoBack)
   formData.append("passwords", userData.passwords);
   formData.append("fullName", userData.fullName);
   formData.append("role", userData.role);
+  console.log("userData.role:", userData.role);
+  
+
+  if(userData.role === "seller"){
   formData.append("mobileNumber", userData.mobileNumber);
   formData.append("bankAccountNumber", userData.bankAccountNumber);
   formData.append("bankName", userData.bankName);
   formData.append("nationalId", userData.nationalId);
-
+  }
+  
+  console.log("userData:", userData);
   // file (optional)
   if (nationalIdPhotoFront) {
     formData.append("nationalIdPhotoFront", nationalIdPhotoFront);

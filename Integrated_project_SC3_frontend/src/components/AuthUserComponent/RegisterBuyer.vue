@@ -90,10 +90,6 @@ const summitForm = async () => {
       email: email.value,
       passwords: password.value,
       role: "buyer",
-      mobileNumber: "",
-      bankAccountNumber: "",
-      bankName: "",
-      nationalId: "",
     };
 
     loading.value = true;
