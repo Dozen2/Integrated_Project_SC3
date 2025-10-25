@@ -194,62 +194,71 @@ watch(
 
 // -------------------- order --------------------
 const PlaceOrder = async () => {
-  // if (selectedItems.value.length === 0) {
-  //      alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
-  //      return;
-  // }
-  const buyerId = auth.getAuthData().id;
-  console.log(buyerId);
+     // if (selectedItems.value.length === 0) {
+     //      alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
+     //      return;
+     // }
+     const buyerId = auth.getAuthData().id
+     console.log(buyerId);
 
-  // หา sellerId ของสินค้าที่ถูกเลือก
-  const sellerIds = [...new Set(selectedItems.value.map((key) => key.split("-")[1]))];
 
-  const orders = [];
+     // หา sellerId ของสินค้าที่ถูกเลือก
+     const sellerIds = [...new Set(
+          selectedItems.value.map(key => key.split("-")[1])
+     )];
 
-  for (const sellerId of sellerIds) {
-    const itemsOfSeller = groupedCart.value[sellerId].filter((item) => selectedItems.value.includes(item.id + "-" + item.sellerId));
+     const orders = [];
 
-    if (itemsOfSeller.length === 0) continue;
+     for (const sellerId of sellerIds) {
+          const itemsOfSeller = groupedCart.value[sellerId].filter(item =>
+               selectedItems.value.includes(item.id + "-" + item.sellerId)
+          );
 
-    const orderItems = itemsOfSeller.map((item, idx) => ({
-      no: idx + 1,
-      saleItemId: item.id,
-      price: item.price,
-      quantity: item.quantity,
-      description: getDescription(item),
-      mainImageFileName: item.images?.length ? item.images[0].fileName : null,
-    }));
+          if (itemsOfSeller.length === 0) continue;
 
-    orders.push(order);
-  }
-  const order = {
-    buyerId: buyerId,
-    sellerId: sellerId,
-    orderDate: new Date().toISOString(),
-    shippingAddress: selectedAddress.value,
-    orderNote: note.value,
-    orderItems,
-    orderStatus: "new_complete",
-  };
+          const orderItems = itemsOfSeller.map((item, idx) => ({
+               no: idx + 1,
+               saleItemId: item.id,
+               price: item.price,
+               quantity: item.quantity,
+               description: getDescription(item),
+               mainImageFileName: item.images?.length ? item.images[0].fileName : null
+          }));
 
-  console.log("📦 Orders Created:", orders);
-  console.log(selectedItems.value);
-  console.log(selectedSellers.value);
+          const order = {
+               buyerId: buyerId,
+               sellerId: sellerId,
+               orderDate: new Date().toISOString(),
+               shippingAddress: selectedAddress.value,
+               orderNote: note.value,
+               orderItems,
+               orderStatus: "new_complete"
+          };
 
-  const result = await createOrder(orders);
-  if (result) {
-    // alert("สั่งซื้อเรียบร้อยแล้ว!");
-    alertStore.addToast("สั่งซื้อเรียบร้อยแล้ว", "PlaceOrder", "success");
-    // cartStore.clearCart(); // ล้างตะกร้า
-    selectedItems.value.forEach((key) => {
-      const [id, sellerId] = key.split("-");
-      cartStore.removeFromCart(id, sellerId);
-    });
-    selectedItems.value = [];
-    selectedSellers.value = [];
-    // address.value = ""
-  }
+          orders.push(order);
+     }
+
+     console.log("📦 Orders Created:", orders);
+     console.log(selectedItems.value);
+     console.log(selectedSellers.value);
+
+
+
+     const result = await createOrder(orders);
+     if (result) {
+          // alert("สั่งซื้อเรียบร้อยแล้ว!");
+          alertStore.addToast("สั่งซื้อเรียบร้อยแล้ว", "PlaceOrder", "success");
+          // cartStore.clearCart(); // ล้างตะกร้า
+          selectedItems.value.forEach(key => {
+               const [id, sellerId] = key.split("-")
+               cartStore.removeFromCart(id, sellerId)
+          })
+          selectedItems.value = [];
+          selectedSellers.value = [];
+          // address.value = ""
+     }
 };
+ 
 //-------------------- addess -----------------------
 const getAddressKey = (userId) => `address_${userId}`;
 
