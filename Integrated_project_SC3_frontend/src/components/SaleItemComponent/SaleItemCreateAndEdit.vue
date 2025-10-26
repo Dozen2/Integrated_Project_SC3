@@ -84,8 +84,8 @@ onBeforeMount(async () => {
       if (data.saleItemImage && Array.isArray(data.saleItemImage)) {
         saleItem.saleItemImage = [...data.saleItemImage];
         fileImageFirstResponse.length = 0; // clear array ก่อน
-        fileImageFirstResponse.push(...data.saleItemImage);
-  console.log("saleItem.saleItemImage", saleItem.saleItemImage);
+    fileImageFirstResponse.push(...data.saleItemImage);
+  // console.log("saleItem.saleItemImage", saleItem.saleItemImage);
         await organizeAndFetchImages();
       }
 
@@ -360,7 +360,7 @@ const handleFileChange = async (event) => {
     filesProcessed.push(file);
   }
 
-  console.log("fileImageOrganize.value:", fileImageOrganize.value);
+  // console.log("fileImageOrganize.value:", fileImageOrganize.value);
 
   // เพิ่มไฟล์ลงใน files array
   files.value.push(...filesProcessed);
@@ -544,8 +544,8 @@ const organizeAndFetchImages = async () => {
         imageViewOrder: item.imageViewOrder,
       });
     }
-    console.log("After sorted Sale Item:", fileImageOrganize.value);
-    console.log("After sorted Sale Item:", saleItem.saleItemImage.length);
+  // console.log("After sorted Sale Item:", fileImageOrganize.value);
+  // console.log("After sorted Sale Item:", saleItem.saleItemImage.length);
   } catch (error) {
     console.error("Error organizing and fetching saleItemImage:", error);
   }
@@ -591,14 +591,14 @@ const saveSaleItem = async () => {
       return copied;
     });
   }
-  console.log("saleItemCopy:", saleItemCopy);
-  console.log("saleItem:", saleItem);
+  // console.log("saleItemCopy:", saleItemCopy);
+  // console.log("saleItem:", saleItem);
 
   let appendControlByMode = "";
   if (prop.mode === "Edit") {
     appendControlByMode = "saleItem.";
   }
-  console.log("appendControlByMode: ", appendControlByMode);
+  // console.log("appendControlByMode: ", appendControlByMode);
 
   // เพิ่มข้อมูลลงใน FormData
   for (const field in saleItemCopy) {
@@ -613,7 +613,7 @@ const saveSaleItem = async () => {
         }
         if (image.imageFile) {
           formData.append(`saleItemImages[${index}].imageFile`, image.imageFile);
-          console.log(`Appending imageFile for index ${index}:`, image.imageFile);
+          // console.log(`Appending imageFile for index ${index}:`, image.imageFile);
           formData.append(`saleItemImages[${index}].imageViewOrder`, image.imageViewOrder);
         }
       });
@@ -622,8 +622,8 @@ const saveSaleItem = async () => {
     }
   }
 
-  console.log("fileImageOrganize before sending:", fileImageOrganize.value);
-  console.log("files array before sending:", files.value);
+  // console.log("fileImageOrganize before sending:", fileImageOrganize.value);
+  // console.log("files array before sending:", files.value);
 
   // if(prop.mode != 'Edit' ){
   fileImageOrganize.value.forEach((item, index) => {
@@ -631,8 +631,8 @@ const saveSaleItem = async () => {
       // หาไฟล์ใหม่ที่ตรงกับ index นี้
       const actualFileIndex = fileImageOrganize.value.slice(0, index + 1).filter((img) => img.fileName === null).length - 1;
       if (files.value[actualFileIndex]) {
-        formData.append(`images`, files.value[actualFileIndex]);
-        console.log(`Appending new file: ${files.value[actualFileIndex]}`);
+  formData.append(`images`, files.value[actualFileIndex]);
+  // console.log(`Appending new file: ${files.value[actualFileIndex]}`);
       }
     }
   });
@@ -643,15 +643,15 @@ const saveSaleItem = async () => {
   });
 
   // Debug: แสดงข้อมูลใน FormData
-  console.log("FormData entries:");
-  for (let [key, value] of formData.entries()) {
-    console.log(key, value);
-  }
+  // console.log("FormData entries:");
+  // for (let [key, value] of formData.entries()) {
+  //   console.log(key, value);
+  // }
 
   try {
     if (saleItem.id || prop.mode === "Edit") {
-      await updateSaleItemSeller(saleItem.id, formData);
-      console.log("FormData after update:", formData);
+  await updateSaleItemSeller(saleItem.id, formData);
+  // console.log("FormData after update:", formData);
       alertStore.addToast("The sale item has been updated.", "Update success", "success");
       router.go(-1);
     } else {

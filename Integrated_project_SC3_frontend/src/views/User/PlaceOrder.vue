@@ -34,13 +34,13 @@ const fetchselect = async () => {
 
     const page = parseInt(sessionStorage.getItem("order_pagination") ?? "0", 10);
     let size = sessionStorage.getItem("order_size") ? parseInt(sessionStorage.getItem("order_size"), 10) : 10;
-    console.log("Fetching page:", page);
-    console.log("Fetching size:", size);
+  // console.log("Fetching page:", page);
+  // console.log("Fetching size:", size);
     pagination.value.page = page;
     pagination.value.size = size;
     const ordersData = await getAllOrderByUserId(size, page);
-    orders.value = ordersData;
-    console.log("Fetched order:", ordersData);
+  orders.value = ordersData;
+  // console.log("Fetched order:", ordersData);
     pagination.value = {
       page: ordersData.page,
       size: ordersData.size,
@@ -56,12 +56,12 @@ const fetchselect = async () => {
       totalPrice.value.push(orderTotal);
     });
     currentTotalPrice.value = totalPrice.value.reduce((a, b) => a + b, 0);
-    console.log("currentTotalPrice.value: ", currentTotalPrice.value);
-    console.log("totalPrice.value: ", totalPrice.value);
+  // console.log("currentTotalPrice.value: ", currentTotalPrice.value);
+  // console.log("totalPrice.value: ", totalPrice.value);
     //------------------------- Image Showing -------------------------
-    await loadImageUrl();
-    console.log("imageMap.value mounted: ", imageMap.value);
-    console.log("imageMap.value page changed: ", imageMap.value);
+  await loadImageUrl();
+  // console.log("imageMap.value mounted: ", imageMap.value);
+  // console.log("imageMap.value page changed: ", imageMap.value);
     isLoading.value = false;
   } catch (error) {
     console.error("Error fetching data:", error);

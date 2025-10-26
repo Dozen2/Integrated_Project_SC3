@@ -20,7 +20,7 @@ onMounted(async () => {
       product.value = data;
     }
   } catch (error) {
-    console.log("โหลดข้อมูลสินค้าไม่สำเร็จ:", error.message);
+    // console.log("โหลดข้อมูลสินค้าไม่สำเร็จ:", error.message);
   }
 });
 </script>

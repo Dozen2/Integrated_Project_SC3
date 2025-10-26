@@ -109,7 +109,7 @@ const getAllSaleItemV2 = async (
   params.append("page", page || 0);
 
   const pathInput = params.toString();
-  console.log("API Call URL:", `${urlV2}?${pathInput}`);
+  // console.log("API Call URL:", `${urlV2}?${pathInput}`);
 
   try {
     const res = await fetch(`${urlV2}?${pathInput}`);
@@ -134,14 +134,14 @@ const getAllSaleItemSeller = async (size, page) => {
   const accessToken = localStorage.getItem("accessToken"); // ดึงจาก localStorage
   const decoded = jwtDecode(accessToken);
 
-  console.log("Decoded JWT in :", decoded);
-  console.log("Decoded JWT in getAllSaleItemSeller:", decoded.sellerId);
+  // console.log("Decoded JWT in :", decoded);
+  // console.log("Decoded JWT in getAllSaleItemSeller:", decoded.sellerId);
 
   if (!accessToken) {
     throw new Error("No access token found in localStorage");
   }
 
-  console.log(accessToken);
+  // console.log(accessToken);
 
   const params = new URLSearchParams();
   params.append("size", size);
@@ -150,7 +150,7 @@ const getAllSaleItemSeller = async (size, page) => {
 
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items?${params.toString()}`;
 
-  console.log("API Call URL:", url);
+  // console.log("API Call URL:", url);
 
   try {
     const res = await authFetch(url, {
@@ -180,7 +180,7 @@ async function createSaleItem(formData) {
   const decoded = jwtDecode(accessToken);
 
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items`;
-  console.log("API Call URL CREATE:", url);
+  // console.log("API Call URL CREATE:", url);
 
 
   const res = await authFetch(url, {
@@ -204,7 +204,7 @@ async function updateSaleItemSeller(id, updatedSaleItem) {
   const decoded = jwtDecode(accessToken);
 
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items/${id}`
-  console.log("API Call URL UPDATE:", url);
+  // console.log("API Call URL UPDATE:", url);
 
   const res = await authFetch(url, {
     method: "PUT",
@@ -227,7 +227,7 @@ async function deleteSaleItemSeller(id) {
   const decoded = jwtDecode(accessToken);
 
   const url = `${VITE_ROOT_API_URL}/itb-mshop/v2/sellers/${decoded.sellerId}/sale-items/${id}`
-  console.log("API Call URL DELETE:", url);
+  // console.log("API Call URL DELETE:", url);
 
   const res = await authFetch(url, {
     method: "DELETE",
@@ -235,10 +235,10 @@ async function deleteSaleItemSeller(id) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  console.log(res);
+  // console.log(res);
 
   if (!res.ok) {
-    console.log(res);
+  // console.log(res);
     const err = await res.json();
     throw new Error(err.message || "Failed to create sale item");
   }
@@ -383,8 +383,8 @@ const deleteSaleItemByIdV2 = async (id) => {
 const fetchSellers = async (ids) => {
   try {
     const idsParam = ids.join(','); // เช่น "1,2,3"
-    const token = localStorage.getItem('accessToken');
-    console.log(token);
+  const token = localStorage.getItem('accessToken');
+  // console.log(token);
     if (!token) throw new Error('No access token found');
 
     const res = await authFetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/cart/sellers/${idsParam}`, {
@@ -398,8 +398,8 @@ const fetchSellers = async (ids) => {
       throw new Error('Failed to fetch sellers: ' + res.status);
     }
 
-    const data = await res.json();
-    console.log('Sellers:', data);
+  const data = await res.json();
+  // console.log('Sellers:', data);
     return data;
   } catch (error) {
     console.error(error);
@@ -425,8 +425,8 @@ const createOrder = async (orders) => {
       throw new Error("Failed to create order: " + res.status);
     }
 
-    const data = await res.json();
-    console.log("Order Response:", data);
+  const data = await res.json();
+  // console.log("Order Response:", data);
     return data;
   } catch (error) {
     console.error(error);
@@ -450,8 +450,8 @@ const setOrderStatus = async (id) => {
       throw new Error("Failed to update order status: " + res.status);
     }
 
-    const data = await res.json();
-    console.log("Updated Order:", data);
+  const data = await res.json();
+  // console.log("Updated Order:", data);
     return data;
   } catch (error) {
     console.error("Error updating order status:", error);

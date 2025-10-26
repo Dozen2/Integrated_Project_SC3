@@ -198,7 +198,7 @@ watch(
 // -------------------- order --------------------
 const PlaceOrder = async () => {
   const buyerId = auth.getAuthData().id;
-  console.log(buyerId);
+  // console.log(buyerId);
 
   // find sellerIds of selected items
   const sellerIds = [...new Set(selectedItems.value.map((key) => key.split("-")[1]))];
@@ -232,9 +232,9 @@ const PlaceOrder = async () => {
     orders.push(order);
   }
 
-  console.log("📦 Orders Created:", orders);
-  console.log(selectedItems.value);
-  console.log(selectedSellers.value);
+  // console.log("📦 Orders Created:", orders);
+  // console.log(selectedItems.value);
+  // console.log(selectedSellers.value);
 
   const result = await createOrder(orders);
   if (result) {
@@ -253,8 +253,8 @@ const getAddressKey = (userId) => `address_${userId}`;
 
 const isLoadingAddress = ref(false);
 
-watch(selectedAddress, (val) => {
-  console.log("Selected address:", val);
+  watch(selectedAddress, (val) => {
+  // console.log("Selected address:", val);
   // save last selectedAddress
   const user = auth.getAuthData();
   if (user && user.id && val) {
@@ -293,12 +293,12 @@ const saveAddresses = () => {
 };
 
 // -------------------- onMounted --------------------
-onMounted(async () => {
+  onMounted(async () => {
   cartStore.loadCart();
 
   //address in localstorage
   const user = auth.getAuthData();
-  console.log(user.id);
+  // console.log(user.id);
 
   //get seller
   const sellerIds = [...new Set(cartStore.cart.map((item) => item.sellerId))];
@@ -338,12 +338,12 @@ onMounted(async () => {
     console.error("Something wrong when loading images:", e);
   }
 
-  console.log(imagesMap.value);
+  // console.log(imagesMap.value);
 
   if (user && user.id) {
     isLoadingAddress.value = true;
     const savedAddress = localStorage.getItem(getAddressKey(user.id));
-    console.log(savedAddress);
+  // console.log(savedAddress);
 
     if (savedAddress) {
       address.value = JSON.parse(savedAddress);

@@ -21,7 +21,7 @@ onMounted(async () => {
   const urlParams = new URLSearchParams(window.location.search);
   token.value = urlParams.get("token");
   try {
-    console.log("decodeAccessToken(token): ", decodeAccessToken(token.value).sub);
+    // console.log("decodeAccessToken(token): ", decodeAccessToken(token.value).sub);
   } catch (error) {
     route.push({ name: "PageNotFound" });
   }
