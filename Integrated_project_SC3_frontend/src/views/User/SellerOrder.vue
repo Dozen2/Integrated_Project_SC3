@@ -170,6 +170,7 @@ const getOrderTag = (status) => {
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
     <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Order Mange' }]" />
+
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
         <span class="mr-2"> <PackageOpen size="50" color="#3B82F6" /> </span>SELLER ORDERS
@@ -182,7 +183,9 @@ const getOrderTag = (status) => {
         @click="activeTab = 'all'"
         :class="[
           'px-4 py-2 rounded-full border transition cursor-pointer',
-          activeTab === 'all' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+          activeTab === 'all'
+            ? 'bg-blue-500 text-white border-blue-500'
+            : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
         ]"
       >
         All
@@ -192,7 +195,9 @@ const getOrderTag = (status) => {
         @click="activeTab = 'new'"
         :class="[
           'px-4 py-2 rounded-full border transition cursor-pointer',
-          activeTab === 'new' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+          activeTab === 'new'
+            ? 'bg-blue-500 text-white border-blue-500'
+            : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
         ]"
       >
         New
@@ -202,13 +207,18 @@ const getOrderTag = (status) => {
         @click="activeTab = 'cancelled'"
         :class="[
           'px-4 py-2 rounded-full border transition cursor-pointer',
-          activeTab === 'cancelled' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+          activeTab === 'cancelled'
+            ? 'bg-blue-500 text-white border-blue-500'
+            : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
         ]"
       >
         Cancelled
       </button>
     </div>
-    <div v-if="sellerOrder?.content?.length === 0" class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-17%]">
+    <div
+      v-if="sellerOrder?.content?.length === 0"
+      class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-17%]"
+    >
       <ShoppingCart size="140" color="#3B82F6" strokeWidth="{1.30}" />
       <p class="text-4xl text-blue-500">Nobody ordered your order yet.</p>
     </div>
@@ -218,8 +228,22 @@ const getOrderTag = (status) => {
         :key="order.id"
         :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }"
         @click="console.log('clicked id:', order)"
-        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl"
+        
+      
+        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl relative"
       >
+
+
+        <div class="absolute top-0 right-0 z-10 transform translate-x-3 -translate-y-3">
+          <span
+            class="ml-1 font-semibold text-xs px-4 py-2 rounded-full shadow-lg"
+            :class="getOrderTag(order.orderStatus).class"
+          >
+            {{ getOrderTag(order.orderStatus).text }}
+          </span>
+        </div>
+        
+        <!-- Grid Layout เดิม -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
           <div>
             <div class="flex items-center mb-2">
@@ -244,44 +268,80 @@ const getOrderTag = (status) => {
                 {{ formatOrderStatus(order.orderStatus) }}
               </span>
             </p>
-
-            <p class="mt-2">
-              <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full" :class="getOrderTag(order.orderStatus).class">
-                {{ getOrderTag(order.orderStatus).text }}
-              </span>
+            <!-- 🚫 Tag สถานะเดิมถูกลบทิ้งไปแล้ว -->
+            <!-- <p class="mt-2">
+              <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full" :class="getOrderTag(order.orderStatus).class">
+                {{ getOrderTag(order.orderStatus).text }}
+              </span>
+            </p> -->
+          </div>
+          <div>
+            <p>
+              <strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{
+                formatDate(order.orderDate) || "-"
+              }}
             </p>
           </div>
           <div>
-            <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
-          </div>
-          <div>
-            <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+            <p>
+              <strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{
+                formatDate(order.paymentDate) || "-"
+              }}
+            </p>
           </div>
           <div class="md:text-right">
             <p class="text-gray-500">Total:</p>
-            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
+            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">
+              {{ formatCurrency(totalPrice[index]) }} Bath
+            </p>
           </div>
         </div>
 
         <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-          <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-          <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+          <p>
+            <strong class="itbms-shipping-address text-gray-600">Shipped To:</strong>
+            {{ order.shippingAddress }}
+          </p>
+          <p v-if="order.orderNote">
+            <strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}
+          </p>
         </div>
 
         <hr class="my-4" />
 
         <div class="space-y-4">
-          <div v-for="item in order.orderItems" :key="item.no" class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-            <img :src="imageMap[item.no]" :alt="item.description" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+          <div
+            v-for="item in order.orderItems"
+            :key="item.no"
+            class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none"
+          >
+            <img
+              :src="imageMap[item.no]"
+              :alt="item.description"
+              class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+            />
             <div class="flex-grow">
-              <p class="itbms-item-description font-semibold text-gray-800">{{ item.description || "No Description" }}</p>
+              <p class="itbms-item-description font-semibold text-gray-800">
+                {{ item.description || "No Description" }}
+              </p>
               <p class="itbms-item-quantity text-gray-500">Quantity: {{ item.quantity }}</p>
               <p class="text-xs text-gray-400">SaleItemId: {{ item.saleItemId }}</p>
             </div>
-            <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
+            <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">
+              {{ formatCurrency(item.price * item.quantity) }} Bath
+            </div>
           </div>
         </div>
       </RouterLink>
     </div>
+    <div class="flex gap-4 justify-center pb-10">
+        <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="seller_order_pagination"
+          @update:modelValue="fetchselect" />
+        <div v-show="pagination.totalPages > 0">
+          <SizeAndSortSeller v-model:modelSize="pagination.size" v-model:modelSort="pagination.sort"
+            v-model:modelPage="pagination.page" storage-key-size="seller_order_size" storage-key-sort="seller_order_sort"
+            reset-storage="seller_order_pagination" @update:modelPage="handlePageChange" />
+        </div>
+      </div>
   </div>
 </template>

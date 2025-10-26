@@ -281,7 +281,7 @@ const formatOrderStatus = (status) => {
       <div class="flex gap-4 justify-center pb-10">
         <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination"
           @update:modelValue="fetchselect" />
-        <div v-show="pagination.totalPages > 1">
+        <div v-show="pagination.totalPages > 0">
           <SizeAndSortSeller v-model:modelSize="pagination.size" v-model:modelSort="pagination.sort"
             v-model:modelPage="pagination.page" storage-key-size="order_size" storage-key-sort="order_sort"
             reset-storage="order_pagination" @update:modelPage="handlePageChange" />
