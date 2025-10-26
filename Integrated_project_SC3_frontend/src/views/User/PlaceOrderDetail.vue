@@ -17,8 +17,6 @@ onMounted(async () => {
   isLoading.value = true;
   orderParam.value = route.params.id;
 
-  const updatedOrder = await setOrderStatus(orderParam.value);
-  console.log("Updated Order:", updatedOrder);
 
   orders.value = await getOrderById(orderParam.value);
   console.log("orders.value: ", orders.value);
