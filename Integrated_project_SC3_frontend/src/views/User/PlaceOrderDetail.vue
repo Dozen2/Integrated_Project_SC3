@@ -120,6 +120,7 @@ const formatOrderStatus = (status) => {
           </p>
         </div>
 
+        
         <div class="space-y-2">
           <p><strong class="itbms-nickname text-blue-700">Seller:</strong> {{ orders?.sellerResponseOrder?.nickName || "unknown" }}</p>
           <p><strong class="itbms-payment-date text-blue-700">Payment Date:</strong> {{ formatDate(orders.paymentDate)

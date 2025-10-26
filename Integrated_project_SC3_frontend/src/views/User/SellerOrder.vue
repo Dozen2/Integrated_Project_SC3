@@ -169,7 +169,7 @@ const getOrderTag = (status) => {
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'SellerOrders' }]" />
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Order Mange' }]" />
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
         <span class="mr-2"> <PackageOpen size="50" color="#3B82F6" /> </span>SELLER ORDERS
