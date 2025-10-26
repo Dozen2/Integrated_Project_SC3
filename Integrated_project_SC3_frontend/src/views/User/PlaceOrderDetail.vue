@@ -129,9 +129,9 @@ const formatOrderStatus = (status) => {
           <p>
             <strong class="text-gray-500">Status:</strong>
             <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
-              order.orderStatus === 'new_complete'
+              orders.orderStatus === 'new_complete'
                 ? 'bg-green-100 text-green-700'
-                : order.orderStatus === 'new_cancelled'
+                : orders.orderStatus === 'new_cancelled'
                   ? 'bg-red-100 text-red-700'
                   : 'bg-yellow-100 text-yellow-700'
             ]">

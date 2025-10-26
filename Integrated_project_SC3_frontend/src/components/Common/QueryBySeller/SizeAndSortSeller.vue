@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, onBeforeMount, watch } from "vue";
 import {
   ArrowDownWideNarrow,
@@ -67,12 +68,16 @@ function setSize(newSize) {
 </script>
 
 <template>
-  <div class="flex items-center gap-4">
-    <!-- Page Size -->
+  <div class="flex items-center gap-2 md:gap-4">
     <select
       v-model="size"
       @change="setSize(size)"
-      class="cursor-pointer border border-blue-300 rounded-lg px-5 py-2 bg-white text-blue-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition duration-200 ease-in-out min-w-[4rem]"
+      class="cursor-pointer border border-blue-300 rounded-lg 
+             px-3 py-1 text-sm md:px-5 md:py-2 
+             bg-white text-blue-800 font-medium 
+             shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 
+             transition duration-200 ease-in-out 
+             min-w-[3rem] md:min-w-[4rem]"
     >
       <option :value="5">5</option>
       <option :value="10">10</option>
@@ -80,40 +85,5 @@ function setSize(newSize) {
       <option :value="50">50</option>
     </select>
 
-    <!-- Sort Controls -->
-    <!-- <div class="flex gap-1">
-      <button
-        @click="sortAsc"
-        :class="[
-          'p-2 border border-gray-300 rounded transition cursor-pointer',
-          sort === 'asc' ? 'bg-blue-500 text-white' : 'hover:bg-blue-100',
-        ]"
-        title="Sort Ascending"
-      >
-        <ArrowDownWideNarrow />
-      </button>
-      <button
-        @click="sortDesc"
-        :class="[
-          'p-2 border border-gray-300 rounded transition cursor-pointer',
-          sort === 'desc' ? 'bg-blue-500 text-white' : 'hover:bg-blue-100',
-        ]"
-        title="Sort Descending"
-      >
-        <ArrowUpWideNarrow />
-      </button>
-      <button
-        @click="resetSort"
-        :class="[
-          'p-2 border border-gray-300 rounded transition cursor-pointer',
-          sort === props.modelSort
-            ? 'bg-blue-500 text-white'
-            : 'hover:bg-blue-100',
-        ]"
-        title="Reset Sort"
-      >
-        <ListFilter />
-      </button>
-    </div> -->
-  </div>
+    </div>
 </template>

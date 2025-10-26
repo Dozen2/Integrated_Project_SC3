@@ -56,15 +56,18 @@ function handleBlur(e) {
 </script>
 
 <template>
-  <div class="grid grid-cols-12 gap-4 items-center py-2 border-b border-blue-100">
-    <!-- Label -->
-    <span class="col-span-4 text-lg text-blue-700 font-medium">
+  <!-- 🔹 ปรับ Container ให้เป็น Stacked (flex-col) ในจอเล็ก, และเป็น Grid ในจอใหญ่ (sm:grid) -->
+  <div class="flex flex-col sm:grid sm:grid-cols-12 gap-1 sm:gap-4 py-1 sm:py-2 border-b border-blue-100">
+    
+    <!-- Label: ใช้ w-full ในจอเล็ก (Stacking), ใช้ col-span-4 ในจอใหญ่ (Grid) -->
+    <!-- เพิ่ม mb-1 ในจอเล็กเพื่อให้มีระยะห่างจาก Input/Value -->
+    <span class="w-full sm:col-span-4 text-sm sm:text-lg text-blue-700 font-medium mb-1 sm:mb-0">
       {{ props.label }}
     </span>
     
 
-    <!-- Input (Edit mode) -->
-    <div class="col-span-8" v-if="isEditMode">
+    <!-- Input (Edit mode): ใช้ w-full ในจอเล็ก (Stacking), ใช้ col-span-8 ในจอใหญ่ (Grid) -->
+    <div class="w-full sm:col-span-8" v-if="isEditMode">
       
       <input
         :value="props.modelValue"
@@ -74,20 +77,21 @@ function handleBlur(e) {
         @blur="handleBlur"
         :class="[
           props.classname,
-          'w-full rounded-lg px-3 py-2 border transition-colors focus:outline-none focus:ring-2',
+          // ใช้ w-full และลดขนาด text
+          'w-full rounded-lg px-2 py-1 sm:px-3 sm:py-2 border transition-colors focus:outline-none focus:ring-2 text-sm sm:text-base', 
           isValid || isFirstInput
             ? 'border-blue-300 focus:ring-blue-400'
             : 'border-red-400 focus:ring-red-300'
         ]"
       />
-      <span class="text-sm text-red-500" v-show="!isValid && !isFirstInput"
+      <span class="text-xs sm:text-sm text-red-500" v-show="!isValid && !isFirstInput"
         >* {{ errorText }}</span
       >
     </div>
 
-    <!-- Value (View mode) -->
-    <div class="col-span-8" v-else>
-      <span :class="[props.classname,'text-lg text-gray-800']">
+    <!-- Value (View mode): ใช้ w-full ในจอเล็ก (Stacking), ใช้ col-span-8 ในจอใหญ่ (Grid) -->
+    <div class="w-full sm:col-span-8" v-else>
+      <span :class="[props.classname,'text-sm sm:text-lg text-gray-800 break-words']">
         {{ props.modelValue }}
       </span>
     </div>

@@ -100,26 +100,47 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto mt-[40px]">
-    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'BrandManage' }]" />
+  <div class="p-6 max-w-7xl mx-auto mt-[40px]">
+    <Breadcrumb :class="'mb-6'"
+      :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'BrandManage' }]" />
     <h3 class="text-3xl font-bold text-blue-700">Wellcome {{ auth.getAuthData().nickname }}</h3>
     <div class="flex justify-between items-center gap-4 mb-4">
       <h1 class="text-4xl font-bold text-blue-700 flex items-center">Brand Management</h1>
-      <RouterLink
-        :to="{ name: 'BrandCreate' }"
-        class="inline-flex items-center gap-2 border-blue-400 border bg-gray-100 text-blue-700 hover:bg-gray-200 text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
-      >
-        Add New Brand
+      <RouterLink :to="{ name: 'BrandCreate' }" class="inline-flex items-center justify-center 
+         bg-sky-500 text-white 
+         hover:bg-sky-600 hover:shadow-lg 
+         shadow-md shadow-sky-500/50 
+         transition duration-300 ease-in-out 
+         focus:outline-none focus:ring-4 focus:ring-sky-500/50 
+         rounded-full group 
+         
+         /* === MOBILE (Circle) === */
+         w-12 h-12 flex-shrink-0 
+         
+         /* === DESKTOP (Full Button) === */
+         sm:w-auto sm:h-auto 
+         ">
+        <!-- 🟢 ข้อความเต็ม (แสดงเมื่อจอใหญ่กว่า 640px) -->
+        <span
+          class="tracking-wide hidden sm:flex items-center gap-2 text-base font-semibold px-6 py-2.5 whitespace-nowrap">
+          Add New Brand
+        </span>
+
+        <!-- 🔴 Icon "+" (แสดงเมื่อจอเล็กกว่า 640px) -->
+        <!-- ใช้ h-full w-full เพื่อให้ไอคอนอยู่ตรงกลางวงกลม -->
+        <span class="flex sm:hidden items-center justify-center h-full w-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </span>
       </RouterLink>
     </div>
-    <ConfirmDelete :show="showDeleteModal" :message="`Do you want to delete brand '${brandToDeleteName}' ?`" @confirm="confirmDeleteProduct" @cancel="() => (showDeleteModal = false)" />
-    <ConfirmDelete
-      :show="cannotdelete"
+    <ConfirmDelete :show="showDeleteModal" :message="`Do you want to delete brand '${brandToDeleteName}' ?`"
+      @confirm="confirmDeleteProduct" @cancel="() => (showDeleteModal = false)" />
+    <ConfirmDelete :show="cannotdelete"
       :message="`Cannot delete brand '${brandToDeleteName}'. There are sale items associated with this brand.`"
-      confirm-text="OK"
-      hide-cancel
-      @confirm="() => (cannotdelete = false)"
-    />
+      confirm-text="OK" hide-cancel @confirm="() => (cannotdelete = false)" />
 
     <!-- Brand Table -->
     <div class="overflow-x-auto">
@@ -132,21 +153,18 @@ onBeforeUnmount(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in brand" :key="item.id" :class="index % 2 === 0 ? 'bg-blue-50' : 'bg-white'" class="itbms-row border border-gray-200">
+          <tr v-for="(item, index) in brand" :key="item.id" :class="index % 2 === 0 ? 'bg-blue-50' : 'bg-white'"
+            class="itbms-row border border-gray-200">
             <td class="itbms-id text-black py-2 px-4 text-center border-r border-gray-200">{{ item.id }}</td>
             <td class="itbms-name text-black py-2 px-4 text-center border-r border-gray-200">{{ item.name }}</td>
             <td class="py-2 px-4 text-center">
               <div class="flex justify-center space-x-2">
-                <button
-                  @click="goToEdit(item.id)"
-                  class="itbms-edit-button bg-blue-700 hover:bg-blue-800 text-white w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer"
-                >
+                <button @click="goToEdit(item.id)"
+                  class="itbms-edit-button bg-blue-700 hover:bg-blue-800 text-white w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer">
                   <Pencil size="20" strokeWidth="1.5" />
                 </button>
-                <button
-                  @click="deleteBrand(item.id, item.name, item.noOfSaleItems)"
-                  class="itbms-delete-button bg-white hover:bg-red-500 border border-gray-300 text-gray-700 w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer"
-                >
+                <button @click="deleteBrand(item.id, item.name, item.noOfSaleItems)"
+                  class="itbms-delete-button bg-white hover:bg-red-500 border border-gray-300 text-gray-700 w-8 h-8 flex items-center justify-center rounded transition duration-150 hover:cursor-pointer">
                   <Trash2 size="20" strokeWidth="1.5" />
                 </button>
               </div>

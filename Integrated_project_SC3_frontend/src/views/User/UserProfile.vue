@@ -178,7 +178,7 @@ const changeToViewMode = () => {
     <Loading />
   </div>
 
-  <div v-else class="py-8 max-w-4xl mx-auto">
+  <div v-else class="p-6 py-8 max-w-4xl mx-auto">
     <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
       { text: 'Home', name: 'Home' },
       { text: 'SaleItem', name: 'Products' },
@@ -189,24 +189,40 @@ const changeToViewMode = () => {
 
       <div class="md:col-span-1 space-y-4">
 
-        <div class="bg-card border rounded-xl p-6 text-center">
+        <div class="bg-white border border-gray-100 rounded-xl p-6 text-center shadow-lg overflow-hidden">
           <div class="flex justify-center mb-4">
             <div
-              class="w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md hover:scale-105 transition-transform">
+              class="w-24 h-24 flex items-center justify-center rounded-full bg-sky-500 shadow-xl hover:scale-105 transition-transform duration-300">
               <UserRoundPen size="60px" color="white" />
             </div>
           </div>
-          <h3>{{ userProfile.fullName || userProfile.nickName }}</h3>
-          <p class="text-sm text-muted-foreground mt-1">{{ userProfile.email }}</p>
+
+          <!-- ชื่อ: ลดขนาดตัวอักษรเป็น sm:text-lg และเพิ่ม break-words -->
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-800 break-words">{{ userProfile.fullName ||
+            userProfile.nickName }}</h3>
+
+          <!-- อีเมล: ลดขนาดตัวอักษรเป็น text-xs และเพิ่ม break-words -->
+          <p class="text-xs sm:text-sm text-gray-500 mt-1 break-words">{{ userProfile.email }}</p>
         </div>
 
-        <div class="bg-card border rounded-xl p-4 space-y-2">
+        <div class="bg-white border border-gray-100 rounded-xl p-3 space-y-1 shadow-lg">
+
           <RouterLink :to="{ name: 'chang-password' }" class="block">
-            <button
-              class="w-full justify-start text-left py-2 px-4 hover:bg-accent hover:text-accent-foreground rounded-md">
+            <button class="w-full text-left py-2 px-4 rounded-lg 
+                     bg-blue-500 text-white font-semibold 
+                     hover:bg-blue-600 transition-colors duration-200 
+                     flex items-center justify-center gap-2">
               Change Password
             </button>
           </RouterLink>
+
+          <button @click="logOut" class="w-full text-left py-2 px-4 rounded-lg 
+                   bg-gray-100 text-gray-700 font-medium 
+                   border border-gray-200 
+                   hover:bg-red-50 hover:text-red-600 transition-colors duration-200
+                   flex items-center justify-center gap-2">
+            Log Out
+          </button>
         </div>
       </div>
 
@@ -216,8 +232,11 @@ const changeToViewMode = () => {
           <div class="flex items-center justify-between mb-6">
             <h2>Personal Information</h2>
             <template v-if="!isEditMode">
-              <button @click="changeToEditMode"
-                class="itbms-profile-button bg-primary text-primary-foreground hover:bg-primary/90 py-2 px-4 rounded-md transition-colors cursor-pointer">
+              <button @click="changeToEditMode" class="itbms-profile-button 
+         bg-blue-50 text-sky-600 border border-sky-300
+         hover:bg-blue-100 hover:border-sky-500
+         py-2 px-4 rounded-lg font-medium transition-colors cursor-pointer 
+         shadow-sm hover:shadow-md">
                 Edit
               </button>
             </template>
