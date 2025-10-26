@@ -160,8 +160,11 @@ const parsePriceRange = (priceValues, customPrice = null) => {
 
 const loadImageUrl = async () => {
   imageUrl.value = [];
+  console.log("product.value.content: ",product.value.content);
+  
   for (const item of product.value.content) {
     if (item.mainImageFileName) {
+      console.log("Loading image for:", item.mainImageFileName);
       const image = await getImageByImageName(item.mainImageFileName);
       imageUrl.value.push(image);
     } else {

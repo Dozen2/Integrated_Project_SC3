@@ -12,6 +12,11 @@ const route = useRouter();
 const auth = useAuthStore();
 const toast = useAlertStore();
 
+const logOut = async () => {
+  await auth.logout();
+  router.push({ name: 'Products' });
+};
+
 const userProfile = ref({
   email: "",
   fullName: "",
@@ -211,7 +216,7 @@ const changeToViewMode = () => {
             <button class="w-full text-left py-2 px-4 rounded-lg 
                      bg-blue-500 text-white font-semibold 
                      hover:bg-blue-600 transition-colors duration-200 
-                     flex items-center justify-center gap-2">
+                     flex items-center justify-center gap-2 cursor-pointer mb-3">
               Change Password
             </button>
           </RouterLink>
@@ -220,7 +225,7 @@ const changeToViewMode = () => {
                    bg-gray-100 text-gray-700 font-medium 
                    border border-gray-200 
                    hover:bg-red-50 hover:text-red-600 transition-colors duration-200
-                   flex items-center justify-center gap-2">
+                   flex items-center justify-center gap-2 cursor-pointer">
             Log Out
           </button>
         </div>
