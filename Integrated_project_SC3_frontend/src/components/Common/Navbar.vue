@@ -38,99 +38,81 @@ onMounted(() => {
 
 <template>
   <div
-    class="sticky top-0 z-50 bg-blue-800 h-20 flex items-center justify-between px-8 border-b border-slate-600 text-slate-300 font-sans">
-    <RouterLink to="/" class="flex items-center gap-3 group">
-      <Smartphone />
-      <h1 class="font-bold text-2xl tracking-wide text-white group-hover:text-sky-400 transition-colors duration-300">
+    class="sticky top-0 z-50 bg-white shadow-md h-16 flex items-center justify-between px-4 sm:px-8 border-b border-gray-100 text-gray-700 font-sans transition-all duration-300"
+  >
+    <RouterLink to="/" class="flex items-center gap-2 group">
+      <Smartphone class="text-sky-500 w-6 h-6" />
+      <h1
+        class="font-extrabold text-xl tracking-wide text-sky-700 group-hover:text-sky-500 transition-colors duration-200 hidden sm:block"
+      >
         ITBMS_SHOP
       </h1>
     </RouterLink>
 
-    <!-- <div class="flex-grow max-w-lg mx-8">
-      <div class="relative">
-        <input
-          type="text"
-          placeholder="🔍 Search for products..."
-          class="w-full bg-blue-300 border border-slate-700 rounded-full py-2 pl-5 pr-4 text-black focus:outline-none focus:border-sky-500 transition-colors"
-        />
-      </div>
-    </div> -->
-
-    <!-- =======================Option=========================     -->
-
-    <div class="flex items-center gap-8">
-      <div v-if="auth.role" class="flex items-center gap-6">
-
-
-        <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3 sm:gap-6">
+      <div v-if="auth.role" class="flex items-center gap-3 sm:gap-6">
+        <div v-if='auth.role == "ROLE_SELLER"' class="flex items-center justify-between">
           <DropDownManagement />
-          <!-- <div>
-            <button @click="refresh">
-              refresh token
-            </button>
-          </div> -->
-          
-          <!-- <RouterLink
-            :to="{ name: 'ProductManage' }"
-            class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
-          >
-            <span class="itbms-manage-brand tracking-wide"
-              >Manage Sale Items</span
-            >
-          </RouterLink> -->
         </div>
 
-
         <div class="relative flex">
-          <!-- ปุ่มหลัก -->
-          <RouterLink 
-          :to="{ name: 'UserProfile' }"
-          class="itbms-profile">
-            <button class="p-2 rounded-full cursor-pointer bg-blue-100 hover:bg-blue-200 transition-colors flex">
-              <UserRound color="#000000" />
+          <RouterLink :to="{ name: 'UserProfile' }" class="itbms-profile">
+            <button
+              class="p-2 rounded-full cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors duration-200 flex border border-blue-200"
+            >
+              <UserRound color="#000000" class="w-5 h-5" />
             </button>
           </RouterLink>
         </div>
 
         <div class="relative cursor-pointer">
           <RouterLink :to="{ name: 'Cart' }">
-          <ShoppingCart color="#ffffff" />
-          <span v-if="cartCount > 0"
-            class="itbms-cart-quantity absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-            {{ cartCount }}
-          </span>
+            <ShoppingCart color="#3b82f6" class="w-6 h-6 hover:text-sky-600 transition-colors" />
+            <span
+              v-if="cartCount > 0"
+              class="itbms-cart-quantity absolute -top-2 -right-2 bg-sky-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold ring-2 ring-white"
+            >
+              {{ cartCount }}
+            </span>
           </RouterLink>
         </div>
-        
+
         <div class="relative cursor-pointer">
           <RouterLink :to="{ name: 'PlaceOrder' }">
-          <ClipboardList color="#ffffff" />
-          <span v-if="orderPlaceItemCount > 0"
-            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-            {{ orderPlaceItemCount }}
-          </span>
+            <ClipboardList color="#3b82f6" class="w-6 h-6 hover:text-sky-600 transition-colors" />
+            <span
+              v-if="orderPlaceItemCount > 0"
+              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold ring-2 ring-white"
+            >
+              {{ orderPlaceItemCount }}
+            </span>
           </RouterLink>
         </div>
 
-        <div class="relative">
+        <div class="relative hidden sm:block">
           <button
-            class="itbms-logout flex boader border-white rounded-full px-4 py-2 cursor-pointer transition-colors text-white font-semibold hover:bg-blue-600 "
-            @click="logOut">
-            <span class="mr-[7px]">Log Out</span>
-            <LogOut color="#ffffff" />
+            class="itbms-logout flex items-center gap-1 border border-sky-500 rounded-full px-3 py-1 cursor-pointer transition-colors text-sky-500 font-semibold hover:bg-sky-500 hover:text-white text-sm"
+            @click="logOut"
+          >
+            <span>Log Out</span>
+            <LogOut class="w-4 h-4" />
           </button>
         </div>
-
       </div>
 
-      <div v-else class="flex items-center gap-6 text-lg font-medium">
+      <div v-else class="flex items-center gap-3 sm:gap-4 text-sm font-medium">
         <RouterLink :to="{ name: 'Login' }">
-          <span class="cursor-pointer hover:text-sky-400 transition-colors duration-300">Login</span>
+          <span
+            class="cursor-pointer text-gray-600 hover:text-sky-500 transition-colors duration-200"
+          >
+            Login
+          </span>
         </RouterLink>
 
         <RouterLink :to="{ name: 'Register' }">
           <span
-            class="cursor-pointer bg-sky-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-sky-600 transition-all duration-300 shadow-lg shadow-sky-500/20">
+            class="cursor-pointer bg-sky-500 text-white font-semibold px-3 py-1.5 rounded-full hover:bg-sky-600 transition-all duration-200 shadow-md shadow-sky-500/30"
+          >
             Register
           </span>
         </RouterLink>

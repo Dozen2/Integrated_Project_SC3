@@ -170,7 +170,7 @@ const addItem = async () => {
       <div class="grid md:grid-cols-2 gap-12">
 
         <div class="space-y-4">
-          <div class="relative aspect-square   rounded-2xl overflow-hidden">
+          <div class="relative aspect-square rounded-2xl overflow-hidden">
             <ImageUploader :fileImageOrganize="product.fileImageOrganize" :param="route.params.id"
               class="w-full h-full object-cover" />
           </div>
@@ -208,10 +208,6 @@ const addItem = async () => {
               สี:
               <span class="itbms-color font-normal">{{ nullCatching(product.color) }}</span>
             </h3>
-            <div class="mt-2 flex items-center space-x-2">
-              <div class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-2 ring-blue-500"
-                :style="`background-color: ${product.color?.toLowerCase() || 'gray'}`"></div>
-            </div>
           </div>
 
           <div>
@@ -256,17 +252,7 @@ const addItem = async () => {
         </div>
       </div>
 
-      <div class="mt-8 flex justify-between items-center">
-        <RouterLink to="/sale-items">
-          <button class="flex items-center text-blue-600 hover:text-blue-800 transition font-medium">
-            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
-              </path>
-            </svg>
-            กลับไปหน้ารายการสินค้า
-          </button>
-        </RouterLink>
-      </div>
+
     </div>
   </div>
 

@@ -63,14 +63,20 @@ const closeDropdown = () => {
       <button
         @click="isOpen = !isOpen"
         type="button"
-        class="inline-flex justify-between items-center gap-2 w-50 border-blue-400 border bg-gray-100 text-blue-700 hover:bg-gray-200 text-m font-medium px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 cursor-pointer"
+        class="inline-flex justify-between items-center gap-2 w-full sm:w-50 border border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100 text-sm font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-400 cursor-pointer"
         id="menu-button"
         aria-expanded="true"
         aria-haspopup="true"
       >
-        {{ displayText }}
-        <span class="-mr-1 h-5 w-5 text-gray-400 transition-transform duration-200" :class="{ 'transform rotate-180': isOpen }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <ChevronDown color="#478eff" strokeWidth="2" />
+        <span class="truncate">{{ displayText }}</span>
+        <span
+          class="-mr-1 h-5 w-5 text-sky-400 transition-transform duration-200"
+          :class="{ 'transform rotate-180': isOpen }"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <ChevronDown color="#3b82f6" strokeWidth="2" />
         </span>
       </button>
     </div>
@@ -85,7 +91,7 @@ const closeDropdown = () => {
     >
       <div
         v-if="isOpen"
-        class="absolute right-0 z-10 mt-2 w-50 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="absolute right-0 z-10 mt-2 w-48 sm:w-50 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none overflow-hidden"
         role="menu"
         aria-orientation="vertical"
         aria-labelledby="menu-button"
@@ -98,16 +104,16 @@ const closeDropdown = () => {
             :to="item.path"
             @click="closeDropdown"
             :class="{
-              'bg-blue-50 border-l-4 border-blue-500': isActiveMenuItem(item.path),
-              'hover:bg-gray-100 border-l-4 border-gray-200': !isActiveMenuItem(item.path),
+              'bg-blue-50 border-l-4 border-sky-500': isActiveMenuItem(item.path),
+              'hover:bg-gray-50 border-l-4 border-transparent': !isActiveMenuItem(item.path),
             }"
-            class="block px-4 py-2 text-sm hover:text-gray-900 transition-colors duration-150"
+            class="block px-4 py-2 text-sm transition-colors duration-150"
             role="menuitem"
             tabindex="-1"
           >
             <span
               :class="{
-                'text-blue-700 font-semibold': isActiveMenuItem(item.path),
+                'text-sky-700 font-semibold': isActiveMenuItem(item.path),
                 'text-gray-700': !isActiveMenuItem(item.path),
               }"
             >
