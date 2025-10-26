@@ -14,6 +14,7 @@ import VerifyEmail from "@/views/AuthUser/VerlfyEmail.vue";
 import UserProfile from "@/views/User/UserProfile.vue";
 import PlaceOrder from "@/views/User/PlaceOrder.vue";
 import PlaceOrderDetail from "@/views/User/PlaceOrderDetail.vue";
+import PlaceOrderSellerDetail from "@/views/User/PlaceOrderSellerDetail.vue";
 import Cart from "@/views/User/Cart.vue";
 import PageNotFound from "@/views/PageNotFound.vue";
 import SellerOrder from "@/views/User/SellerOrder.vue";
@@ -54,7 +55,7 @@ const router = createRouter({
     { path: "/profile/edit", name: "UserProfileEdit", component: UserProfile, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/your-order", name: "PlaceOrder", component: PlaceOrder, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/your-order/:id", name: "PlaceOrderId", component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
-    { path: "/seller-order/:id", name: "PlaceOrderSellerId", component: PlaceOrderDetail, meta: { requiresAuth: true, roles: ["ROLE_SELLER"] } },
+    { path: "/seller-order/:id", name: "PlaceOrderSellerId", component: PlaceOrderSellerDetail, meta: { requiresAuth: true, roles: ["ROLE_SELLER"] } },
     { path: "/cart", name: "Cart", component: Cart, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },
     { path: "/seller-order", name: "SellerOrder", component: SellerOrder, meta: { requiresAuth: true, roles: ["ROLE_SELLER"] } },
     { path: "/chang-password", name: "chang-password", component: ChangePassword, meta: { requiresAuth: true, roles: ["ROLE_BUYER", "ROLE_SELLER"] } },

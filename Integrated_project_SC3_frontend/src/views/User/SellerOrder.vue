@@ -119,7 +119,7 @@ const formatDate = (isoString) => {
   }).format(date);
 };
 
-const activeTab = ref("all")
+const activeTab = ref("all");
 const filteredOrders = computed(() => {
   if (!sellerOrder.value.content) return [];
 
@@ -127,29 +127,22 @@ const filteredOrders = computed(() => {
 
   // all tab → แสดงทุกอันที่เป็น new_complete, new_cancelled, Complete, Cancelled
   if (status === "all") {
-    return sellerOrder.value.content.filter(order =>
-      ["new_complete", "new_cancelled", "Complete", "Cancelled"].includes(order.orderStatus)
-    );
+    return sellerOrder.value.content.filter((order) => ["new_complete", "new_cancelled", "Complete", "Cancelled"].includes(order.orderStatus));
   }
 
   // cancelled tab → แสดงเฉพาะ new_cancelled, Cancelled
   if (status === "cancelled") {
-    return sellerOrder.value.content.filter(order =>
-      ["new_cancelled", "Cancelled"].includes(order.orderStatus)
-    );
+    return sellerOrder.value.content.filter((order) => ["new_cancelled", "Cancelled"].includes(order.orderStatus));
   }
 
   // new tab → แสดงเฉพาะ new_complete, new_cancelled
   if (status === "new") {
-    return sellerOrder.value.content.filter(order =>
-      ["new_complete", "new_cancelled"].includes(order.orderStatus)
-    );
+    return sellerOrder.value.content.filter((order) => ["new_complete", "new_cancelled"].includes(order.orderStatus));
   }
 
   // default
   return sellerOrder.value.content;
 });
-
 
 const formatOrderStatus = (status) => {
   switch (status) {
@@ -158,9 +151,9 @@ const formatOrderStatus = (status) => {
     case "new_cancelled":
       return "Cancelled";
     default:
-      return status
+      return status;
   }
-}
+};
 
 const getOrderTag = (status) => {
   if (status === "new_complete" || status === "new_cancelled") {
@@ -168,8 +161,6 @@ const getOrderTag = (status) => {
   }
   return { text: "VIEWED", class: "bg-gray-200 text-gray-600" };
 };
-
-
 </script>
 
 <template>
@@ -178,129 +169,119 @@ const getOrderTag = (status) => {
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb
-      :class="'mb-6'"
-      :pathForBreadcrumb="[
-        { text: 'Home', name: 'Home' },
-        { text: 'SaleItem', name: 'Products' },
-        { text: 'SellerOrders' },
-      ]"
-    />
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'SellerOrders' }]" />
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
         <span class="mr-2"> <PackageOpen size="50" color="#3B82F6" /> </span>SELLER ORDERS
       </h1>
     </div>
 
-
     <!-- Filter Tabs -->
     <div class="flex justify-center gap-4 mb-8">
-      <button @click="activeTab = 'all'" :class="[
-        'px-4 py-2 rounded-full border transition cursor-pointer',
-        activeTab === 'all'
-          ? 'bg-blue-500 text-white border-blue-500'
-          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
-      ]">
+      <button
+        @click="activeTab = 'all'"
+        :class="[
+          'px-4 py-2 rounded-full border transition cursor-pointer',
+          activeTab === 'all' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+        ]"
+      >
         All
       </button>
 
-      <button @click="activeTab = 'new'" :class="[
-        'px-4 py-2 rounded-full border transition cursor-pointer',
-        activeTab === 'new'
-          ? 'bg-blue-500 text-white border-blue-500'
-          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
-      ]">
+      <button
+        @click="activeTab = 'new'"
+        :class="[
+          'px-4 py-2 rounded-full border transition cursor-pointer',
+          activeTab === 'new' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+        ]"
+      >
         New
       </button>
 
-      <button @click="activeTab = 'cancelled'" :class="[
-        'px-4 py-2 rounded-full border transition cursor-pointer',
-        activeTab === 'cancelled'
-          ? 'bg-blue-500 text-white border-blue-500'
-          : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100'
-      ]">
+      <button
+        @click="activeTab = 'cancelled'"
+        :class="[
+          'px-4 py-2 rounded-full border transition cursor-pointer',
+          activeTab === 'cancelled' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-blue-500 border-blue-300 hover:bg-blue-100',
+        ]"
+      >
         Cancelled
       </button>
     </div>
-<div v-if="sellerOrder?.content?.length === 0" class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-17%]">
+    <div v-if="sellerOrder?.content?.length === 0" class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-17%]">
       <ShoppingCart size="140" color="#3B82F6" strokeWidth="{1.30}" />
       <p class="text-4xl text-blue-500">Nobody ordered your order yet.</p>
     </div>
     <div v-else>
+      <RouterLink
+        v-for="(order, index) in filteredOrders"
+        :key="order.id"
+        :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }"
+        @click="console.log('clicked id:', order)"
+        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
+          <div>
+            <div class="flex items-center mb-2">
+              <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.buyerDTO.username }}</span>
+            </div>
+            <p>
+              <strong class="text-gray-500">Order No:</strong>
+              <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
+            </p>
+            <p>
+              <strong class="text-gray-500">Status:</strong>
+              <span
+                class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
+                :class="[
+                  order.orderStatus === 'new_complete' || order.orderStatus === 'Complete'
+                    ? 'bg-green-100 text-green-700'
+                    : order.orderStatus === 'new_cancelled' || order.orderStatus === 'Cancelled'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700',
+                ]"
+              >
+                {{ formatOrderStatus(order.orderStatus) }}
+              </span>
+            </p>
 
-    <RouterLink v-for="(order, index) in filteredOrders" :key="order.id"
-      :to="{ name: 'PlaceOrderSellerId', params: { id: order.id } }" @click="console.log('clicked id:', order)"
-      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
-        <div>
-          <div class="flex items-center mb-2">
-            <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.buyerDTO.username }}</span>
+            <p class="mt-2">
+              <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full" :class="getOrderTag(order.orderStatus).class">
+                {{ getOrderTag(order.orderStatus).text }}
+              </span>
+            </p>
           </div>
-          <p>
-            <strong class="text-gray-500">Order No:</strong>
-            <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
-          </p>
-          <p>
-            <strong class="text-gray-500">Status:</strong>
-            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
-              order.orderStatus === 'new_complete' || order.orderStatus === 'Complete'
-                ? 'bg-green-100 text-green-700'
-                : order.orderStatus === 'new_cancelled' || order.orderStatus === 'Cancelled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
-            ]">
-              {{ formatOrderStatus(order.orderStatus) }}
-            </span>
-          </p>
-
-
-          <p class="mt-2">
-            <span class="ml-1 font-semibold text-xs px-3 py-1 rounded-full"
-              :class="getOrderTag(order.orderStatus).class">
-              {{ getOrderTag(order.orderStatus).text }}
-            </span>
-          </p>
-
-        </div>
-        <div>
-          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) ||
-            "-" }}</p>
-        </div>
-        <div>
-          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{
-            formatDate(order.paymentDate) || "-" }}</p>
-        </div>
-        <div class="md:text-right">
-          <p class="text-gray-500">Total:</p>
-          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }}
-            Bath</p>
-        </div>
-      </div>
-
-      <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-        <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}
-        </p>
-      </div>
-
-      <hr class="my-4" />
-
-      <div class="space-y-4">
-        <div v-for="item in order.orderItems" :key="item.no"
-          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-          <img :src="imageMap[item.no]" :alt="item.description"
-            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
-          <div class="flex-grow">
-            <p class="itbms-item-description font-semibold text-gray-800">{{ item.description || "No Description" }}</p>
-            <p class="itbms-item-quantity text-gray-500">Quantity: {{ item.quantity }}</p>
-            <p class="text-xs text-gray-400">SaleItemId: {{ item.saleItemId }}</p>
+          <div>
+            <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
           </div>
-          <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">
-            {{ formatCurrency(item.price * item.quantity) }} Bath
+          <div>
+            <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+          </div>
+          <div class="md:text-right">
+            <p class="text-gray-500">Total:</p>
+            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
           </div>
         </div>
-      </div>
-    </RouterLink>
-  </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
+          <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
+          <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+        </div>
+
+        <hr class="my-4" />
+
+        <div class="space-y-4">
+          <div v-for="item in order.orderItems" :key="item.no" class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+            <img :src="imageMap[item.no]" :alt="item.description" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+            <div class="flex-grow">
+              <p class="itbms-item-description font-semibold text-gray-800">{{ item.description || "No Description" }}</p>
+              <p class="itbms-item-quantity text-gray-500">Quantity: {{ item.quantity }}</p>
+              <p class="text-xs text-gray-400">SaleItemId: {{ item.saleItemId }}</p>
+            </div>
+            <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
+          </div>
+        </div>
+      </RouterLink>
+    </div>
   </div>
 </template>
