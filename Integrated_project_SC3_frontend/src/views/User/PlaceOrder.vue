@@ -134,18 +134,20 @@ const formatOrderStatus = (status) => {
   }
 }
 </script>
-
 <template>
   <div v-if="isLoading" class="flex items-center justify-center h-screen bg-blue-50">
     <Loading />
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[
-      { text: 'Home', name: 'Home' },
-      { text: 'SaleItem', name: 'Products' },
-      { text: 'PlaceOrder', name: 'PlaceOrder' },
-    ]" />
+    <Breadcrumb
+      class="mb-6"
+      :pathForBreadcrumb="[
+        { text: 'Home', name: 'Home' },
+        { text: 'SaleItem', name: 'Products' },
+        { text: 'PlaceOrder', name: 'PlaceOrder' },
+      ]"
+    />
 
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
@@ -156,133 +158,154 @@ const formatOrderStatus = (status) => {
       </h1>
     </div>
 
+    <!-- ปุ่มแท็บ -->
     <div class="flex justify-center gap-6 mb-8">
-      <button @click="activeTab = 'new_complete'" :class="[
-        'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-        activeTab === 'new_complete'
-          ? 'bg-blue-500 text-white shadow-md'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      ]">
+      <button
+        @click="activeTab = 'new_complete'"
+        :class="[
+          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
+          activeTab === 'new_complete'
+            ? 'bg-blue-500 text-white shadow-md'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
         COMPLETE
       </button>
-      <button @click="activeTab = 'new_cancelled'" :class="[
-        'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-        activeTab === 'new_cancelled'
-          ? 'bg-blue-500 text-white shadow-md'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      ]">
+
+      <button
+        @click="activeTab = 'new_cancelled'"
+        :class="[
+          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
+          activeTab === 'new_cancelled'
+            ? 'bg-blue-500 text-white shadow-md'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
         CANCELLED
       </button>
     </div>
-  <div v-if="filteredOrders.length === 0 " class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-20%]">
-        <ShoppingCart size="140" color="#3B82F6" strokeWidth="{1.30}"/>
-        <p class="text-4xl text-blue-500">You haven’t placed any orders yet.</p>
-      </div>
-  
-      <div v-else>
-    <!-- ✅ ใช้ filteredOrders แทน orders.content -->
-    <RouterLink v-for="(order, index) in filteredOrders" :key="order.orderNo"
-      :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
-      class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
-        <div>
-          <div class="flex items-center mb-2">
-            <span class="itbms-nickname font-bold text-blue-700 text-base">{{ order.seller.userName }}</span>
-          </div>
-          <p>
-            <strong class="text-gray-500">Order No:</strong>
-            <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
-          </p>
-          <p>
-            <strong class="text-gray-500">Status:</strong>
-            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
-              order.orderStatus === 'new_complete'
-                ? 'bg-green-100 text-green-700'
-                : order.orderStatus === 'new_cancelled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
-            ]">
-              {{ formatOrderStatus(order.orderStatus) }}
-            </span>
-          </p>
-        </div>
 
-        <div>
-          <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) ||
-            "-" }}</p>
-        </div>
-        <div>
-          <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{
-            formatDate(order.paymentDate) || "-" }}</p>
-        </div>
-        <div class="md:text-right">
-          <p class="text-gray-500">Total:</p>
-          <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }}
-            Bath</p>
-        </div>
-      </div>
+    <!-- ไม่มี order -->
+    <div
+      v-if="filteredOrders.length === 0"
+      class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-20%]"
+    >
+      <ShoppingCart size="140" color="#3B82F6" stroke-width="1.3" />
+      <p class="text-4xl text-blue-500">You haven’t placed any orders yet.</p>
+    </div>
 
-      <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-        <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-        <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}
-        </p>
-      </div>
-
-      <hr class="my-4" />
-
-      <div class="space-y-4">
-        <div v-for="(item, index) in order.orderItems" :key="item.id"
-          class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-          <img :src="imageMap[item.no]" :alt="item.productName"
-            class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
-          <div class="flex-grow">
-            <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName }}</p>
-            <p class="itbms-item-quantity text-gray-500">Qty {{ item.quantity }}</p>
+    <!-- แสดงรายการ order -->
+    <div v-else>
+      <RouterLink
+        v-for="(order, index) in filteredOrders"
+        :key="order.orderNo"
+        :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
+        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer"
+      >
+        <!-- ส่วนข้อมูลหลัก -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
+          <div>
+            <div class="flex items-center mb-2">
+              <span class="itbms-nickname font-bold text-blue-700 text-base">
+                {{ order.seller.userName }}
+              </span>
+            </div>
+            <p>
+              <strong class="text-gray-500">Order No:</strong>
+              <span class="itbms-order-id text-gray-800 ml-1">{{ order.id }}</span>
+            </p>
+            <p>
+              <strong class="text-gray-500">Status:</strong>
+              <span
+                class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
+                :class="[
+                  order.orderStatus === 'new_complete'
+                    ? 'bg-green-100 text-green-700'
+                    : order.orderStatus === 'new_cancelled'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
+                ]"
+              >
+                {{ formatOrderStatus(order.orderStatus) }}
+              </span>
+            </p>
           </div>
 
           <div>
-            <p><strong class="itbms-order-date text-gray-500">Order Date:</strong><br />{{ formatDate(order.orderDate) || "-" }}</p>
+            <p>
+              <strong class="text-gray-500">Order Date:</strong><br />
+              {{ formatDate(order.orderDate) || '-' }}
+            </p>
           </div>
+
           <div>
-            <p><strong class="itbms-payment-date text-gray-500">Payment Date:</strong><br />{{ formatDate(order.paymentDate) || "-" }}</p>
+            <p>
+              <strong class="text-gray-500">Payment Date:</strong><br />
+              {{ formatDate(order.paymentDate) || '-' }}
+            </p>
           </div>
+
           <div class="md:text-right">
             <p class="text-gray-500">Total:</p>
-            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">{{ formatCurrency(totalPrice[index]) }} Bath</p>
+            <p class="itbms-total-order-price text-2xl font-bold text-blue-700">
+              {{ formatCurrency(totalPrice[index]) }} Baht
+            </p>
           </div>
         </div>
 
+        <!-- ที่อยู่จัดส่ง -->
         <div class="bg-blue-50 p-4 rounded-lg text-sm mb-4">
-          <p><strong class="itbms-shipping-address text-gray-600">Shipped To:</strong> {{ order.shippingAddress }}</p>
-          <p v-if="order.orderNote"><strong class="itbms-order-note text-gray-600">Note:</strong> {{ order.orderNote }}</p>
+          <p>
+            <strong class="text-gray-600">Shipped To:</strong>
+            {{ order.shippingAddress }}
+          </p>
+          <p v-if="order.orderNote">
+            <strong class="text-gray-600">Note:</strong> {{ order.orderNote }}
+          </p>
         </div>
 
         <hr class="my-4" />
 
+        <!-- สินค้าในคำสั่งซื้อ -->
         <div class="space-y-4">
-          <div v-for="(item, index) in order.orderItems" :key="item.id" class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
-            <img :src="imageMap[item.no]" :alt="item.productName" class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
+          <div
+            v-for="(item, i) in order.orderItems"
+            :key="item.id"
+            class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none"
+          >
+            <img
+              :src="imageMap[item.no]"
+              :alt="item.productName"
+              class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+            />
             <div class="flex-grow">
-              <p class="itbms-item-description font-semibold text-gray-800">{{ item.productName }}</p>
-              <p class="itbms-item-quantity text-gray-500">Qty {{ item.quantity }}</p>
+              <p class="font-semibold text-gray-800">{{ item.productName }}</p>
+              <p class="text-gray-500">Qty {{ item.quantity }}</p>
             </div>
-            <div class="itbms-item-total-price text-right font-bold text-blue-700 w-28">{{ formatCurrency(item.price * item.quantity) }} Bath</div>
+            <div class="font-bold text-blue-700 w-28 text-right">
+              {{ formatCurrency(item.price * item.quantity) }} Baht
+            </div>
           </div>
-        </div>
         </div>
       </RouterLink>
 
+      <!-- pagination -->
       <div class="flex gap-4 justify-center pb-10">
-        <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination" @update:modelValue="fetchselect" />
+        <PaginationSeller
+          v-model="pagination.page"
+          :total-page="pagination.totalPages"
+          storage-key="order_pagination"
+          @update:modelValue="fetchselect"
+        />
         <div v-show="pagination.totalPages > 1">
           <SizeAndSortSeller
-          v-model:modelSize="pagination.size"
-          v-model:modelSort="pagination.sort"
-          v-model:modelPage="pagination.page"
-          storage-key-size="order_size"
-          storage-key-sort="order_sort"
-          reset-storage="order_pagination"
-          @update:modelPage="handlePageChange"
+            v-model:modelSize="pagination.size"
+            v-model:modelSort="pagination.sort"
+            v-model:modelPage="pagination.page"
+            storage-key-size="order_size"
+            storage-key-sort="order_sort"
+            reset-storage="order_pagination"
+            @update:modelPage="handlePageChange"
           />
         </div>
       </div>

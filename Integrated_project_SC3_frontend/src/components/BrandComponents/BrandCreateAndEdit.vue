@@ -178,45 +178,25 @@ const handleSave = async () => {
   }
 };
 const auth = useAuthStore();
-
 </script>
 
 <template>
-
   <div class="p-6">
     <div class="max-w-4xl mx-auto">
-
-     
       <!-- Header -->
-      <div class="mb-6 ">
-        <div class="flex items-center mt-[40px]">
-        
-      </div>
+      <div class="mb-6">
+        <div class="flex items-center mt-[40px]"></div>
 
         <span v-if="isEdit">
-          <Breadcrumb
-          :class="'mb-6'"
-          :pathForBreadcrumb="[
-            { text: 'Home', name: 'Home' },
-            { text: 'SaleItem', name: 'Products' },
-            { text: 'Edit Brand' },
-          ]"
-    />
-  </span>
-  <span v-else>
-<Breadcrumb
-      :class="'mb-6'"
-      :pathForBreadcrumb="[
-        { text: 'Home', name: 'Home' },
-        { text: 'SaleItem', name: 'Products' },
-        { text: 'Create Brand' },
-      ]"
-    />
-  </span>
+          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Edit Brand' }]" />
+        </span>
+        <span v-else>
+          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Create Brand' }]" />
+        </span>
       </div>
 
- <h3 class="text-3xl font-bold text-blue-700">Wellcome {{ auth.getAuthData().nickname }}</h3>
-   <h1 class="text-4xl font-bold text-blue-700 flex items-center mb-4">Brand Management</h1>
+      <h3 class="text-3xl font-bold text-blue-700">Wellcome {{ auth.getAuthData().nickname }}</h3>
+      <h1 class="text-4xl font-bold text-blue-700 flex items-center mb-4">Brand Management</h1>
 
       <!-- Form Card -->
       <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-blue-100">
@@ -267,21 +247,20 @@ const auth = useAuthStore();
                 Brand country of origin must be 1-80 characters long or not specified.
               </p>
             </div>
-            <div class="flex items-center">
-              <div class="relative inline-block w-12 mr-3 align-middle select-none transition duration-200 ease-in">
+            <div class="flex items-center space-x-3">
+              <!-- Toggle Switch -->
+              <div class="relative inline-flex items-center">
                 <input
                   id="itbms-isActive"
                   type="checkbox"
-                  name="toggle"
                   v-model="brand.isActive"
-                  class="peer absolute w-6 h-6 bg-white border-4 rounded-full appearance-none cursor-pointer transition-all duration-300 ease-in-out checked:translate-x-6"
+                  class="peer appearance-none w-12 h-6 bg-gray-300 rounded-full cursor-pointer transition-all duration-300 ease-in-out checked:bg-blue-600"
                 />
-                <label for="itbms-isActive" class="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-all duration-300 ease-in-out peer-checked:bg-blue-500"></label>
+                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-all duration-300 ease-in-out peer-checked:translate-x-6 peer-checked:bg-blue-50"></span>
               </div>
 
-              <div class="ml-2 text-sm">
-                <label for="itbms-isActive" class="font-medium text-gray-700">Active</label>
-              </div>
+              <!-- Label -->
+              <label for="itbms-isActive" class="text-sm font-medium text-gray-700 select-none cursor-pointer hover:text-blue-700 transition-colors"> Active </label>
             </div>
           </div>
           <div class="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">

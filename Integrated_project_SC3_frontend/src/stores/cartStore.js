@@ -65,14 +65,14 @@ export const useCartStore = defineStore("cart", {
         if (willBe > stock) {
           const available = stock - current;
           if (available <= 0) {
-            return { success: false, message: "สินค้าเกินสต็อก" };
+            return { success: false, message: "You've already added the maximum available quantity of this item to your cart." };
           }
           this.cart[idx].quantity = current + available;
           this.saveCart();
           return {
             success: true,
             added: available,
-            message: `เพิ่มได้เพียง ${available} เนื่องจากจำกัดสต็อก`,
+            message: `You can only add ${available} due to stock limit.`,
           };
         } else {
           this.cart[idx].quantity = willBe;
@@ -81,7 +81,7 @@ export const useCartStore = defineStore("cart", {
         }
       } else {
         const toAdd = Math.min(qty, stock);
-        if (toAdd <= 0) return { success: false, message: "สินค้าหมดสต็อก" };
+        if (toAdd <= 0) return { success: false, message: "This saleitem out of stock" };
 
         this.cart.push({
           id: itemPayload.id,
