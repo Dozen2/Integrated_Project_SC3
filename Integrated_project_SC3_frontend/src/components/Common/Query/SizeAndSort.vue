@@ -1,4 +1,5 @@
 <script setup>
+
 import {
   ArrowDownWideNarrow,
   ArrowUpWideNarrow,
@@ -159,7 +160,12 @@ onMounted(() => {
       id="size"
       v-model="size"
       @change="setSize(size)"
-      class="cursor-pointer border border-blue-300 rounded-lg px-5 py-2 bg-white text-blue-800 font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition duration-200 ease-in-out min-w-[4rem]"
+      class="cursor-pointer border border-blue-300 rounded-lg 
+             px-2 py-1 text-sm sm:px-5 sm:py-2 
+             bg-white text-blue-800 font-medium 
+             shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 
+             transition duration-200 ease-in-out 
+             min-w-[3rem] sm:min-w-[4rem] text-center"
     >
       <option :value="5">5</option>
       <option :value="10">10</option>
@@ -167,43 +173,42 @@ onMounted(() => {
       <option :value="50">50</option>
     </select>
 
-    <!-- Sort Controls -->
     <div class="flex gap-1">
       <button
         @click="sortAsc"
         :class="[
-          'itbms-brand-asc p-2 border border-gray-300 rounded transition cursor-pointer',
+          'itbms-brand-asc p-1 sm:p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'asc'
             ? 'bg-blue-500 text-white'
             : 'hover:bg-blue-100',
         ]"
         title="Sort Ascending"
       >
-        <ArrowDownWideNarrow />
+        <ArrowDownWideNarrow class="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
       <button
         @click="sortDesc"
         :class="[
-          'itbms-brand-desc p-2 border border-gray-300 rounded transition cursor-pointer',
+          'itbms-brand-desc p-1 sm:p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'desc'
             ? 'bg-blue-500 text-white'
             : 'hover:bg-blue-100',
         ]"
         title="Sort Descending"
       >
-        <ArrowUpWideNarrow />
+        <ArrowUpWideNarrow class="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
       <button
         @click="resetSort"
         :class="[
-          'itbms-brand-none p-2 border border-gray-300 rounded transition cursor-pointer',
+          'itbms-brand-none p-1 sm:p-2 border border-gray-300 rounded transition cursor-pointer',
           currentSort === 'none'
             ? 'bg-blue-500 text-white'
             : 'hover:bg-blue-100',
         ]"
         title="Reset Sort"
       >
-        <ListFilter />
+        <ListFilter class="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
     </div>
   </div>

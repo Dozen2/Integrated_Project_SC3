@@ -64,7 +64,16 @@ const formatDate = (isoString) => {
   }).format(date);
 };
 
-
+const formatOrderStatus = (status) => {
+  switch (status) {
+    case "new_complete":
+      return "Complete";
+    case "new_cancelled":
+      return "Cancelled";
+    default:
+      return status
+  }
+}
 </script>
 <template>
   <div v-if="isLoading"
@@ -101,7 +110,7 @@ const formatDate = (isoString) => {
         <div class="space-y-2">
           <p><strong class="itbms-order-id text-blue-700">Order No:</strong> {{ orders.id }}</p>
           <p><strong class="itbms-order-date text-blue-700">Order Date:</strong> {{ formatDate(orders.orderDate) || "-"
-            }}</p>
+          }}</p>
           <p>
             <strong class="text-blue-700">Total:</strong>
             <span class="itbms-total-order-price font-bold text-blue-600 text-lg ml-1">{{ formatCurrency(totalPrice) }}
@@ -118,11 +127,15 @@ const formatDate = (isoString) => {
           <p><strong class="itbms-payment-date text-blue-700">Payment Date:</strong> {{ formatDate(orders.paymentDate)
             || "-" }}</p>
           <p>
-            <strong class="text-blue-700">Status:</strong>
-            <span class="itbms-order-status ml-1 px-3 py-1 text-xs rounded-full font-semibold shadow-sm" :class="orders.orderStatus === 'Complete'
-              ? 'bg-green-100 text-green-700'
-              : 'bg-yellow-100 text-yellow-700'">
-              {{ orders.orderStatus }}
+            <strong class="text-gray-500">Status:</strong>
+            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
+              order.orderStatus === 'new_complete'
+                ? 'bg-green-100 text-green-700'
+                : order.orderStatus === 'new_cancelled'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-yellow-100 text-yellow-700'
+            ]">
+              {{ formatOrderStatus(orders.orderStatus) }}
             </span>
           </p>
           <p><strong class="itbms-order-note text-blue-700">Note:</strong> {{ orders.orderNote || "-" }}</p>
@@ -149,7 +162,7 @@ const formatDate = (isoString) => {
 
           <div class="flex items-center space-x-8 text-sm">
             <p class="text-gray-600">Qty: <span class="itbms-item-quantity font-medium text-gray-800">{{ item.quantity
-                }}</span></p>
+            }}</span></p>
             <p class="itbms-item-total-price font-bold text-blue-700 text-base">{{ formatCurrency(item.price *
               item.quantity) }} Bath</p>
           </div>

@@ -435,24 +435,36 @@ onBeforeUnmount(() => {
   <div v-if="isLoading" class="flex items-center justify-center h-screen">
     <Loading />
   </div>
-  <div v-else class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200">
-    <!-- Alert Message -->
+  <div
+    v-else
+    class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200"
+  >
     <div v-if="alertStore.message">
-      <div :class="`itbms-message px-4 py-2 rounded ${alertStore.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`">
+      <div
+        :class="`itbms-message px-4 py-2 rounded ${
+          alertStore.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+        }`"
+      >
         {{ alertStore.message }}
       </div>
     </div>
 
-    <div class="flex justify-between items-center gap-6">
-      <div class="flex items-center">
-        <h1 class="text-6xl text-blue-500 flex"><Smartphone size="60" color="#478eff" />ITBMS SHOP SC3</h1>
+    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-start gap-6 px-4 md:px-8">
+      <div class="flex items-center order-1 lg:order-none">
+        <h1 class="text-3xl sm:text-4xl md:text-6xl text-blue-500 flex items-center">
+          <Smartphone size="30" class="sm:w-8 sm:h-8 md:w-12 md:h-12 mr-2" color="#478eff" />ITBMS SHOP SC3
+        </h1>
       </div>
 
-      <div class="flex flex-col items-end gap-5">
-        <div>
-          <Search :key="getSessionValue(SESSION_KEYS.SEARCH, '')" :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')" @search="handleSearch" />
+      <div class="flex flex-col items-stretch sm:items-end gap-5 w-full sm:w-auto order-2 lg:order-none">
+        <div class="w-full order-1">
+          <Search
+            :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
+            :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
+            @search="handleSearch"
+          />
         </div>
-        <div>
+        <div class="w-full order-2">
           <SizeAndSort
             :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
             :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
@@ -464,10 +476,10 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
-    <div class="flex flex-col md:flex-row gap-6 px-4 md:px-8">
-      <!-- Filters -->
-      <div class="w-full md:w-1/5 lg:w-1/6 flex flex-col gap-4 ml-[-40px] mt-4 md:mt-6">
+    <div class="flex flex-col xl:flex-row gap-6 px-4 md:px-8">
+      <div
+        class="w-full xl:w-1/6 flex flex-col gap-4 order-3 xl:order-none mt-4 md:mt-6"
+      >
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
           :options="brand"
@@ -492,7 +504,6 @@ onBeforeUnmount(() => {
           @filterChanged="handleStorageFilter"
         />
 
-        <!-- Price Filter -->
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
           :options="priceOption"
@@ -511,41 +522,68 @@ onBeforeUnmount(() => {
 
               <div class="flex items-center gap-2">
                 <span>Min</span>
-                <input type="number" class="border rounded px-2 py-1 flex-1" placeholder="Min" v-model.number="min_price" />
+                <input
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1"
+                  placeholder="Min"
+                  v-model.number="min_price"
+                />
               </div>
 
               <div class="flex items-center gap-2">
                 <span>Max</span>
-                <input :disabled="min_price === null" type="number" class="border rounded px-2 py-1 flex-1" placeholder="Max" v-model.number="max_price" />
+                <input
+                  :disabled="min_price === null"
+                  type="number"
+                  class="border rounded px-2 py-1 flex-1"
+                  placeholder="Max"
+                  v-model.number="max_price"
+                />
               </div>
 
-              <p v-if="min_price > max_price && max_price != 0" class="text-red-500 text-sm">* Min price must be less than max price</p>
+              <p v-if="min_price > max_price && max_price != 0" class="text-red-500 text-sm">
+                * Min price must be less than max price
+              </p>
 
               <div class="flex justify-end">
-                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap" @click="applyCustomPrice">Apply</button>
+                <button
+                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap"
+                  @click="applyCustomPrice"
+                >
+                  Apply
+                </button>
               </div>
             </div>
           </template>
         </Filter>
 
-        <!-- Clear Button -->
         <div class="flex justify-start">
           <ClearButton
-            :sessionKeys="[SESSION_KEYS.BRAND, SESSION_KEYS.STORAGE, SESSION_KEYS.PRICE, SESSION_KEYS.CUSTOM_PRICE_MIN, SESSION_KEYS.CUSTOM_PRICE_MAX, SESSION_KEYS.PAGE, SESSION_KEYS.SEARCH]"
+            :sessionKeys="[
+              SESSION_KEYS.BRAND,
+              SESSION_KEYS.STORAGE,
+              SESSION_KEYS.PRICE,
+              SESSION_KEYS.CUSTOM_PRICE_MIN,
+              SESSION_KEYS.CUSTOM_PRICE_MAX,
+              SESSION_KEYS.PAGE,
+              SESSION_KEYS.SEARCH,
+            ]"
             @cleared="handleClear"
           />
         </div>
       </div>
 
-      <!-- Product Gallery -->
-      <div class="flex-1">
+      <div class="flex-1 order-4 xl:order-none">
         <SelectAllSaleItemGallery v-if="product?.content" :product="product.content" :imageUrl="imageUrl" />
       </div>
     </div>
 
-    <!-- 🔹 Pagination ด้านล่าง -->
     <div class="mt-4">
-      <Pagination :initialTotalPages="totalPages" :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1" @pageChanged="handlePageChange" />
+      <Pagination
+        :initialTotalPages="totalPages"
+        :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
+        @pageChanged="handlePageChange"
+      />
     </div>
   </div>
 </template>

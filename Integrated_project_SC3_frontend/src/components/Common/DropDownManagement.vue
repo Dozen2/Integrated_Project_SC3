@@ -55,10 +55,19 @@ onUnmounted(() => {
 const closeDropdown = () => {
   isOpen.value = false;
 };
+
+const props = defineProps({
+  isMobile: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+
 </script>
 
 <template>
-  <div ref="dropdown" class="relative inline-block text-left">
+  <div v-if="!props.isMobile" ref="dropdown" class="relative inline-block text-left">
     <div>
       <button
         @click="isOpen = !isOpen"
@@ -123,5 +132,20 @@ const closeDropdown = () => {
         </div>
       </div>
     </transition>
+  </div>
+
+  <div v-else class="flex justify-around items-center w-full px-2 py-2">
+    <RouterLink
+      v-for="(item, index) in menuItems"
+      :key="item.text"
+      :to="item.path"
+      :class="{
+        'border-b-2 border-sky-500 text-sky-700 font-bold bg-blue-50/50': isActiveMenuItem(item.path),
+        'text-gray-600 hover:text-sky-500 hover:bg-gray-50': !isActiveMenuItem(item.path),
+      }"
+      class="flex-1 text-center py-2 px-1 text-xs sm:text-sm transition-all duration-200 rounded-md mx-1 whitespace-nowrap"
+    >
+      {{ item.text }}
+    </RouterLink>
   </div>
 </template>

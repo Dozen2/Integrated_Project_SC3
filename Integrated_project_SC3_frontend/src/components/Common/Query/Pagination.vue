@@ -1,4 +1,5 @@
 <script setup>
+
 import {
   computed,
   defineEmits,
@@ -144,51 +145,70 @@ onMounted(() => {
 
 <template>
   <div v-show="totalPage > 1" class="Pagination">
-    <div class="flex justify-center">
-      <div
-        class="flex gap-1 items-center bg-white rounded-lg shadow-sm border p-2"
-      >
+    <div
+      class="flex justify-center text-xs sm:text-sm md:text-base"
+    >
+      <div class="flex gap-0.5 items-center bg-white rounded-lg shadow-sm border p-0.5 md:p-2">
         <button
           @click="goToPage(1)"
           :disabled="page === 1"
-          class="cursor-pointer itbms-page-first px-3 py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="cursor-pointer itbms-page-first px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
         >
           First
         </button>
         <button
           @click="goToPage(Math.max(1, page - 1))"
           :disabled="page === 1"
-          class="cursor-pointer itbms-page-prev px-3 py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="cursor-pointer itbms-page-prev px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 rounded text-gray-600 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
         >
           Prev
         </button>
 
-        <template v-for="(p, index) in totalPage" :key="p">
-          <button
-            @click="goToPage(p)"
-            :class="[
-              `itbms-page-${index}`,
-              'px-3 py-2 rounded transition min-w-10',
-              page === p
-                ? 'bg-gray-800 text-white'
-                : 'text-gray-600 hover:bg-gray-300 cursor-pointer ',
-            ]"
+        <div class="block md:hidden mx-1">
+          <select
+            :value="page"
+            @change="goToPage($event.target.value)"
+            class="h-full border border-gray-300 rounded-md bg-white text-xs py-0.5 px-1 focus:ring-sky-500 focus:border-sky-500"
           >
-            {{ p }}
-          </button>
-        </template>
+            <option
+              v-for="p in totalPage"
+              :key="p"
+              :value="p"
+            >
+              {{ p }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="hidden md:flex gap-1 items-center"> 
+          <template v-for="(p, index) in totalPage" :key="p">
+            <button
+              @click="goToPage(p)"
+              :class="[
+                `itbms-page-${index}`,
+                'px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 rounded transition min-w-6 md:min-w-10', 
+                page === p
+                  ? 'bg-gray-800 text-white'
+                  : 'text-gray-600 hover:bg-gray-300 cursor-pointer ',
+              ]"
+            >
+              {{ p }}
+            </button>
+          </template>
+        </div>
+
 
         <button
           @click="goToPage(Math.min(totalPage, page + 1))"
           :disabled="page === totalPage"
-          class="itbms-page-next px-3 py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="itbms-page-next px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
         >
           Next
         </button>
         <button
           @click="goToPage(totalPage)"
           :disabled="page === totalPage"
-          class="itbms-page-last px-3 py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition"
+          class="itbms-page-last px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-2 rounded text-gray-600 hover:bg-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition whitespace-nowrap"
         >
           Last
         </button>
