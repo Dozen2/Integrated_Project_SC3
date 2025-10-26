@@ -1,6 +1,10 @@
 <script setup>
 import { ref, onBeforeUnmount, onBeforeMount } from "vue";
-import { getAllSaleItemV2, getImageByImageName, getViewStorageForSelect } from "@/libs/callAPI/apiSaleItem.js";
+import {
+  getAllSaleItemV2,
+  getImageByImageName,
+  getViewStorageForSelect,
+} from "@/libs/callAPI/apiSaleItem.js";
 import { getAllBrand } from "@/libs/callAPI/apiBrand.js";
 import SelectAllSaleItemGallery from "@/components/SaleItemComponent/SaleItemSelectAllGallery.vue";
 import { useAlertStore } from "@/stores/alertStore.js";
@@ -9,8 +13,6 @@ import SizeAndSort from "@/components/Common/Query/SizeAndSort.vue";
 import Pagination from "@/components/Common/Query/Pagination.vue";
 import ClearButton from "@/components/Common/Query/ClearButton.vue";
 import Search from "@/components/Common/Query/Search.vue";
-import { ChevronDown, Funnel, Smartphone } from "lucide-vue-next";
-import Loading from "@/components/Common/Loading.vue";
 
 // ======================== Reactive States ========================
 const product = ref([]);
@@ -41,6 +43,7 @@ const SESSION_KEYS = {
   SIZE: "SaleItem-Size",
   SORT_DIRECTION: "SaleItem-SortDirection",
   SORT_FIELD: "SaleItem-SortField",
+
   SEARCH: "SaleItem-Search",
 };
 
@@ -101,9 +104,12 @@ const getCurrentFilters = () => ({
   customPrice: getSessionCustomPrice(),
   page: getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page),
   size: getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size),
-  sortDirection: getSessionValue(SESSION_KEYS.SORT_DIRECTION, DEFAULT_VALUES.sortDirection),
+  sortDirection: getSessionValue(
+    SESSION_KEYS.SORT_DIRECTION,
+    DEFAULT_VALUES.sortDirection
+  ),
   sortField: getSessionValue(SESSION_KEYS.SORT_FIELD, DEFAULT_VALUES.sortField),
-  search: getSessionValue(SESSION_KEYS.SEARCH),
+  search: getSessionValue(SESSION_KEYS.SEARCH, ""),
 });
 
 // ======================== Data Processing Helpers ========================
@@ -165,7 +171,9 @@ const loadImageUrl = async () => {
       const image = await getImageByImageName(item.mainImageFileName);
       imageUrl.value.push(image);
     } else {
-      imageUrl.value.push("https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg");
+      imageUrl.value.push(
+        "https://static.vecteezy.com/system/resources/thumbnails/022/059/000/small_2x/no-image-available-icon-vector.jpg"
+      );
     }
   }
 
@@ -185,7 +193,6 @@ const loadProductsDefault = async () => {
   try {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
-    console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -198,7 +205,10 @@ const loadProductsWithFilters = async (filters) => {
     // Convert filter values
     const storageValues = convertStorageValues(filters.storages);
     const priceValues = convertPriceValues(filters.prices);
-    const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
+    const { min: minPrice, max: maxPrice } = parsePriceRange(
+      priceValues,
+      filters.customPrice
+    );
 
     console.log("Loading products with filters:", {
       brands: filters.brands,
@@ -212,9 +222,18 @@ const loadProductsWithFilters = async (filters) => {
       customPrice: filters.customPrice,
     });
 
-    const data = await getAllSaleItemV2(filters.brands, filters.sortField, filters.sortDirection, filters.size, filters.page, storageValues, minPrice, maxPrice, filters.search);
+    const data = await getAllSaleItemV2(
+      filters.brands,
+      filters.sortField,
+      filters.sortDirection,
+      filters.size,
+      filters.page,
+      storageValues,
+      minPrice,
+      maxPrice,
+      filters.search
+    );
     product.value = data;
-    console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -315,9 +334,12 @@ const handlePageChange = async (pageData) => {
   setSession(SESSION_KEYS.PAGE, pageData.page);
 
   // Update other settings if provided
-  if (pageData.sortField) setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
-  if (pageData.sortDirection) setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
-  if (pageData.filterBrands !== undefined) setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
+  if (pageData.sortField)
+    setSession(SESSION_KEYS.SORT_FIELD, pageData.sortField);
+  if (pageData.sortDirection)
+    setSession(SESSION_KEYS.SORT_DIRECTION, pageData.sortDirection);
+  if (pageData.filterBrands !== undefined)
+    setSession(SESSION_KEYS.BRAND, pageData.filterBrands);
   if (pageData.size) setSession(SESSION_KEYS.SIZE, pageData.size);
 
   const filters = getCurrentFilters();
@@ -360,7 +382,10 @@ const applyCustomPrice = () => {
     return;
   }
 
-  const maxId = priceOption.value.length > 0 ? Math.max(...priceOption.value.map((opt) => Number(opt.id))) : 0;
+  const maxId =
+    priceOption.value.length > 0
+      ? Math.max(...priceOption.value.map((opt) => Number(opt.id)))
+      : 0;
 
   const customOption = {
     id: maxId + 1,
@@ -390,20 +415,18 @@ const hasActiveFilters = (filters) => {
     filters.brands.length > 0 ||
     filters.storages.length > 0 ||
     filters.prices.length > 0 ||
-    (filters.customPrice && (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
+    (filters.customPrice &&
+      (filters.customPrice.min !== null || filters.customPrice.max !== null)) ||
     filters.page > 0 ||
     filters.sortField !== DEFAULT_VALUES.sortField ||
     filters.sortDirection !== DEFAULT_VALUES.sortDirection ||
-    filters.size !== DEFAULT_VALUES.size ||
-    !!filters.search
+    filters.size !== DEFAULT_VALUES.size
   );
 };
 
 // ======================== Lifecycle ========================
 const imageUrl = ref([]);
-const isLoading = ref(false);
 onBeforeMount(async () => {
-  isLoading.value = true;
   await loadBrands();
   await loadStroage();
 
@@ -411,9 +434,6 @@ onBeforeMount(async () => {
   customPriceRange.value = getSessionCustomPrice();
 
   const filters = getCurrentFilters();
-  console.log("Initial filters:", filters);
-
-  console.log(hasActiveFilters(filters));
 
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
@@ -422,8 +442,6 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
-  console.log(" product.value.content: ", product.value.content);
-  isLoading.value = false;
 });
 
 onBeforeUnmount(() => {
@@ -432,59 +450,63 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="isLoading" class="flex items-center justify-center h-screen">
-    <Loading />
-  </div>
-  <div
-    v-else
-    class="min-h-[calc(100vh-80px)] flex flex-col gap-6 p-10 bg-gradient-to-br from-blue-100 via-white to-blue-200"
-  >
+  <div class="flex flex-col gap-6 m-10">
+    <!-- Alert Message -->
     <div v-if="alertStore.message">
       <div
         :class="`itbms-message px-4 py-2 rounded ${
-          alertStore.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+          alertStore.type === 'error'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-green-100 text-green-700'
         }`"
       >
         {{ alertStore.message }}
       </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-start gap-6 px-4 md:px-8">
-      <div class="flex items-center order-1 lg:order-none">
-        <h1 class="text-3xl sm:text-4xl md:text-6xl text-blue-500 flex items-center">
-          <Smartphone size="30" class="sm:w-8 sm:h-8 md:w-12 md:h-12 mr-2" color="#478eff" />ITBMS SHOP SC3
-        </h1>
-      </div>
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-between gap-4">
+      <!-- New Product -->
+      <RouterLink
+        :to="{ name: 'ProuctCreate' }"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
+      >
+        <span class="itbms-sale-item-add tracking-wide">New Product</span>
+      </RouterLink>
 
-      <div class="flex flex-col items-stretch sm:items-end gap-5 w-full sm:w-auto order-2 lg:order-none">
-        <div class="w-full order-1">
-          <Search
-            :key="getSessionValue(SESSION_KEYS.SEARCH, '')"
-            :initialValue="getSessionValue(SESSION_KEYS.SEARCH, '')"
-            @search="handleSearch"
-          />
-        </div>
-        <div class="w-full order-2">
-          <SizeAndSort
-            :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
-            :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
-            :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
-            @sizeChanged="handleSizeChange"
-            @sortChanged="handleSortChange"
-          />
-        </div>
-      </div>
+      <!-- Manage Items -->
+      <RouterLink
+        :to="{ name: 'ProductManage' }"
+        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-m font-medium px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all"
+      >
+        <span class="itbms-manage-brand tracking-wide">Manage Sale Items</span>
+      </RouterLink>
     </div>
 
-    <div class="flex flex-col xl:flex-row gap-6 px-4 md:px-8">
-      <div
-        class="w-full xl:w-1/6 flex flex-col gap-4 order-3 xl:order-none mt-4 md:mt-6"
-      >
+    <!-- 🔹 Search + SizeAndSort แนวนอน -->
+    <div class="flex justify-between items-center gap-4">
+      <SizeAndSort
+        :initialSize="getSessionValue(SESSION_KEYS.SIZE, DEFAULT_VALUES.size)"
+        :initialSortField="getSessionValue(SESSION_KEYS.SORT_FIELD, '')"
+        :initialSortDirection="getSessionValue(SESSION_KEYS.SORT_DIRECTION, '')"
+        @sizeChanged="handleSizeChange"
+        @sortChanged="handleSortChange" 
+      />
+      <Search @search="handleSearch" />
+    </div>
+
+    <!-- 🔹 Filters + Gallery ระนาบเดียวกัน -->
+    <div class="flex gap-6">
+      <!-- Filters -->
+      <div class="w-1/6 flex flex-col gap-4 mt-8 bg-gray-100 rounded py-[20px]">
+        <div class="text-xl font-semibold text-gray-700 mb-2 ml-[20px]">
+          Filter by:
+        </div>
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.BRAND)"
           :options="brand"
           label="Brands"
-          placeholder="Filter Brands"
+          placeholder="Select brands"
           :sessionKey="SESSION_KEYS.BRAND"
           valueField="name"
           displayField="name"
@@ -496,7 +518,7 @@ onBeforeUnmount(() => {
           :initialFilterValues="getSessionArray(SESSION_KEYS.STORAGE)"
           :options="STORAGE_OPTIONS"
           label="Storages"
-          placeholder="Filter Storages"
+          placeholder="Select StoragesGB"
           :sessionKey="SESSION_KEYS.STORAGE"
           valueField="name"
           displayField="name"
@@ -504,11 +526,12 @@ onBeforeUnmount(() => {
           @filterChanged="handleStorageFilter"
         />
 
+        <!-- Price Filter -->
         <Filter
           :initialFilterValues="getSessionArray(SESSION_KEYS.PRICE)"
           :options="priceOption"
           label="Price"
-          placeholder="Filter Price Range"
+          placeholder="Select Price Range"
           :sessionKey="SESSION_KEYS.PRICE"
           valueField="value"
           displayField="name"
@@ -517,37 +540,37 @@ onBeforeUnmount(() => {
           @filterChanged="handlePriceFilter"
         >
           <template #InputPrice>
-            <div class="px-4 py-3 border-t border-gray-100 space-y-3">
-              <div class="text-gray-800 font-semibold">Custom Price</div>
-
-              <div class="flex items-center gap-2">
-                <span>Min</span>
+            <div class="items-center px-4 py-3 border-t border-gray-100 gap-2">
+              <div class="mb-[7px] text-gray-800 font-semibold">
+                Custom Price
+              </div>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Min</span>
                 <input
                   type="number"
-                  class="border rounded px-2 py-1 flex-1"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
                   placeholder="Min"
                   v-model.number="min_price"
                 />
               </div>
-
-              <div class="flex items-center gap-2">
-                <span>Max</span>
+              <div class="flex mb-[8px]">
+                <span class="mx-1">Max</span>
                 <input
                   :disabled="min_price === null"
                   type="number"
-                  class="border rounded px-2 py-1 flex-1"
+                  class="border rounded px-2 py-1 flex-1 min-w-0"
                   placeholder="Max"
                   v-model.number="max_price"
                 />
               </div>
-
-              <p v-if="min_price > max_price && max_price != 0" class="text-red-500 text-sm">
-                * Min price must be less than max price
-              </p>
-
+              <div v-if="min_price > max_price && max_price != 0">
+                <p class="text-red-500 text-sm">
+                  * Min price must be least than max price
+                </p>
+              </div>
               <div class="flex justify-end">
                 <button
-                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap"
+                  class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 whitespace-nowrap block"
                   @click="applyCustomPrice"
                 >
                   Apply
@@ -557,7 +580,8 @@ onBeforeUnmount(() => {
           </template>
         </Filter>
 
-        <div class="flex justify-start">
+        <!-- Clear Button -->
+        <div class="flex justify-end mr-[25px]">
           <ClearButton
             :sessionKeys="[
               SESSION_KEYS.BRAND,
@@ -573,15 +597,23 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div class="flex-1 order-4 xl:order-none">
-        <SelectAllSaleItemGallery v-if="product?.content" :product="product.content" :imageUrl="imageUrl" />
+      <!-- Product Gallery -->
+      <div class="flex-1">
+        <SelectAllSaleItemGallery
+          v-if="product?.content"
+          :product="product.content"
+          :imageUrl="imageUrl"
+        />
       </div>
     </div>
 
+    <!-- 🔹 Pagination ด้านล่าง -->
     <div class="mt-4">
       <Pagination
         :initialTotalPages="totalPages"
-        :initialPage="getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1"
+        :initialPage="
+          getSessionValue(SESSION_KEYS.PAGE, DEFAULT_VALUES.page) + 1
+        "
         @pageChanged="handlePageChange"
       />
     </div>

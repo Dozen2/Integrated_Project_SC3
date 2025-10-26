@@ -188,10 +188,10 @@ const auth = useAuthStore();
         <div class="flex items-center mt-[40px]"></div>
 
         <span v-if="isEdit">
-          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Edit Brand' }]" />
+          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' },{ text: 'BrandManage', name: 'BrandManage' }, { text: 'Edit Brand' }]" />
         </span>
         <span v-else>
-          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Create Brand' }]" />
+          <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' },{ text: 'BrandManage', name: 'BrandManage' }, { text: 'Create Brand' }]" />
         </span>
       </div>
 
