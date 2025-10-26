@@ -50,7 +50,7 @@ const isLoading = ref(false);
 onMounted(async () => {
   isLoading.value = true;
   const role = await auth.getAuthData().authorities[auth.getAuthData().authorities.length - 1].role;
-  console.log("User role:", role);
+  // console.log("User role:", role);
   try {
     if (auth.accessToken) {
       const userId = auth.getAuthData().id;
@@ -80,7 +80,7 @@ const validateNickname = () => {
 };
 
 const validateFullname = () => {
-  console.log("Validating fullname:", userProfile.value.fullName);
+  // console.log("Validating fullname:", userProfile.value.fullName);
   const value = userProfile.value.fullName.trim();
   form.fullname.isValid = value.length >= 4 && value.length <= 40;
   updateIsFirstInput("fullname", value);
@@ -91,7 +91,7 @@ const updateIsFirstInput = (field, value) => {
 };
 
 const summitForm = () => {
-  console.log("Form submitted with data:", userProfile.value);
+  // console.log("Form submitted with data:", userProfile.value);
   isEditMode.value = false;
 };
 
@@ -128,7 +128,7 @@ const isDataChanged = computed(() => {
 
 const isFormValid = computed(() => {
   if (!isDataChanged.value) {
-    console.log("No data changed - cannot save");
+    // console.log("No data changed - cannot save");
     return false;
   }
   let changedFieldsValid = true;

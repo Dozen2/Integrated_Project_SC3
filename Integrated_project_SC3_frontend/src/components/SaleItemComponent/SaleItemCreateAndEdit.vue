@@ -85,13 +85,13 @@ onBeforeMount(async () => {
         saleItem.saleItemImage = [...data.saleItemImage];
         fileImageFirstResponse.length = 0; // clear array ก่อน
         fileImageFirstResponse.push(...data.saleItemImage);
-        console.log("saleItem.saleItemImage", saleItem.saleItemImage);
+  console.log("saleItem.saleItemImage", saleItem.saleItemImage);
         await organizeAndFetchImages();
       }
 
       Object.assign(originalSaleItem, JSON.parse(JSON.stringify(saleItem)));
 
-      console.log("Original Sale Item:", originalSaleItem);
+  // console.log("Original Sale Item:", originalSaleItem);
     } catch (error) {
       console.error("Error loading product:", error);
     }
@@ -251,9 +251,9 @@ const setSessionStorage = () => {
     const settings = JSON.parse(raw);
     settings.page = 0;
     sessionStorage.setItem("product-page-settings", JSON.stringify(settings));
-    console.log("✔️ page updated to 0 and saved back:", settings);
+  // console.log("✔️ page updated to 0 and saved back:", settings);
   } else {
-    console.log("⚠️ No settings found in sessionStorage.");
+  // console.log("⚠️ No settings found in sessionStorage.");
   }
 };
 
@@ -277,11 +277,11 @@ const handleFileChange = async (event) => {
   const MAX_IMAGES = 4;
   const MAX_FILENAME_LENGTH = 50;
 
-  console.log(
-    "Selected files:",
-    selectedFiles.map((f) => f.name)
-  );
-  console.log("Selected files all:", selectedFiles);
+  // console.log(
+  //   "Selected files:",
+  //   selectedFiles.map((f) => f.name)
+  // );
+  // console.log("Selected files all:", selectedFiles);
 
   // ตรวจสอบความยาวของชื่อไฟล์
   const longFilenames = selectedFiles.filter((file) => file.name.length > MAX_FILENAME_LENGTH);
@@ -327,7 +327,7 @@ const handleFileChange = async (event) => {
     alertStore.addToast(warningMessage, "Image upload limit exceeded.", "warning", 8000);
   }
 
-  console.log("filesToProcess: ", filesToProcess);
+  // console.log("filesToProcess: ", filesToProcess);
 
   const filesProcessed = [];
   for (const [index, file] of filesToProcess.entries()) {
@@ -340,8 +340,8 @@ const handleFileChange = async (event) => {
 
     const nextOrder = fileImageOrganize.value.length;
 
-    console.log("filesToProcess: ", filesToProcess[index].name);
-    console.log("filesToProcess: ", filesToProcess);
+  // console.log("filesToProcess: ", filesToProcess[index].name);
+  // console.log("filesToProcess: ", filesToProcess);
 
     fileImageOrganize.value.push({
       fileName: null, // ไฟล์ใหม่
@@ -368,7 +368,7 @@ const handleFileChange = async (event) => {
 };
 
 const validateFileSize = (selectedFiles) => {
-  console.log("Validating file sizes...", selectedFiles);
+  // console.log("Validating file sizes...", selectedFiles);
 
   const errors = [];
   let totalSize = 0;
@@ -408,24 +408,24 @@ const removeFile = (index) => {
     deletedImage.value.push(fileImageOrganize.value[index].fileName);
 
     let findIndexSaleItemImage = saleItem.saleItemImage.findIndex((item) => item.fileName === fileImageOrganize.value[index].fileName);
-    console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+  // console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
     if (findIndexSaleItemImage !== -1) {
       saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
     }
   } else {
     // ถ้าเป็นไฟล์ใหม่ที่ยังไม่มี fileName ให้ลบจาก saleItem.saleItemImage โดยใช้ orgFileName แทน
     let findIndexSaleItemImage = saleItem.saleItemImage.findIndex((item) => item.orgFileName === fileImageOrganize.value[index].orgFileName);
-    console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
+  // console.log("findIndexSaleItemImage:", findIndexSaleItemImage);
 
     if (findIndexSaleItemImage !== -1) {
       saleItem.saleItemImage.splice(findIndexSaleItemImage, 1);
     }
   }
 
-  console.log("fileImageOrganize.value[index].fileName: " + fileImageOrganize.value[index].fileName);
-  console.log("index: " + index);
+  // console.log("fileImageOrganize.value[index].fileName: " + fileImageOrganize.value[index].fileName);
+  // console.log("index: " + index);
 
-  console.log("deletedImage:", deletedImage.value);
+  // console.log("deletedImage:", deletedImage.value);
   fileImageOrganize.value.splice(index, 1);
   files.value.splice(index, 1);
 
@@ -439,9 +439,9 @@ const removeFile = (index) => {
     img.imageViewOrder = img.imageViewOrder - 1; // เริ่มนับจาก 1
   });
 
-  console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
-  console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
-  console.log("After removal, files array:", files.value);
+  // console.log("After removal, fileImageOrganize:", fileImageOrganize.value);
+  // console.log("After removal, saleItem.saleItemImage:", saleItem.saleItemImage);
+  // console.log("After removal, files array:", files.value);
 };
 
 const deletedImage = ref([]);
@@ -478,8 +478,8 @@ const moveUp = (index) => {
     positionImageChange();
 
     //log saleItem.saleItemImage after move
-    console.log("After move up saleItem.saleItemImage:", saleItem.saleItemImage);
-    console.log("After move up fileImageOrganize:", fileImageOrganize.value);
+  // console.log("After move up saleItem.saleItemImage:", saleItem.saleItemImage);
+  // console.log("After move up fileImageOrganize:", fileImageOrganize.value);
   }
 };
 

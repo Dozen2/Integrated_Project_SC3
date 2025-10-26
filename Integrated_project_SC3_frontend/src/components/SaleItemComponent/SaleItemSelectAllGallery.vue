@@ -30,13 +30,13 @@ onMounted(async () => {
 //===================== add to cart =======================
 const addItem = (item) => {
   const checkRole = localStorage.getItem("role");
-  console.log(checkRole);
+  // console.log(checkRole);
   if (!checkRole) {
     router.push({ name: "Login" });
   }
   const accSellerId = auth.getAuthData().sellerId;
-  console.log(accSellerId);
-  console.log(item.quantity);
+  // console.log(accSellerId);
+  // console.log(item.quantity);
   if (item.sellerId === accSellerId) {
     alertStore.addToast("Seller cant't add order that their owner", "Can't add your order", "error");
     return;
@@ -58,7 +58,7 @@ const addItem = (item) => {
     stock: item.quantity,
     storageGb: item.storageGb,
   };
-  console.log(payload);
+  // console.log(payload);
 
   const result = cartStore.addToCart(payload);
 

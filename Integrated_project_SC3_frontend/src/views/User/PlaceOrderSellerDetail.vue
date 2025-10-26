@@ -18,10 +18,10 @@ onMounted(async () => {
   orderParam.value = route.params.id;
 
   const updatedOrder = await setOrderStatus(orderParam.value);
-  console.log("Updated Order:", updatedOrder);
+  // console.log("Updated Order:", updatedOrder);
 
   orders.value = await getOrderById(orderParam.value);
-  console.log("orders.value: ", orders.value);
+  // console.log("orders.value: ", orders.value);
 
   totalPrice.value = orders.value.orderItems
     .map((item) => item.price * item.quantity)
