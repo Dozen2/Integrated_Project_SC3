@@ -123,21 +123,21 @@ const formatOrderStatus = (status) => {
         </div>
 
         <div class="space-y-2">
-          <p><strong class="itbms-nickname text-blue-700">Seller:</strong> {{ orders.sellerName || "unknow" }}</p>
+          <p><strong class="itbms-nickname text-blue-700">Seller:</strong> {{ orders?.sellerResponseOrder?.nickName || "unknown" }}</p>
           <p><strong class="itbms-payment-date text-blue-700">Payment Date:</strong> {{ formatDate(orders.paymentDate)
             || "-" }}</p>
-          <p>
-            <strong class="text-gray-500">Status:</strong>
-            <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
-              orders.orderStatus === 'new_complete'
-                ? 'bg-green-100 text-green-700'
-                : orders.orderStatus === 'new_cancelled'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-yellow-100 text-yellow-700'
-            ]">
-              {{ formatOrderStatus(orders.orderStatus) }}
-            </span>
-          </p>
+            <p>
+              <strong class="text-gray-500">Status:</strong>
+              <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
+                ['new_complete', 'complete'].includes(orders.orderStatus?.toLowerCase())
+                  ? 'bg-green-100 text-green-700'
+                  : ['new_cancelled', 'cancelled'].includes(orders.orderStatus?.toLowerCase())
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
+              ]">
+                {{ formatOrderStatus(orders.orderStatus) }}
+              </span>
+            </p>
           <p><strong class="itbms-order-note text-blue-700">Note:</strong> {{ orders.orderNote || "-" }}</p>
         </div>
       </div>

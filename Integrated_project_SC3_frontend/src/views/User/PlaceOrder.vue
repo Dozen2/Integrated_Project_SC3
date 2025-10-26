@@ -120,8 +120,18 @@ const activeTab = ref("new_complete"); // ค่าเริ่มต้นเ�
 // ✅ computed: แสดงเฉพาะ order ตามแท็บที่เลือก
 const filteredOrders = computed(() => {
   if (!orders.value.content) return [];
-  return orders.value.content.filter((order) => order.orderStatus === activeTab.value);
+
+  return orders.value.content.filter((order) => {
+    const status = order.orderStatus?.toLowerCase(); // แปลงเป็นตัวเล็กหมด
+    if (activeTab.value === "new_complete") {
+      return status === "new_complete" || status === "complete";
+    } else if (activeTab.value === "new_cancelled") {
+      return status === "new_cancelled" || status === "cancelled";
+    }
+    return true;
+  });
 });
+
 
 const formatOrderStatus = (status) => {
   switch (status) {
@@ -140,14 +150,11 @@ const formatOrderStatus = (status) => {
   </div>
 
   <div v-else class="font-sans max-w-7xl mx-auto min-h-screen p-8">
-    <Breadcrumb
-      class="mb-6"
-      :pathForBreadcrumb="[
-        { text: 'Home', name: 'Home' },
-        { text: 'SaleItem', name: 'Products' },
-        { text: 'PlaceOrder', name: 'PlaceOrder' },
-      ]"
-    />
+    <Breadcrumb class="mb-6" :pathForBreadcrumb="[
+      { text: 'Home', name: 'Home' },
+      { text: 'SaleItem', name: 'Products' },
+      { text: 'PlaceOrder', name: 'PlaceOrder' },
+    ]" />
 
     <div class="flex items-center">
       <h1 class="text-5xl text-blue-500 flex mb-5">
@@ -160,48 +167,37 @@ const formatOrderStatus = (status) => {
 
     <!-- ปุ่มแท็บ -->
     <div class="flex justify-center gap-6 mb-8">
-      <button
-        @click="activeTab = 'new_complete'"
-        :class="[
-          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-          activeTab === 'new_complete'
-            ? 'bg-blue-500 text-white shadow-md'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        ]"
-      >
+      <button @click="activeTab = 'new_complete'" :class="[
+        'px-6 py-2 rounded-full font-semibold transition-all duration-200',
+        activeTab === 'new_complete'
+          ? 'bg-blue-500 text-white shadow-md'
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      ]">
         COMPLETE
       </button>
 
-      <button
-        @click="activeTab = 'new_cancelled'"
-        :class="[
-          'px-6 py-2 rounded-full font-semibold transition-all duration-200',
-          activeTab === 'new_cancelled'
-            ? 'bg-blue-500 text-white shadow-md'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        ]"
-      >
+      <button @click="activeTab = 'new_cancelled'" :class="[
+        'px-6 py-2 rounded-full font-semibold transition-all duration-200',
+        activeTab === 'new_cancelled'
+          ? 'bg-blue-500 text-white shadow-md'
+          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+      ]">
         CANCELLED
       </button>
     </div>
 
     <!-- ไม่มี order -->
-    <div
-      v-if="filteredOrders.length === 0"
-      class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-20%]"
-    >
+    <div v-if="filteredOrders.length === 0"
+      class="flex flex-col items-center justify-center min-h-screen text-gray-500 gap-7 mt-[-20%]">
       <ShoppingCart size="140" color="#3B82F6" stroke-width="1.3" />
       <p class="text-4xl text-blue-500">You haven’t placed any orders yet.</p>
     </div>
 
     <!-- แสดงรายการ order -->
     <div v-else>
-      <RouterLink
-        v-for="(order, index) in filteredOrders"
-        :key="order.orderNo"
+      <RouterLink v-for="(order, index) in filteredOrders" :key="order.orderNo"
         :to="{ name: 'PlaceOrderId', params: { id: order.id } }"
-        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer"
-      >
+        class="itbms-row block max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 mb-6 border border-blue-100 transition transform hover:scale-[1.02] hover:shadow-xl cursor-pointer">
         <!-- ส่วนข้อมูลหลัก -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm mb-4">
           <div>
@@ -216,19 +212,17 @@ const formatOrderStatus = (status) => {
             </p>
             <p>
               <strong class="text-gray-500">Status:</strong>
-              <span
-                class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs"
-                :class="[
-                  order.orderStatus === 'new_complete'
-                    ? 'bg-green-100 text-green-700'
-                    : order.orderStatus === 'new_cancelled'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                ]"
-              >
+              <span class="itbms-order-status font-semibold ml-1 px-2 py-1 rounded-md text-xs" :class="[
+                ['new_complete', 'complete'].includes(order.orderStatus?.toLowerCase())
+                  ? 'bg-green-100 text-green-700'
+                  : ['new_cancelled', 'cancelled'].includes(order.orderStatus?.toLowerCase())
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-yellow-100 text-yellow-700'
+              ]">
                 {{ formatOrderStatus(order.orderStatus) }}
               </span>
             </p>
+
           </div>
 
           <div>
@@ -268,16 +262,10 @@ const formatOrderStatus = (status) => {
 
         <!-- สินค้าในคำสั่งซื้อ -->
         <div class="space-y-4">
-          <div
-            v-for="(item, i) in order.orderItems"
-            :key="item.id"
-            class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none"
-          >
-            <img
-              :src="imageMap[item.no]"
-              :alt="item.productName"
-              class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
-            />
+          <div v-for="(item, i) in order.orderItems" :key="item.id"
+            class="itbms-item-row flex items-center space-x-4 text-sm border-b pb-4 last:border-none">
+            <img :src="imageMap[item.no]" :alt="item.productName"
+              class="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm" />
             <div class="flex-grow">
               <p class="font-semibold text-gray-800">{{ item.productName }}</p>
               <p class="text-gray-500">Qty {{ item.quantity }}</p>
@@ -291,22 +279,12 @@ const formatOrderStatus = (status) => {
 
       <!-- pagination -->
       <div class="flex gap-4 justify-center pb-10">
-        <PaginationSeller
-          v-model="pagination.page"
-          :total-page="pagination.totalPages"
-          storage-key="order_pagination"
-          @update:modelValue="fetchselect"
-        />
+        <PaginationSeller v-model="pagination.page" :total-page="pagination.totalPages" storage-key="order_pagination"
+          @update:modelValue="fetchselect" />
         <div v-show="pagination.totalPages > 1">
-          <SizeAndSortSeller
-            v-model:modelSize="pagination.size"
-            v-model:modelSort="pagination.sort"
-            v-model:modelPage="pagination.page"
-            storage-key-size="order_size"
-            storage-key-sort="order_sort"
-            reset-storage="order_pagination"
-            @update:modelPage="handlePageChange"
-          />
+          <SizeAndSortSeller v-model:modelSize="pagination.size" v-model:modelSort="pagination.sort"
+            v-model:modelPage="pagination.page" storage-key-size="order_size" storage-key-sort="order_sort"
+            reset-storage="order_pagination" @update:modelPage="handlePageChange" />
         </div>
       </div>
     </div>
