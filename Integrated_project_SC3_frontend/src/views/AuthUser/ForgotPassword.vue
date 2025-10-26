@@ -53,7 +53,7 @@ const summitForm = async () => {
     route.push({ name: "CheckEmail" });
   } catch (err) {
     loading.value = false;
-    alertStore.addToast(err.message, "Email Sent Error", "error");
+    alertStore.addToast("Your email address is not registered or has not been verified.", "Email Sent Error", "error");
   }
 };
 </script>
@@ -82,7 +82,7 @@ const summitForm = async () => {
             type="submit"
             :disabled="loading || !isFormValid"
             :class="[
-              'px-6 py-2 rounded-lg font-medium shadow-md transition-all duration-200',
+              'px-6 py-2 rounded-lg font-medium shadow-md transition-all duration-200 cursor-pointer',
               loading || !isFormValid ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700',
             ]"
           >

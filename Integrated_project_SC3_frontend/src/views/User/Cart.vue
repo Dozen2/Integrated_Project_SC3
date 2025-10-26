@@ -6,6 +6,8 @@ import { createOrder, fetchSellers, getImageByImageName } from "@/libs/callAPI/a
 import { useAlertStore } from "@/stores/alertStore";
 import { nullCatching, unitPrice } from "@/libs/utils.js";
 import ConfirmDelete from "@/components/Common/ConfirmDelete.vue";
+import { Store } from "lucide-vue-next";
+import Breadcrumb from "@/components/Common/Breadcrumb.vue";
 
 const imagesMap = ref({});
 const address = ref([]);
@@ -22,12 +24,10 @@ const alertStore = useAlertStore();
 const placeholder = "https://cdn-icons-png.freepik.com/512/9280/9280762.png";
 
 // -------------------- reactive --------------------
-// const sellerMap = ref({});
-
-// ทำ computed เพื่อให้ template reactive สวย ๆ
+// computed properties for reactive template binding
 const cartItems = computed(() => cartStore.cart);
 
-// -------------------- model comfrim ------------------------
+// -------------------- modal confirm ------------------------
 const openConfirmModal = (message, onConfirm) => {
   confirmMessage.value = message;
   confirmAction = onConfirm;
@@ -43,28 +43,37 @@ const confirmNo = () => {
   showConfirmModal.value = false;
 };
 
-// -------------------- ฟังก์ชันเพิ่ม / ลดสินค้า --------------------
+// -------------------- Increase / decrease item functions --------------------
 const increment = (item) => {
   cartStore.updateQuantity(item.id, item.sellerId, item.quantity + 1);
 };
 
 const decrement = (item) => {
   if (item.quantity - 1 <= 0) {
-    openConfirmModal(`คุณต้องการลบ "${getDescription(item)}" ออกจากตะกร้าหรือไม่?`, () => {
+    openConfirmModal(`Do you want to remove "${getDescription(item)}" from your cart?`, () => {
       cartStore.removeFromCart(item.id, item.sellerId);
-      alertStore.addToast("ลบสินค้าที่เลือกเรียบร้อยแล้ว", "Delete Selected", "success");
+      alertStore.addToast("Item removed successfully", "Delete Selected", "success");
     });
   } else {
     cartStore.updateQuantity(item.id, item.sellerId, item.quantity - 1);
   }
 };
 
+// Function for the new 'x' remove button, adapted from reference
+const removeFromCartConfirmed = (item) => {
+  openConfirmModal(`Do you want to remove "${getDescription(item)}" from your cart?`, () => {
+    cartStore.removeFromCart(item.id, item.sellerId);
+    alertStore.addToast("Item removed successfully", "Delete Item", "success");
+  });
+};
+
 const deleteselected = () => {
   if (selectedItems.value.length === 0) {
-    alertStore.addToast("กรุณาเลือกสินค้าที่ต้องการลบ", "Delete Selected", "warning");
+    alertStore.addToast("Please select items to delete", "Delete Selected", "warning");
+    return; // prevent opening confirm when nothing selected
   }
 
-  openConfirmModal("คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากตะกร้าหรือไม่?", () => {
+  openConfirmModal("Do you want to remove all selected items from your cart?", () => {
     selectedItems.value.forEach((key) => {
       const [id, sellerId] = key.split("-");
       cartStore.removeFromCart(id, sellerId);
@@ -72,7 +81,7 @@ const deleteselected = () => {
 
     selectedItems.value = [];
     selectedSellers.value = [];
-    alertStore.addToast("ลบสินค้าที่เลือกเรียบร้อยแล้ว", "Delete Selected", "success");
+    alertStore.addToast("Selected items removed successfully", "Delete Selected", "success");
   });
 };
 
@@ -91,7 +100,7 @@ const toggleSelectAll = () => {
     selectedItems.value = cartItems.value.map((it) => it.id + "-" + it.sellerId);
   }
 };
-// ✅ รวมเฉพาะสินค้าที่ถูกเลือก
+// ✅ Summary for selected items
 const selectedSummary = computed(() => {
   let totalQty = 0;
   let totalPrice = 0;
@@ -112,11 +121,11 @@ const toggleSeller = (sellerId) => {
   const allSelected = items.every((it) => selectedItems.value.includes(it.id + "-" + it.sellerId));
 
   if (allSelected) {
-    // ยกเลิกเลือกทั้งหมดของ seller นี้
+    // Unselect all items of this seller
     selectedItems.value = selectedItems.value.filter((key) => !items.some((it) => key === it.id + "-" + it.sellerId));
     selectedSellers.value = selectedSellers.value.filter((id) => id !== sellerId);
   } else {
-    // เลือกทั้งหมดของ seller นี้
+    // Select all items of this seller
     for (const it of items) {
       const key = it.id + "-" + it.sellerId;
       if (!selectedItems.value.includes(key)) {
@@ -152,11 +161,6 @@ const isSellerSelected = (sellerId) => {
 };
 // -------------------- mock seller --------------------
 const sellerMap = ref({});
-// const sellerMap = ref({
-//      1: "Somsuan",
-//      2: "Somsuk",
-//      3: "Somsak"
-// });
 
 const groupedCart = computed(() => {
   const groups = {};
@@ -183,9 +187,8 @@ watch(
     if (newCart.length === 0) {
       selectedItems.value = [];
       selectedSellers.value = [];
-      // address.value = ""
     } else {
-      // ลบ item ที่ไม่อยู่ใน cart ออก
+      // remove items that are no longer in cart
       selectedItems.value = selectedItems.value.filter((key) => newCart.some((item) => key === item.id + "-" + item.sellerId));
     }
   },
@@ -194,79 +197,65 @@ watch(
 
 // -------------------- order --------------------
 const PlaceOrder = async () => {
-     // if (selectedItems.value.length === 0) {
-     //      alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
-     //      return;
-     // }
-     const buyerId = auth.getAuthData().id
-     console.log(buyerId);
+  const buyerId = auth.getAuthData().id;
+  console.log(buyerId);
 
+  // find sellerIds of selected items
+  const sellerIds = [...new Set(selectedItems.value.map((key) => key.split("-")[1]))];
 
-     // หา sellerId ของสินค้าที่ถูกเลือก
-     const sellerIds = [...new Set(
-          selectedItems.value.map(key => key.split("-")[1])
-     )];
+  const orders = [];
 
-     const orders = [];
+  for (const sellerId of sellerIds) {
+    const itemsOfSeller = groupedCart.value[sellerId].filter((item) => selectedItems.value.includes(item.id + "-" + item.sellerId));
 
-     for (const sellerId of sellerIds) {
-          const itemsOfSeller = groupedCart.value[sellerId].filter(item =>
-               selectedItems.value.includes(item.id + "-" + item.sellerId)
-          );
+    if (itemsOfSeller.length === 0) continue;
 
-          if (itemsOfSeller.length === 0) continue;
+    const orderItems = itemsOfSeller.map((item, idx) => ({
+      no: idx + 1,
+      saleItemId: item.id,
+      price: item.price,
+      quantity: item.quantity,
+      description: getDescription(item),
+      mainImageFileName: item.images?.length ? item.images[0].fileName : null,
+    }));
 
-          const orderItems = itemsOfSeller.map((item, idx) => ({
-               no: idx + 1,
-               saleItemId: item.id,
-               price: item.price,
-               quantity: item.quantity,
-               description: getDescription(item),
-               mainImageFileName: item.images?.length ? item.images[0].fileName : null
-          }));
+    const order = {
+      buyerId: buyerId,
+      sellerId: sellerId,
+      orderDate: new Date().toISOString(),
+      shippingAddress: selectedAddress.value,
+      orderNote: note.value,
+      orderItems,
+      orderStatus: "new_complete",
+    };
 
-          const order = {
-               buyerId: buyerId,
-               sellerId: sellerId,
-               orderDate: new Date().toISOString(),
-               shippingAddress: selectedAddress.value,
-               orderNote: note.value,
-               orderItems,
-               orderStatus: "new_complete"
-          };
+    orders.push(order);
+  }
 
-          orders.push(order);
-     }
+  console.log("📦 Orders Created:", orders);
+  console.log(selectedItems.value);
+  console.log(selectedSellers.value);
 
-     console.log("📦 Orders Created:", orders);
-     console.log(selectedItems.value);
-     console.log(selectedSellers.value);
-
-
-
-     const result = await createOrder(orders);
-     if (result) {
-          // alert("สั่งซื้อเรียบร้อยแล้ว!");
-          alertStore.addToast("สั่งซื้อเรียบร้อยแล้ว", "PlaceOrder", "success");
-          // cartStore.clearCart(); // ล้างตะกร้า
-          selectedItems.value.forEach(key => {
-               const [id, sellerId] = key.split("-")
-               cartStore.removeFromCart(id, sellerId)
-          })
-          selectedItems.value = [];
-          selectedSellers.value = [];
-          // address.value = ""
-     }
+  const result = await createOrder(orders);
+  if (result) {
+    alertStore.addToast("Order placed successfully", "PlaceOrder", "success");
+    selectedItems.value.forEach((key) => {
+      const [id, sellerId] = key.split("-");
+      cartStore.removeFromCart(id, sellerId);
+    });
+    selectedItems.value = [];
+    selectedSellers.value = [];
+  }
 };
- 
-//-------------------- addess -----------------------
+
+//-------------------- address -----------------------
 const getAddressKey = (userId) => `address_${userId}`;
 
 const isLoadingAddress = ref(false);
 
 watch(selectedAddress, (val) => {
   console.log("Selected address:", val);
-  // บันทึก selectedAddress ที่เลือกล่าสุด
+  // save last selectedAddress
   const user = auth.getAuthData();
   if (user && user.id && val) {
     localStorage.setItem(`selectedAddress_${user.id}`, val);
@@ -282,21 +271,20 @@ watch(
   { deep: true }
 );
 
-// เพิ่ม address ใหม่
+// add new address
 const addAddress = () => {
   const trimmed = newAddress.value.trim();
   if (trimmed === "") return;
 
-  // ถ้ายังไม่มี address นี้ใน list
+  // if address not already in the list
   if (!address.value.includes(trimmed)) {
     address.value.push(trimmed);
-    // saveAddresses();
   }
   newAddress.value = "";
   selectedAddress.value = trimmed; // auto select
 };
 
-// บันทึก address ลง localStorage
+// save addresses to localStorage
 const saveAddresses = () => {
   const user = auth.getAuthData();
   if (user && user.id) {
@@ -308,7 +296,7 @@ const saveAddresses = () => {
 onMounted(async () => {
   cartStore.loadCart();
 
-  //addess in localstroage
+  //address in localstorage
   const user = auth.getAuthData();
   console.log(user.id);
 
@@ -347,7 +335,7 @@ onMounted(async () => {
       }
     }
   } catch (e) {
-    console.error("Somethig wrong when loading images:", e);
+    console.error("Something wrong when loading images:", e);
   }
 
   console.log(imagesMap.value);
@@ -360,158 +348,201 @@ onMounted(async () => {
     if (savedAddress) {
       address.value = JSON.parse(savedAddress);
 
-      // โหลด selectedAddress ที่บันทึกไว้ล่าสุด
+      // load last selected address
       const lastSelected = localStorage.getItem(`selectedAddress_${user.id}`);
 
       if (lastSelected && address.value.includes(lastSelected)) {
-        // ถ้ามีและยังอยู่ใน array → ใช้ตัวนั้น
+        // if exists and still in array -> use it
         selectedAddress.value = lastSelected;
       } else {
-        // ถ้าไม่มีหรือถูกลบไปแล้ว → ใช้ตัวแรก
+        // if not exists or removed -> use first
         selectedAddress.value = address.value[0] || "";
       }
     }
     isLoadingAddress.value = false;
   }
 });
+
+const toggleItemSelection = (item) => {
+  const key = item.id + "-" + item.sellerId;
+  const index = selectedItems.value.indexOf(key);
+  if (index > -1) {
+    selectedItems.value.splice(index, 1); // Deselect
+  } else {
+    selectedItems.value.push(key); // Select
+  }
+};
 </script>
 
 <template>
   <div class="p-6 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen">
-    <h1 class="text-3xl font-extrabold mb-8 text-blue-700 drop-shadow-md">Shopping Cart</h1>
+    <Breadcrumb :class="'mb-6'" :pathForBreadcrumb="[{ text: 'Home', name: 'Home' }, { text: 'SaleItem', name: 'Products' }, { text: 'Cart' }]" />
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">YOUR CART</h1>
 
-    <!-- Layout 2 คอลัมน์ -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- ✅ ฝั่งซ้าย: สินค้า -->
       <div class="lg:col-span-2 space-y-8">
-        <!-- ถ้าไม่มีสินค้า -->
-        <div v-if="cartItems.length === 0" class="text-gray-400 text-center py-16 border-2 border-dashed rounded-2xl bg-white/50 backdrop-blur-sm shadow-inner">ไม่มีสินค้าในตะกร้า</div>
+        <div v-if="cartItems.length === 0" class="flex flex-col items-center justify-center text-gray-500 text-center py-20 border-1 rounded-2xl bg-white/60">
+          <Store :size="64" color="#454545" :stroke-width="1.5" class="mb-4" />
 
-        <ConfirmDelete v-if="showConfirmModal" :show="showConfirmModal" :message="confirmMessage" @confirm="confirmYes" @cancel="confirmNo" />
+          <h2 class="text-2xl font-semibold text-gray-700 mb-2">Your Cart is Currently Empty</h2>
+          <p class="mb-6">Start adding some items to see them here.</p>
 
-        <!-- รายการสินค้า -->
+          <router-link to="/sale-items" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300"> Continue Shopping </router-link>
+        </div>
         <div v-else>
-          <!-- ปุ่มเลือกทั้งหมด -->
-          <div class="flex items-center gap-2 mb-6 text-blue-700">
-            <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="itbms-select-all w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
-            <label class="font-semibold text-lg">Select All</label>
-          </div>
+          <ConfirmDelete v-if="showConfirmModal" :show="showConfirmModal" :message="confirmMessage" @confirm="confirmYes" @cancel="confirmNo" />
 
-          <button
-            @click="deleteselected"
-            :disabled="selectedItems.length === 0"
-            class="px-4 py-2 rounded-lg shadow-md transition text-white font-medium bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
-          >
-            🗑️ Delete Selected
-          </button>
-
-          <!-- Seller Group -->
-          <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="itbms-row mb-10">
-            <!-- Checkbox Seller -->
-            <div class="flex items-center gap-2 mb-4">
-              <input
-                type="checkbox"
-                :checked="isSellerSelected(sellerId)"
-                @change="toggleSeller(sellerId)"
-                class="itbms-select-nickname w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400"
-              />
-              <label class="itbms-nickname font-bold text-xl text-blue-800 drop-shadow-sm">
-                {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}
-              </label>
+          <div v-else>
+            <div class="bg-white p-4 rounded-lg shadow-md border border-gray-100 mb-4 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-3 cursor-pointer" @click="toggleSelectAll">
+                <input
+                  type="checkbox"
+                  :checked="isAllSelected"
+                  @change="toggleSelectAll"
+                  @click.stop
+                  class="itbms-select-all w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400"
+                />
+                <label class="font-semibold text-lg text-gray-700">Select All</label>
+              </div>
+              <button
+                @click="deleteselected"
+                :disabled="selectedItems.length === 0"
+                class="px-4 py-2 rounded-lg shadow-sm transition text-black font-medium border hover:bg-blue-600 hover:text-white disabled:bg-gray-300 disabled:border-0 disabled:text-gray-500 disabled:cursor-not-allowed text-sm cursor-pointer"
+              >
+                Delete Selected
+              </button>
             </div>
 
-            <!-- รายการสินค้า -->
-            <div
-              v-for="item in items"
-              :key="item.id + '-' + item.sellerId"
-              class="itbms-item-row group flex items-center justify-between bg-white/80 backdrop-blur-md border border-blue-100 p-5 rounded-2xl mb-5 shadow-md hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out"
-            >
-              <!-- ✅ Product Info -->
-              <div class="flex items-center gap-4 flex-1">
-                <input type="checkbox" :value="item.id + '-' + item.sellerId" v-model="selectedItems" class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400" />
-
-                <div v-if="item.images && item.images.length > 0" class="relative flex-shrink-0 overflow-hidden rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                  <img :src="imagesMap[item.id]?.[0] || placeholder" alt="Product Image" class="w-20 h-20 object-cover rounded-xl" />
-                </div>
-
-                <div>
-                  <p class="itbms-item-description font-semibold text-gray-900 text-lg group-hover:text-blue-700 transition">
-                    {{ getDescription(item) }}
-                  </p>
-                  <p class="text-sm text-gray-500">฿{{ unitPrice(item.price) }}</p>
-                </div>
+            <div v-for="(items, sellerId) in groupedCart" :key="sellerId" class="mb-6 bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
+              <!-- Seller Header -->
+              <div class="flex items-center gap-3 p-4 bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100 transition-all" @click="toggleSeller(sellerId)">
+                <input
+                  type="checkbox"
+                  :checked="isSellerSelected(sellerId)"
+                  @change="toggleSeller(sellerId)"
+                  @click.stop
+                  class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400"
+                />
+                <label class="font-semibold text-gray-800 tracking-tight pointer-events-none">
+                  {{ sellerMap[Number(sellerId)] || "Unknown Seller" }}
+                </label>
               </div>
 
-              <!-- ✅ Quantity -->
-              <div class="flex items-center gap-3">
-                <button
-                  @click="decrement(item)"
-                  class="itbms-dec-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-300 text-blue-600 font-bold hover:bg-blue-100 hover:scale-110 transition"
-                >
-                  -
-                </button>
-
-                <span class="itbms-item-quantity w-6 text-center font-medium">{{ item.quantity }}</span>
-
-                <button
-                  @click="increment(item)"
-                  class="itbms-inc-qty-button w-8 h-8 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold hover:bg-blue-600 hover:scale-110 transition"
-                >
-                  +
-                </button>
+              <!-- Column Headers -->
+              <div class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider px-5 py-3 bg-white/60 border-b border-gray-100">
+                <div class="col-span-5">Product</div>
+                <div class="col-span-2 text-right">Price</div>
+                <div class="col-span-3 text-center">Quantity</div>
+                <div class="col-span-2 text-right">Total</div>
               </div>
 
-              <!-- ✅ Price -->
-              <div class="min-w-[120px] text-right">
-                <span class="itbms-item-total-price inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 font-bold px-4 py-2 rounded-xl shadow-sm">
-                  ฿{{ unitPrice(item.price * item.quantity) }}
-                </span>
+              <!-- Items -->
+              <div
+                v-for="item in items"
+                :key="item.id + '-' + item.sellerId"
+                class="grid grid-cols-12 gap-4 items-center px-5 py-4 border-b border-gray-100 last:border-none hover:bg-gray-50 transition-colors cursor-pointer"
+                @click="toggleItemSelection(item)"
+              >
+                <!-- Product Info -->
+                <div class="col-span-5 flex items-center gap-4">
+                  <input
+                    type="checkbox"
+                    :value="item.id + '-' + item.sellerId"
+                    v-model="selectedItems"
+                    @click.stop
+                    class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-400 flex-shrink-0"
+                  />
+
+                  <div v-if="item.images && item.images.length > 0" class="flex-shrink-0 pointer-events-none">
+                    <img :src="imagesMap[item.id]?.[0] || placeholder" alt="Product Image" class="w-14 h-14 object-cover rounded-lg border border-gray-200" />
+                  </div>
+
+                  <div class="truncate pointer-events-none">
+                    <p class="text-gray-800 font-medium text-sm leading-snug truncate">
+                      {{ getDescription(item) }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="col-span-2 text-right text-gray-600 text-sm pointer-events-none">฿{{ unitPrice(item.price) }}</div>
+
+                <!-- Quantity Controls -->
+                <div class="col-span-3 flex items-center justify-center gap-2">
+                  <button @click.stop="decrement(item)" class="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 text-gray-600 font-bold hover:bg-gray-100 transition">
+                    –
+                  </button>
+
+                  <span class="w-10 text-center text-gray-800 text-sm font-medium select-none pointer-events-none">
+                    {{ item.quantity }}
+                  </span>
+
+                  <button @click.stop="increment(item)" class="w-8 h-8 flex items-center justify-center rounded-md border border-gray-300 text-gray-600 font-bold hover:bg-gray-100 transition">
+                    +
+                  </button>
+                </div>
+
+                <!-- Total & Remove -->
+                <div class="col-span-2 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <span class="font-semibold text-gray-800 text-sm pointer-events-none"> ฿{{ unitPrice(item.price * item.quantity) }} </span>
+                    <button @click.stop="removeFromCartConfirmed(item)" class="text-gray-400 hover:text-red-500 transition text-xl leading-none" title="Remove item">&times;</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ✅ ฝั่งขวา: Cart Summary -->
-      <div class="bg-white border border-blue-100 rounded-xl p-6 shadow-xl h-fit sticky top-6">
-        <h1 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Cart Summary</h1>
+      <!-- ========================================== Order Summary ========================================== -->
+      <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-xl h-fit sticky top-6">
+        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-3">ORDER SUMMARY</h2>
 
-        <!-- ที่อยู่ -->
         <div class="mb-4">
-          <!-- Dropdown เลือก address -->
-          <select v-model="selectedAddress" class="w-full border rounded-md p-2 mb-2 focus:ring focus:ring-blue-200 focus:border-blue-400">
-            <option disabled value="">-- เลือกที่อยู่ --</option>
+          <label class="block text-sm font-medium text-gray-600 mb-1">
+            Shipping Address
+            <span v-if="!selectedAddress" class="text-red-500">*</span>
+          </label>
+          <select v-model="selectedAddress" class="w-full border rounded-md p-2 mb-2 focus:ring focus:ring-blue-200 focus:border-blue-400 bg-gray-50">
+            <option disabled value="">-- Select address --</option>
             <option v-for="(addr, index) in address" :key="index" :value="addr">
               {{ addr }}
             </option>
           </select>
-
-          <!-- Input เพิ่ม address ใหม่ -->
-          <input type="text" v-model="newAddress" placeholder="เพิ่มที่อยู่ใหม่" class="w-full border rounded-md p-2 mb-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
-
-          <!-- ปุ่มเพิ่ม address -->
-          <button @click="addAddress" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">เพิ่มที่อยู่</button>
+          <div class="flex gap-2">
+            <input type="text" v-model="newAddress" placeholder="Add new address" class="w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+            <button @click="addAddress" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add</button>
+          </div>
         </div>
 
-        <!-- Note -->
         <div class="mb-4">
           <label class="block text-sm font-medium text-gray-600 mb-1">Note</label>
-          <input type="text" v-model="note" placeholder="หมายเหตุ" class="itbms-order-note w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
+          <input type="text" v-model="note" placeholder="Add a note" class="itbms-order-note w-full border rounded-md p-2 focus:ring focus:ring-blue-200 focus:border-blue-400" />
         </div>
 
-        <!-- Summary -->
         <div class="border-t pt-4 text-gray-700 space-y-2">
-          <p>
-            Total items: <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty }}</span> ชิ้น
+          <p class="flex justify-between">
+            <span>Total items:</span>
+            <span class="itbms-total-order-items font-medium">{{ selectedSummary.totalQty }} items</span>
           </p>
 
-          <p class="itbms-total-total-price font-bold text-xl text-blue-700">
-            Total price:
-            {{ unitPrice(selectedSummary.totalPrice) }}
+          <p class="itbms-total-total-price flex justify-between font-medium text-lg">
+            <span>Cart subtotal:</span>
+            <span>฿{{ unitPrice(selectedSummary.totalPrice) }}</span>
+          </p>
+
+          <p class="flex justify-between text-sm text-gray-500">
+            <span>Shipping & Handling:</span>
+            <span>Calculated at checkout</span>
+          </p>
+
+          <p class="font-bold text-2xl text-blue-700 pt-3 border-t mt-3 flex justify-between">
+            <span>GRAND TOTAL:</span>
+            <span>฿{{ unitPrice(selectedSummary.totalPrice) }}</span>
           </p>
         </div>
 
-        <!-- ปุ่มสั่งซื้อ -->
         <div class="mt-6">
           <button
             @click="PlaceOrder()"

@@ -155,7 +155,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex items-center gap-4">
+  <div class="flex items-center gap-4 justify-end">
     <select
       id="size"
       v-model="size"
