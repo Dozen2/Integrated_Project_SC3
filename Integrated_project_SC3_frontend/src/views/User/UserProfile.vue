@@ -12,6 +12,11 @@ const route = useRouter();
 const auth = useAuthStore();
 const toast = useAlertStore();
 
+const logOut = async () => {
+  await auth.logout();
+  router.push({ name: 'Products' });
+};
+
 const userProfile = ref({
   email: "",
   fullName: "",
@@ -45,7 +50,7 @@ const isLoading = ref(false);
 onMounted(async () => {
   isLoading.value = true;
   const role = await auth.getAuthData().authorities[auth.getAuthData().authorities.length - 1].role;
-  console.log("User role:", role);
+  // console.log("User role:", role);
   try {
     if (auth.accessToken) {
       const userId = auth.getAuthData().id;
@@ -75,7 +80,7 @@ const validateNickname = () => {
 };
 
 const validateFullname = () => {
-  console.log("Validating fullname:", userProfile.value.fullName);
+  // console.log("Validating fullname:", userProfile.value.fullName);
   const value = userProfile.value.fullName.trim();
   form.fullname.isValid = value.length >= 4 && value.length <= 40;
   updateIsFirstInput("fullname", value);
@@ -86,7 +91,7 @@ const updateIsFirstInput = (field, value) => {
 };
 
 const summitForm = () => {
-  console.log("Form submitted with data:", userProfile.value);
+  // console.log("Form submitted with data:", userProfile.value);
   isEditMode.value = false;
 };
 
@@ -123,7 +128,7 @@ const isDataChanged = computed(() => {
 
 const isFormValid = computed(() => {
   if (!isDataChanged.value) {
-    console.log("No data changed - cannot save");
+    // console.log("No data changed - cannot save");
     return false;
   }
   let changedFieldsValid = true;
@@ -211,7 +216,7 @@ const changeToViewMode = () => {
             <button class="w-full text-left py-2 px-4 rounded-lg 
                      bg-blue-500 text-white font-semibold 
                      hover:bg-blue-600 transition-colors duration-200 
-                     flex items-center justify-center gap-2">
+                     flex items-center justify-center gap-2 cursor-pointer mb-3">
               Change Password
             </button>
           </RouterLink>
@@ -220,7 +225,7 @@ const changeToViewMode = () => {
                    bg-gray-100 text-gray-700 font-medium 
                    border border-gray-200 
                    hover:bg-red-50 hover:text-red-600 transition-colors duration-200
-                   flex items-center justify-center gap-2">
+                   flex items-center justify-center gap-2 cursor-pointer">
             Log Out
           </button>
         </div>

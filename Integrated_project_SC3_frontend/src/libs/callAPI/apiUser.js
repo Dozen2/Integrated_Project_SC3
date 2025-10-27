@@ -6,8 +6,8 @@ const VITE_ROOT_API_URL = import.meta.env.VITE_ROOT_API_URL;
 async function getAllOrderByUserId(size = 10, page = 0) {
   const accessToken = localStorage.getItem("accessToken");
   const decoded = jwtDecode(accessToken);
-  console.log("decoded: ", decoded);
-  console.log("decoded.id: ", decoded.id);
+  // console.log("decoded: ", decoded);
+  // console.log("decoded.id: ", decoded.id);
   if (!accessToken) throw new Error("No access token");
 
   const params = new URLSearchParams();
@@ -26,10 +26,10 @@ async function getAllOrderByUserId(size = 10, page = 0) {
 
 
 async function getOrderById(id) {
-  console.log("id eiei: " ,id);
+  // console.log("id eiei: " ,id);
   
   const accessToken = localStorage.getItem("accessToken");
-  console.log("accessToken: ",accessToken);
+  // console.log("accessToken: ",accessToken);
   
   if (!accessToken) throw new Error("No access token");
 
@@ -48,8 +48,8 @@ async function getOrderById(id) {
 async function getSellerOrderBySellerId(size = 10, page = 0) {
   const accessToken = localStorage.getItem("accessToken");
   const decoded = jwtDecode(accessToken);
-  console.log("decoded: ", decoded);
-  console.log("decoded.id: ", decoded.id);
+  // console.log("decoded: ", decoded);
+  // console.log("decoded.id: ", decoded.id);
   if (!accessToken) throw new Error("No access token");
 
    const params = new URLSearchParams();

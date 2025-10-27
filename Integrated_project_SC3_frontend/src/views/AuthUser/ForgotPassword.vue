@@ -46,8 +46,8 @@ const summitForm = async () => {
   try {
     loading.value = true;
     const res = await sendResetPasswordEmail(email.value);
-    loading.value = false;
-    console.log("✅ Register success:", res);
+  loading.value = false;
+  // console.log("✅ Register success:", res);
     alertStore.addToast("Please check your email inbox to verify your password reset request.", "Email Sent Successfully", "success");
 
     route.push({ name: "CheckEmail" });

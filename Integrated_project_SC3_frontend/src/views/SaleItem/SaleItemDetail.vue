@@ -47,17 +47,17 @@ onMounted(async () => {
     const data = await getSaleItemByIdV2(route.params.id);
     if (data == undefined) {
       product.value = "404_not_found";
-      console.log("product.value: " + product.value);
-      console.log("product.value: " + product.value.sellerId);
+      // console.log("product.value: " + product.value);
+      // console.log("product.value: " + product.value.sellerId);
       setTimeout(() => {
         router.push("/sale-items");
       }, 2000);
     } else {
       product.value = data;
-      console.log(product.value);
-      console.log(product.value.sellerId);
-      console.log(product.value.storageGb);
-      console.log(data);
+      // console.log(product.value);
+      // console.log(product.value.sellerId);
+      // console.log(product.value.storageGb);
+      // console.log(data);
     }
   } catch (error) {
     alertStore.addToast(error.message || "Something Wrong", "This feature is currently experiencing a bug. We will fix it soon.", "error");
@@ -89,13 +89,13 @@ const addItem = async () => {
   if (!product.value || !product.value.id) return;
 
   const checkRole = localStorage.getItem("role")
-  console.log(checkRole);
+  // console.log(checkRole);
   if (!checkRole) {
     router.push({ name: 'Login' });
   }
 
   const accSellerId = auth.getAuthData().sellerId
-  console.log(accSellerId);
+  // console.log(accSellerId);
   if (product.value.sellerId === accSellerId) {
     alertStore.addToast("Seller cant't add order that their owner", "Can't add your order", "error");
     return;
@@ -112,16 +112,16 @@ const addItem = async () => {
     stock: product.value.quantity,
     storageGb: product.value.storageGb,
   };
-  console.log(payload);
+  // console.log(payload);
   const result = cartStore.addToCart(payload, quantity.value);
-  if (result.success) {
+    if (result.success) {
     // แจ้ง success — ใช้ alertStore ของคุณได้เลย
     alertStore.addToast(`Add your order in to your cart amount (${result.added} )`, "Add to cart", "success");
-    console.log("add success");
+    // console.log("add success");
   } else {
     // แจ้ง error / ข้อจำกัดสต็อก
         alertStore.addToast(result.message, "","error");
-    console.log("add failed ");
+    // console.log("add failed ");
   }
 };
 </script>

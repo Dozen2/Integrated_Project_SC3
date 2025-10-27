@@ -160,8 +160,11 @@ const parsePriceRange = (priceValues, customPrice = null) => {
 
 const loadImageUrl = async () => {
   imageUrl.value = [];
+  // console.log("product.value.content: ",product.value.content);
+  
   for (const item of product.value.content) {
     if (item.mainImageFileName) {
+  // console.log("Loading image for:", item.mainImageFileName);
       const image = await getImageByImageName(item.mainImageFileName);
       imageUrl.value.push(image);
     } else {
@@ -169,7 +172,7 @@ const loadImageUrl = async () => {
     }
   }
 
-  console.log("Image URLs loaded:", imageUrl.value);
+  // console.log("Image URLs loaded:", imageUrl.value);
 };
 
 const loadBrands = async () => {
@@ -185,7 +188,7 @@ const loadProductsDefault = async () => {
   try {
     const data = await getAllSaleItemV2([], "createdOn", "desc", 10, 0);
     product.value = data;
-    console.log(product.value);
+  // console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -200,21 +203,21 @@ const loadProductsWithFilters = async (filters) => {
     const priceValues = convertPriceValues(filters.prices);
     const { min: minPrice, max: maxPrice } = parsePriceRange(priceValues, filters.customPrice);
 
-    console.log("Loading products with filters:", {
-      brands: filters.brands,
-      sortField: filters.sortField,
-      sortDirection: filters.sortDirection,
-      size: filters.size,
-      page: filters.page,
-      storageValues,
-      minPrice,
-      maxPrice,
-      customPrice: filters.customPrice,
-    });
+  // console.log("Loading products with filters:", {
+  //   brands: filters.brands,
+  //   sortField: filters.sortField,
+  //   sortDirection: filters.sortDirection,
+  //   size: filters.size,
+  //   page: filters.page,
+  //   storageValues,
+  //   minPrice,
+  //   maxPrice,
+  //   customPrice: filters.customPrice,
+  // });
 
     const data = await getAllSaleItemV2(filters.brands, filters.sortField, filters.sortDirection, filters.size, filters.page, storageValues, minPrice, maxPrice, filters.search);
     product.value = data;
-    console.log(product.value);
+  // console.log(product.value);
     totalPages.value = data.totalPages;
     loadImageUrl();
   } catch (error) {
@@ -285,7 +288,7 @@ const handlePriceFilter = async (newPrices) => {
 };
 
 const handleSearch = async (keyword) => {
-  console.log(keyword);
+  // console.log(keyword);
   setSession(SESSION_KEYS.SEARCH, keyword);
   setSession(SESSION_KEYS.PAGE, 0);
 
@@ -411,9 +414,9 @@ onBeforeMount(async () => {
   customPriceRange.value = getSessionCustomPrice();
 
   const filters = getCurrentFilters();
-  console.log("Initial filters:", filters);
+  // console.log("Initial filters:", filters);
 
-  console.log(hasActiveFilters(filters));
+  // console.log(hasActiveFilters(filters));
 
   if (hasActiveFilters(filters)) {
     await loadProductsWithFilters(filters);
@@ -422,7 +425,7 @@ onBeforeMount(async () => {
   }
 
   window.addEventListener("storage", onStorageChange);
-  console.log(" product.value.content: ", product.value.content);
+  // console.log(" product.value.content: ", product.value.content);
   isLoading.value = false;
 });
 

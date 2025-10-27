@@ -19,7 +19,7 @@ onMounted(async () => {
 
 
   orders.value = await getOrderById(orderParam.value);
-  console.log("orders.value: ", orders.value);
+  // console.log("orders.value: ", orders.value);
 
   totalPrice.value = orders.value.orderItems
     .map((item) => item.price * item.quantity)

@@ -61,12 +61,12 @@ const summitForm = async () => {
   try {
     if(!await authStore.login(email.value, password.value))
   {
-    console.log("Login successful");
+    // console.log("Login successful");
     alertStore.addToast("Unverify Email.", "Please verify your email", "error");
       return
   }
     const role = await authStore.getAuthData().authorities[authStore.getAuthData().authorities.length - 1].role;
-    console.log("User role after login:", role);
+    // console.log("User role after login:", role);
     alertStore.addToast(
       "The user account has been successfully registered.",
       "Create buyer successful.",
@@ -74,7 +74,7 @@ const summitForm = async () => {
       5000
     );
     if(role == 'ROLE_SELLER'){
-      console.log("Navigating to product management page for seller.");
+      // console.log("Navigating to product management page for seller.");
       route.push("/sale-items/list");
       return;
     }

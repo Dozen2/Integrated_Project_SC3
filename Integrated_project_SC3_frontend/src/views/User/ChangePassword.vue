@@ -75,8 +75,8 @@ const summitForm = async () => {
 
     router.push({ name: "UserProfile" }); // หรือเปลี่ยนเป็นหน้าอื่นได้ เช่น Login
   } catch (err) {
-    alertStore.addToast(err.message, "Change Password Error", "error");
-    console.log(err.message);
+  alertStore.addToast(err.message, "Change Password Error", "error");
+  // console.log(err.message);
   } finally {
     isLoading.value = false;
   }

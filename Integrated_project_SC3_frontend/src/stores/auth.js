@@ -29,7 +29,7 @@ export const useAuthStore = defineStore("auth", {
         this.role = role;
         this.isLoggedIn = true;
         if (accessToken === "Unverified") {
-          console.log("Unverified user cannot login");
+          // console.log("Unverified user cannot login");
           this.logout();
           return false
         }
@@ -50,8 +50,8 @@ export const useAuthStore = defineStore("auth", {
       try {
         const { accessToken, role } = await apiRefreshToken();
 
-        console.log("New AccessToken:", accessToken);
-        console.log("new role = ", role);
+  // console.log("New AccessToken:", accessToken);
+  // console.log("new role = ", role);
 
 
         this.accessToken = accessToken;
@@ -65,7 +65,7 @@ export const useAuthStore = defineStore("auth", {
       } catch (err) {
         this.logout();
         router.push("/signin");
-        console.log("refresh not finis");
+  // console.log("refresh not finis");
 
         return false;
       }
@@ -73,7 +73,7 @@ export const useAuthStore = defineStore("auth", {
 
     // ฟังก์ชัน logout
     async logout() {
-      console.log("logout");
+  // console.log("logout");
 
       try {
         await apiLogout();
@@ -122,7 +122,7 @@ export const useAuthStore = defineStore("auth", {
     async apiChangePassword(newPassword) {
       try {
         const updatedUser = await apiChangePassword(newPassword);
-        console.log("Password changed successfully:", updatedUser);
+  // console.log("Password changed successfully:", updatedUser);
         return true;
       } catch (err) {
         console.error("Change password failed:", err.message);

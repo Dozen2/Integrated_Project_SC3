@@ -33,7 +33,7 @@ const fetchBrands = async () => {
 
 function onStorageChange(event) {
   if (event.key === "brand-updated") {
-    console.log("Brand data changed in another tab");
+    // console.log("Brand data changed in another tab");
     fetchBrands(); // โหลดข้อมูลใหม่
   }
 }
@@ -65,7 +65,7 @@ const confirmDeleteProduct = async () => {
 };
 
 const deleteBrand = (id, name, noOfSaleItems) => {
-  console.log(noOfSaleItems);
+  // console.log(noOfSaleItems);
   if (noOfSaleItems > 0) {
     cannotdelete.value = true;
     brandToDeleteName.value = name;
@@ -77,7 +77,7 @@ const deleteBrand = (id, name, noOfSaleItems) => {
 };
 
 onMounted(async () => {
-  console.log("Brand management component mounted");
+  // console.log("Brand management component mounted");
 
   // โหลดข้อมูล brand
   await fetchBrands();
