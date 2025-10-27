@@ -176,7 +176,6 @@ public class JwtUtils {
     public String verifyAndDecodeEmailToken(String token) throws Exception {
         SignedJWT signedJWT = SignedJWT.parse(token);
         JWSVerifier verifier = new RSASSAVerifier(rsaPublicJWK);
-        System.out.println("isVerifyByPublicKey: " + signedJWT.verify(verifier));
         if (!signedJWT.verify(verifier)) {
             throw new RuntimeException("Invalid signature");
         }

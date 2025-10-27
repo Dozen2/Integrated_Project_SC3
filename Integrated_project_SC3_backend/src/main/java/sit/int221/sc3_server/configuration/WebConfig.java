@@ -46,21 +46,12 @@ public class WebConfig {
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/itb-mshop/v2/auth/register", "/itb-mshop/v2/auth/verify-email"
-                                        , "/itb-mshop/v2/auth/refresh-email-token").permitAll()
-                                .requestMatchers("/itb-mshop/v1/brands/**", "/itb-mshop/v2/sale-items", "/itb-mshop/v2/sale-items/file/{filename:.+}").permitAll()
-                                .requestMatchers("/itb-mshop/v2/auth/login", "/itb-mshop/v2/auth/logout","/itb-mshop/v2/auth/send-reset-password-email","/itb-mshop/v2/auth/reset-password").permitAll()
-                                .requestMatchers("itb-mshop/v2/sale-items/{saleItemId}").permitAll()
-                                .requestMatchers("/itb-mshop/v2/auth/refresh").permitAll()
-                                .requestMatchers("/itb-mshop/v2/sale-items").permitAll()
-                                .requestMatchers("/itb-mshop/v2/sale-items/storages").permitAll()
-                                .requestMatchers(
-                                        "/itb-mshop/v2/user/{id}", "/itb-mshop/v2/user/profile/all").hasAnyAuthority("ROLE_BUYER", "ROLE_SELLER")
-                                .requestMatchers("/itb-mshop/v2/sellers/**").authenticated()
-
-//                        .requestMatchers("/itb-mshop/v2/**","/itb-mshop/v1/**").permitAll()
-
-                                .anyRequest().authenticated()
+                                .requestMatchers("/itb-mshop/v2/sellers/**","/itb-mshop/v2/order-status/{id}").hasAuthority("ROLE_SELLER")
+                        .requestMatchers(HttpMethod.POST,"/itb-mshop/v2/orders").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
+                        .requestMatchers("/itb-mshop/v2/orders/{id}","/itb-mshop/v2/cart/sellers/{id}"
+                                ,"/itb-mshop/v2/user/profile/all","/itb-mshop/v2/change-password"
+                                ,"/itb-mshop/v2/user/{id}").hasAnyAuthority("ROLE_BUYER","ROLE_SELLER")
+                        .anyRequest().permitAll()
                 )
                 .authenticationProvider(authenticationProvider(jwtUserDetailService))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
