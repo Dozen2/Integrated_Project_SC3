@@ -69,7 +69,7 @@ async function refreshEmail(token) {
     console.log(error);
   }
 }
-
+//======
 async function loginUser(username, password) {
   try {
     const res = await fetch(`${VITE_ROOT_API_URL}/itb-mshop/v2/auth/login`, {
