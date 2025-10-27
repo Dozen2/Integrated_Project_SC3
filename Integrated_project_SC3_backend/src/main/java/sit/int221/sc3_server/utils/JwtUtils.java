@@ -38,7 +38,7 @@ public class JwtUtils {
         try {
             rsaPrivateJWK = new RSAKeyGenerator(2048).keyID(KEY_ID).generate();
             rsaPublicJWK = rsaPrivateJWK.toPublicJWK();
-            System.out.println(rsaPublicJWK.toJSONString());
+//            System.out.println(rsaPublicJWK.toJSONString());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -84,23 +84,7 @@ public class JwtUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        try{
-//            JWSSigner signer = new RSASSASigner(rsaPrivateJWK);
-//            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-//                    .subject(user.getUsername()).issuer("http://localhost:8080")
-//                    .expirationTime(new Date(new Date().getTime() + ageInMinute))
-//                    .issueTime(new Date(new Date().getTime()))
-//                    .claim("authorities",user.getAuthorities())
-//                    .claim("uid",((AuthUserDetail)user).getId())
-//                    .claim("typ",tokenType.toString())
-//                    .build();
-//            SignedJWT signedJWT =new SignedJWT(new JWSHeader
-//                    .Builder(JWSAlgorithm.RS256).keyID(rsaPrivateJWK.getKeyID()).build(),claimsSet);
-//            signedJWT.sign(signer);
-//            return signedJWT.serialize();
-//        }catch (Exception e){
-//            throw new RuntimeException(e);
-//        }
+
     }
 
 

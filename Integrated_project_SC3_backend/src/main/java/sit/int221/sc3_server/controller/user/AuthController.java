@@ -46,8 +46,6 @@ public class AuthController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
-        System.out.println("========================== Verify Email ===========================");
-        System.out.println("Controller Verify-token: "  + token);
         boolean verify = userServices.verifyEmail(token);
         if(verify){
             return ResponseEntity.ok("Email successfully verify");
@@ -58,8 +56,6 @@ public class AuthController {
 
     @PostMapping("/refresh-email-token")
     public ResponseEntity<String> verifyEmailRefresh(@RequestParam(name = "token") String token)  throws MessagingException, UnsupportedEncodingException{
-        System.out.println("========================== Refresh Verify Email ===========================");
-        System.out.println("Controller Refresh-token: "  + token);
         userServices.emailExpired(token);
         return ResponseEntity.ok("Email successfully refresh");
     }
@@ -80,11 +76,11 @@ public class AuthController {
             Map<String,Object> tokens = userServices.authenticateUser(jwtAuthUser);
             ResponseCookie cookie =  ResponseCookie.from("refresh_token",(String) tokens.get("refresh_token"))
                     .httpOnly(true)
-                    .secure(false)
+                    .secure(true)
                     .path(cookiePath)
                     .maxAge(Duration.ofDays(1))
-                    .sameSite("Lax")
-//                    .sameSite("Strict")
+//                    .sameSite("Lax")
+                    .sameSite("Strict")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE,cookie.toString());
 
@@ -101,7 +97,6 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshTheToken(@CookieValue(name = "refresh_token",required = false) String token){
-        System.out.println(token);
         if (token == null || token.isEmpty()) {
             // ถ้าไม่มี header → return 400 Bad Request
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
